@@ -44,7 +44,9 @@ export const useBlockchainData = (networkId: string) => {
           // Transform database data to match our application's format
           const transformedHistory = blockData.map(record => ({
             timestamp: new Date(record.created_at).getTime(),
-            providers: JSON.parse(record.providers_data)
+            providers: typeof record.providers_data === 'string' 
+              ? JSON.parse(record.providers_data) 
+              : record.providers_data
           }));
           
           // Get the most recent entry for the lastBlock
@@ -55,17 +57,23 @@ export const useBlockchainData = (networkId: string) => {
           let highestBlock: BlockData | null = null;
           let highestHeight = BigInt(0);
           
-          Object.values(providers).forEach((provider) => {
-            const height = BigInt(provider.height);
+          Object.entries(providers).forEach(([providerName, providerData]) => {
+            // Type assertion to ensure TypeScript knows the structure
+            const typedProviderData = providerData as { 
+              height: string;
+              endpoint: string;
+              status: string;
+              blocksBehind: number;
+            };
+            
+            const height = BigInt(typedProviderData.height);
             if (height > highestHeight) {
               highestHeight = height;
               highestBlock = {
-                height: provider.height,
+                height: typedProviderData.height,
                 timestamp: lastEntry.timestamp,
-                provider: Object.keys(providers).find(
-                  key => providers[key].height === provider.height
-                ) || "Unknown",
-                endpoint: provider.endpoint
+                provider: providerName,
+                endpoint: typedProviderData.endpoint
               };
             }
           });
