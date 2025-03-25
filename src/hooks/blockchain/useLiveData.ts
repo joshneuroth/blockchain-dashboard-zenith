@@ -1,3 +1,4 @@
+
 import { useEffect, useRef } from 'react';
 import { NETWORKS, fetchBlockchainData } from '@/lib/api';
 import { supabase } from '@/lib/supabase';
@@ -131,6 +132,11 @@ export const useLiveData = (
             error: null,
             blockTimeMetrics
           });
+          
+          // Update initial load flag after first successful fetch
+          if (isInitialLoad.current) {
+            isInitialLoad.current = false;
+          }
         }
       } catch (error) {
         console.error("Error in fetchData:", error);
@@ -144,6 +150,9 @@ export const useLiveData = (
       }
     };
 
+    // Call fetchData immediately on mount and when dependencies change
+    fetchData();
+    
     const intervalId = setInterval(fetchData, 10000);
     
     return () => {

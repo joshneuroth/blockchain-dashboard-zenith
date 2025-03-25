@@ -29,7 +29,7 @@ export const NETWORKS = {
       { url: "https://avalanche-c-chain.publicnode.com", name: "PublicNode" },
       { url: "https://avax.meowrpc.com", name: "MeowRPC" },
       { url: "https://avalanche.drpc.org", name: "DRPC" },
-      { url: "https://rpc.ankr.com/avalanche-c", name: "Ankr" }
+      { url: "https://avalanche.api.onfinality.io/public", name: "OnFinality" }
     ],
     color: "avalanche"
   },
@@ -84,7 +84,6 @@ export const fetchBlockchainData = async (network: string, rpcUrl: string): Prom
                       rpcUrl.includes("flashbots") ? "Flashbots" :
                       rpcUrl.includes("polygon-rpc") ? "Polygon" :
                       rpcUrl.includes("avax") ? "Avalanche" :
-                      rpcUrl.includes("ankr") ? "Ankr" :
                       rpcUrl.includes("defibit") ? "Defibit" :
                       rpcUrl.includes("binance") ? "Binance" :
                       rpcUrl.includes("publicnode") ? "PublicNode" :
