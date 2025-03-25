@@ -1,12 +1,15 @@
+
 import React, { useState, useEffect } from 'react';
 import { Moon, Sun } from 'lucide-react';
 import BlockchainCard from '@/components/BlockchainCard';
 import NewsletterForm from '@/components/NewsletterForm';
 import { NETWORKS } from '@/lib/api';
+import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
   const [darkMode, setDarkMode] = useState(false);
   const [activeNetwork, setActiveNetwork] = useState<string | null>(null);
+  const { toast } = useToast();
   
   // Handle dark mode toggle
   useEffect(() => {
@@ -20,7 +23,20 @@ const Index = () => {
   // Set initial active network
   useEffect(() => {
     setActiveNetwork('ethereum');
-  }, []);
+    
+    // Add toast notification to inform user about RPC errors
+    const hasRPCErrors = true; // We've seen errors in the console
+    if (hasRPCErrors) {
+      setTimeout(() => {
+        toast({
+          title: "Some RPC endpoints unavailable",
+          description: "Some blockchain RPC providers are currently experiencing issues. Data may be incomplete.",
+          variant: "default",
+          duration: 5000,
+        });
+      }, 2000);
+    }
+  }, [toast]);
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
@@ -95,14 +111,14 @@ const Index = () => {
       {/* Blockchain Cards */}
       <section className="flex-grow w-full px-6 md:px-10">
         <div className="container mx-auto max-w-4xl">
-          {Object.entries(NETWORKS).map(([id, network]) => (
+          {activeNetwork && (
             <BlockchainCard
-              key={id}
-              networkId={id}
-              networkName={network.name}
-              networkColor={network.color}
+              key={activeNetwork}
+              networkId={activeNetwork}
+              networkName={NETWORKS[activeNetwork as keyof typeof NETWORKS]?.name || 'Unknown Network'}
+              networkColor={NETWORKS[activeNetwork as keyof typeof NETWORKS]?.color || 'gray'}
             />
-          ))}
+          )}
         </div>
       </section>
       

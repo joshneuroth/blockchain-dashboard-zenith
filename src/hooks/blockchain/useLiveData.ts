@@ -40,6 +40,8 @@ export const useLiveData = (
             const blockData = result.value;
             providers[blockData.provider] = blockData;
             successfulFetches++;
+          } else {
+            console.error(`Failed to fetch from ${network.rpcs[index].name}:`, result.reason);
           }
         });
         
@@ -56,6 +58,7 @@ export const useLiveData = (
           
           throw new Error(`Failed to fetch data from any ${network.name} provider`);
         } else {
+          // Reset failure count on success
           failureCount.current = 0;
         }
         
@@ -104,17 +107,23 @@ export const useLiveData = (
             providers: providerStatusMap
           };
           
-          // Save to database
-          const { error } = await supabase
-            .from('blockchain_readings')
-            .insert({
-              network_id: networkId,
-              providers_data: JSON.stringify(providerStatusMap),
-              created_at: new Date(timestamp).toISOString()
-            });
-            
-          if (error) {
-            console.error("Error saving blockchain data:", error);
+          try {
+            // Save to database
+            const { error } = await supabase
+              .from('blockchain_readings')
+              .insert({
+                network_id: networkId,
+                providers_data: JSON.stringify(providerStatusMap),
+                created_at: new Date(timestamp).toISOString()
+              });
+              
+            if (error) {
+              console.error("Error saving blockchain data:", error);
+              // Continue execution even if database save fails
+            }
+          } catch (dbError) {
+            console.error("Database error:", dbError);
+            // Continue execution even if database operations fail
           }
 
           // Update the history with the new measurement and limit to 10 minutes
@@ -137,7 +146,8 @@ export const useLiveData = (
           });
         }
       } catch (error) {
-        if (isMounted.current && !isInitialLoad.current) {
+        console.error("Error in fetchData:", error);
+        if (isMounted.current) {
           setData(prev => ({
             ...prev,
             isLoading: false,
@@ -147,6 +157,7 @@ export const useLiveData = (
       }
     };
 
+    // Call fetchData immediately
     fetchData();
     
     // Set interval to 10 seconds
