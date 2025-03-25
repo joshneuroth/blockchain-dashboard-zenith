@@ -1,6 +1,8 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { NETWORKS, BlockData, NetworkData, fetchBlockchainData } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/lib/supabase';
 
 export const useBlockchainData = (networkId: string) => {
   const [data, setData] = useState<NetworkData>({
@@ -17,6 +19,80 @@ export const useBlockchainData = (networkId: string) => {
   
   const isMounted = useRef(true);
   const failureCount = useRef(0);
+  const isInitialLoad = useRef(true);
+
+  // Load historical data from database
+  useEffect(() => {
+    const fetchHistoricalData = async () => {
+      try {
+        setData(prev => ({ ...prev, isLoading: true }));
+        
+        // Get data from the last hour
+        const oneHourAgo = new Date();
+        oneHourAgo.setHours(oneHourAgo.getHours() - 1);
+        
+        const { data: blockData, error } = await supabase
+          .from('blockchain_readings')
+          .select('*')
+          .eq('network_id', networkId)
+          .gte('created_at', oneHourAgo.toISOString())
+          .order('created_at', { ascending: true });
+          
+        if (error) throw error;
+        
+        if (blockData && blockData.length > 0) {
+          // Transform database data to match our application's format
+          const transformedHistory = blockData.map(record => ({
+            timestamp: new Date(record.created_at).getTime(),
+            providers: JSON.parse(record.providers_data)
+          }));
+          
+          // Get the most recent entry for the lastBlock
+          const lastEntry = transformedHistory[transformedHistory.length - 1];
+          const providers = lastEntry.providers;
+          
+          // Find the highest block
+          let highestBlock: BlockData | null = null;
+          let highestHeight = BigInt(0);
+          
+          Object.values(providers).forEach((provider) => {
+            const height = BigInt(provider.height);
+            if (height > highestHeight) {
+              highestHeight = height;
+              highestBlock = {
+                height: provider.height,
+                timestamp: lastEntry.timestamp,
+                provider: Object.keys(providers).find(
+                  key => providers[key].height === provider.height
+                ) || "Unknown",
+                endpoint: provider.endpoint
+              };
+            }
+          });
+          
+          setData(prev => ({
+            ...prev,
+            lastBlock: highestBlock,
+            blockHistory: transformedHistory,
+            providers,
+            isLoading: false,
+            error: null
+          }));
+        }
+      } catch (error) {
+        console.error("Error loading historical data:", error);
+        setData(prev => ({
+          ...prev,
+          isLoading: false,
+          error: error instanceof Error ? error.message : 'Failed to load historical data'
+        }));
+      } finally {
+        isInitialLoad.current = false;
+      }
+    };
+    
+    fetchHistoricalData();
+  }, [networkId]);
 
   useEffect(() => {
     isMounted.current = true;
@@ -27,7 +103,7 @@ export const useBlockchainData = (networkId: string) => {
 
     const fetchData = async () => {
       try {
-        if (isMounted.current) {
+        if (isMounted.current && !isInitialLoad.current) {
           setData(prev => ({ ...prev, isLoading: true, error: null }));
         }
         
@@ -101,31 +177,42 @@ export const useBlockchainData = (networkId: string) => {
             };
           });
           
-          // Update the history with the new measurement
-          const updatedHistory = [...data.blockHistory];
-          updatedHistory.unshift({
+          // Create the measurement record
+          const newMeasurement = {
             timestamp,
             providers: providerStatusMap
-          });
+          };
           
-          // Keep only the most recent measurements
-          if (updatedHistory.length > 18) {
-            updatedHistory.pop();
+          // Save to database
+          const { error } = await supabase
+            .from('blockchain_readings')
+            .insert({
+              network_id: networkId,
+              providers_data: JSON.stringify(providerStatusMap),
+              created_at: new Date(timestamp).toISOString()
+            });
+            
+          if (error) {
+            console.error("Error saving blockchain data:", error);
           }
+          
+          // Update the history with the new measurement
+          const updatedHistory = [...data.blockHistory, newMeasurement];
           
           // Calculate blocks per minute metrics
           let blocksPerMinute = data.blockTimeMetrics.blocksPerMinute;
           const now = Date.now();
           
           if (now - data.blockTimeMetrics.lastCalculated > 30000 && updatedHistory.length >= 2) {
-            const oldestBlockTime = updatedHistory[updatedHistory.length - 1].timestamp;
-            const newestBlockTime = updatedHistory[0].timestamp;
+            const oldestIndex = Math.max(0, updatedHistory.length - 18);
+            const oldestBlockTime = updatedHistory[oldestIndex].timestamp;
+            const newestBlockTime = updatedHistory[updatedHistory.length - 1].timestamp;
             const minutesElapsed = (newestBlockTime - oldestBlockTime) / 60000;
             
             if (minutesElapsed > 0) {
               // Get the highest blocks from oldest and newest measurements
-              const oldestMeasurement = updatedHistory[updatedHistory.length - 1];
-              const newestMeasurement = updatedHistory[0];
+              const oldestMeasurement = updatedHistory[oldestIndex];
+              const newestMeasurement = updatedHistory[updatedHistory.length - 1];
               
               // Find highest block in oldest measurement
               const oldestHeights = Object.values(oldestMeasurement.providers).map(p => BigInt(p.height));
@@ -154,7 +241,7 @@ export const useBlockchainData = (networkId: string) => {
           });
         }
       } catch (error) {
-        if (isMounted.current) {
+        if (isMounted.current && !isInitialLoad.current) {
           setData(prev => ({
             ...prev,
             isLoading: false,
@@ -172,7 +259,7 @@ export const useBlockchainData = (networkId: string) => {
       clearInterval(intervalId);
       isMounted.current = false;
     };
-  }, [networkId]);
+  }, [networkId, data.blockHistory, data.blockTimeMetrics]);
 
   return data;
 };

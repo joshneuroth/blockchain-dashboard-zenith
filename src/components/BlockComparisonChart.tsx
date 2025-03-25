@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { formatNumber } from '@/lib/api';
 import {
   Dialog,
@@ -8,6 +8,12 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent
+} from "@/components/ui/chart";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from 'recharts';
 
 interface BlockMeasurement {
   timestamp: number;
@@ -44,10 +50,27 @@ const BlockComparisonChart: React.FC<BlockComparisonChartProps> = ({
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedBlock, setSelectedBlock] = useState<BlockDetailsProps | null>(null);
   
-  // Fill with empty blocks if we don't have enough history
-  const filledHistory = [...Array(18)].map((_, i) => 
-    blockHistory[i] || { timestamp: 0, providers: {} }
-  );
+  // Process the data for the chart
+  const chartData = useMemo(() => {
+    return blockHistory.map(measurement => {
+      const result: any = {
+        timestamp: measurement.timestamp,
+        time: new Date(measurement.timestamp).toLocaleTimeString(),
+      };
+      
+      // Add each provider as a data point
+      Object.entries(measurement.providers).forEach(([providerName, providerData]) => {
+        result[providerName] = providerData.status === 'synced' ? 5 : 
+                              providerData.status === 'behind' ? 3 : 1;
+        result[`${providerName}_data`] = {
+          ...providerData,
+          name: providerName
+        };
+      });
+      
+      return result;
+    });
+  }, [blockHistory]);
   
   // Get color for a specific status
   const getStatusColor = (status: 'synced' | 'behind' | 'far-behind') => {
@@ -72,13 +95,14 @@ const BlockComparisonChart: React.FC<BlockComparisonChartProps> = ({
   };
   
   // Handle clicking on a block measurement
-  const handleBlockClick = (timestamp: number, providerName: string, providerData: any) => {
-    if (timestamp === 0) return;
+  const handleBarClick = (data: any, index: number, providerName: string) => {
+    const providerData = data[`${providerName}_data`];
+    if (!providerData) return;
     
     setSelectedBlock({
       providerName,
       providerData,
-      timestamp
+      timestamp: data.timestamp
     });
     
     setDialogOpen(true);
@@ -89,82 +113,54 @@ const BlockComparisonChart: React.FC<BlockComparisonChartProps> = ({
     return new Date(timestamp).toLocaleTimeString();
   };
 
-  return (
-    <div className="mt-6 mb-8 relative">
-      <div className="flex items-end justify-between h-20 overflow-hidden">
-        {filledHistory.reverse().map((measurement, index) => {
-          // Skip if this is an empty placeholder
-          if (measurement.timestamp === 0) {
-            return (
-              <div 
-                key={index}
-                className="flex h-full items-end relative mx-px"
-                style={{ width: `${100 / filledHistory.length}%` }}
-              >
-                <div 
-                  className="w-full h-2 bg-gray-200 dark:bg-gray-700"
-                  style={{ opacity: 0.5 }}
-                ></div>
-              </div>
-            );
-          }
-          
-          // Get all providers for this measurement
-          const providers = Object.entries(measurement.providers);
-          const barWidth = 100 / (providers.length || 1);
-          
-          return (
-            <div 
-              key={index}
-              className="flex h-full items-end relative mx-px"
-              style={{ width: `${100 / filledHistory.length}%` }}
-            >
-              {providers.map(([providerName, providerData], pIdx) => {
-                // Determine bar height based on status (5 units for synced, 3 for behind, 1 for far behind)
-                const barHeight = providerData.status === 'synced' ? 5 : 
-                                 providerData.status === 'behind' ? 3 : 1;
-                
-                return (
-                  <div
-                    key={`${index}-${pIdx}`}
-                    className="cursor-pointer mx-px"
-                    style={{ 
-                      width: `${barWidth}%`,
-                      height: `${barHeight * 20}%`, // Multiply by 20% of container height
-                      backgroundColor: getStatusColor(providerData.status),
-                      opacity: providerData.status === 'synced' ? 1 : 0.85
-                    }}
-                    onClick={() => handleBlockClick(measurement.timestamp, providerName, providerData)}
-                  >
-                    <span className="sr-only">
-                      Block {providerData.height} from {providerName}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          );
-        })}
+  // Get provider names from the most recent measurement
+  const providerNames = useMemo(() => {
+    if (blockHistory.length === 0) return [];
+    const lastMeasurement = blockHistory[blockHistory.length - 1];
+    return Object.keys(lastMeasurement.providers);
+  }, [blockHistory]);
+
+  // If we have no data yet, show a loading state
+  if (blockHistory.length === 0) {
+    return (
+      <div className="mt-6 mb-8 h-40 flex items-center justify-center text-gray-400">
+        No blockchain data available yet...
       </div>
-      
-      {/* Time markers */}
-      <div className="flex justify-between mt-2 text-xs text-gray-500">
-        {[...Array(7)].map((_, i) => {
-          const hour = new Date().getHours();
-          const minute = new Date().getMinutes();
-          
-          // Calculate time for this tick (subtract i*3 minutes from current time)
-          const tickMinute = minute - (i * 3);
-          const tickHour = hour + Math.floor(tickMinute / 60);
-          const adjustedMinute = ((tickMinute % 60) + 60) % 60;
-          const displayHour = ((tickHour % 24) + 24) % 24;
-          
-          return (
-            <div key={i} className="text-center">
-              {String(displayHour).padStart(2, '0')}:{String(adjustedMinute).padStart(2, '0')}
-            </div>
-          );
-        })}
+    );
+  }
+
+  return (
+    <div className="mt-6 mb-8">
+      <div className="h-60">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart
+            data={chartData}
+            margin={{ top: 10, right: 0, left: 0, bottom: 5 }}
+            barCategoryGap={1}
+          >
+            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+            <XAxis 
+              dataKey="time"
+              tick={{ fontSize: 10 }}
+              interval={Math.floor(chartData.length / 6)}
+            />
+            <YAxis hide />
+            <Tooltip content={<CustomTooltip />} />
+            
+            {providerNames.map((provider, index) => (
+              <Bar
+                key={provider}
+                dataKey={provider}
+                name={provider}
+                fill={getStatusColor(
+                  chartData[chartData.length - 1][`${provider}_data`]?.status || 'synced'
+                )}
+                onClick={(data, index) => handleBarClick(data, index, provider)}
+                cursor="pointer"
+              />
+            ))}
+          </BarChart>
+        </ResponsiveContainer>
       </div>
       
       {/* Legend */}
@@ -237,6 +233,42 @@ const BlockComparisonChart: React.FC<BlockComparisonChartProps> = ({
           )}
         </DialogContent>
       </Dialog>
+    </div>
+  );
+};
+
+// Custom tooltip for the chart
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (!active || !payload || !payload.length) return null;
+  
+  return (
+    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-2 rounded shadow-md text-xs">
+      <p className="font-semibold">{label}</p>
+      {payload.map((entry: any, index: number) => {
+        const dataKey = entry.dataKey;
+        const dataKeyWithData = `${dataKey}_data`;
+        const providerData = entry.payload[dataKeyWithData];
+        
+        if (!providerData) return null;
+        
+        return (
+          <div key={index} className="flex items-center mt-1">
+            <div 
+              className="w-2 h-2 mr-1 rounded-sm"
+              style={{ backgroundColor: entry.fill }}
+            />
+            <span className="mr-1">{providerData.name}:</span>
+            <span className="font-mono">
+              {formatNumber(providerData.height)}
+            </span>
+            {providerData.blocksBehind > 0 && (
+              <span className="ml-1 text-gray-500">
+                ({providerData.blocksBehind} behind)
+              </span>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 };

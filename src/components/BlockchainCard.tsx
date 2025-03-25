@@ -103,10 +103,13 @@ const BlockchainCard: React.FC<BlockchainCardProps> = ({
             </div>
           )}
           
-          <BlockComparisonChart 
-            blockHistory={blockHistory} 
-            networkColor={networkColor}
-          />
+          <div className="mt-4">
+            <h3 className="text-sm text-gray-500 mb-2">LAST HOUR BLOCK HEIGHTS</h3>
+            <BlockComparisonChart 
+              blockHistory={blockHistory} 
+              networkColor={networkColor}
+            />
+          </div>
         </>
       )}
     </div>
