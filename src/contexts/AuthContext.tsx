@@ -28,13 +28,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user ?? null);
         
         if (session?.user) {
+          // Check if user is admin using the new user_roles table
           const { data } = await supabase
             .from('user_roles')
             .select('role')
             .eq('user_id', session.user.id)
-            .eq('role', 'admin');
+            .eq('role', 'admin')
+            .single();
           
-          setIsAdmin(!!data && data.length > 0);
+          setIsAdmin(!!data);
         } else {
           setIsAdmin(false);
         }
@@ -49,13 +51,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(session?.user ?? null);
       
       if (session?.user) {
+        // Check if user is admin using the new user_roles table
         const { data } = await supabase
           .from('user_roles')
           .select('role')
           .eq('user_id', session.user.id)
-          .eq('role', 'admin');
+          .eq('role', 'admin')
+          .maybeSingle();
         
-        setIsAdmin(!!data && data.length > 0);
+        setIsAdmin(!!data);
       }
       
       setIsLoading(false);
