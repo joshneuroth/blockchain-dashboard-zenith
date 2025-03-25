@@ -111,14 +111,14 @@ const Index = () => {
       {/* Blockchain Cards */}
       <section className="flex-grow w-full px-6 md:px-10">
         <div className="container mx-auto max-w-4xl">
-          {activeNetwork && (
+          {Object.entries(NETWORKS).map(([id, network]) => (
             <BlockchainCard
-              key={activeNetwork}
-              networkId={activeNetwork}
-              networkName={NETWORKS[activeNetwork as keyof typeof NETWORKS]?.name || 'Unknown Network'}
-              networkColor={NETWORKS[activeNetwork as keyof typeof NETWORKS]?.color || 'gray'}
+              key={id}
+              networkId={id}
+              networkName={network.name}
+              networkColor={network.color}
             />
-          )}
+          ))}
         </div>
       </section>
       
