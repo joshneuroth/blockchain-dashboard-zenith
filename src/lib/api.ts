@@ -1,3 +1,4 @@
+
 // Networks and their RPC endpoints
 export const NETWORKS = {
   ethereum: {
@@ -55,6 +56,13 @@ export interface NetworkData {
     height: string;
     timestamp: number;
     timeDiff: number;
+    provider?: string;
+    providerData?: {
+      [key: string]: {
+        height: string;
+        timestamp: number;
+      }
+    }
   }>;
   providers: {
     [key: string]: BlockData;

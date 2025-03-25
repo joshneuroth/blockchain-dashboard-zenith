@@ -55,12 +55,23 @@ export const useBlockchainData = (networkId: string) => {
           
           const timeDiff = Math.floor((timestamp - lastTimestamp) / 1000);
           
+          // Create provider data for the current measurement
+          const providerData: { [key: string]: { height: string; timestamp: number } } = {};
+          Object.entries(providers).forEach(([name, data]) => {
+            providerData[name] = {
+              height: data.height,
+              timestamp: data.timestamp
+            };
+          });
+          
           // Only add a new entry if the block height changed
           if (data.lastBlock?.height !== highestBlockHeight) {
             updatedHistory.unshift({
               height: highestBlockHeight,
               timestamp,
-              timeDiff: timeDiff
+              timeDiff: timeDiff,
+              provider: highestProvider.provider,
+              providerData
             });
           }
           

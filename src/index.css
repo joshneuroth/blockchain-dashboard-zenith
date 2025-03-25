@@ -1,54 +1,73 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --background: 0 0% 100%;
+    --foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 5.9% 10%;
-    --radius: 0.75rem;
+    --popover-foreground: 222.2 47.4% 11.2%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 47.4% 11.2%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 210 40% 98%;
+
+    --ring: 215 20.2% 65.1%;
+
+    --radius: 0.5rem;
   }
 
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
+    --background: 224 71% 4%;
+    --foreground: 213 31% 91%;
+
+    --muted: 223 47% 11%;
+    --muted-foreground: 215.4 16.3% 56.9%;
+
+    --popover: 224 71% 4%;
+    --popover-foreground: 215 20.2% 65.1%;
+
+    --card: 224 71% 4%;
+    --card-foreground: 213 31% 91%;
+
+    --border: 216 34% 17%;
+    --input: 216 34% 17%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 1.2%;
+
+    --secondary: 222.2 47.4% 11.2%;
+    --secondary-foreground: 210 40% 98%;
+
+    --accent: 216 34% 17%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+
+    --ring: 216 34% 17%;
+
+    --radius: 0.5rem;
   }
 }
 
@@ -56,60 +75,119 @@
   * {
     @apply border-border;
   }
-  
-  html {
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-  
   body {
-    @apply bg-background text-foreground font-sans;
-    @apply transition-colors duration-300 ease-in-out;
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
-@layer components {
-  .blockchain-tabs {
-    @apply inline-flex h-10 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground;
-  }
-  
-  .blockchain-tab {
-    @apply inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
-  }
-  
-  .blockchain-tab.active {
-    @apply bg-background text-foreground shadow-sm;
-  }
-  
-  .block-bar {
-    @apply relative inline-block w-2 h-16 rounded-sm bg-green-400 mx-0.5 origin-bottom transition-transform duration-300;
-  }
-  
-  .block-bar-small {
-    transform: scaleY(0.3);
-  }
-  
-  .block-bar-medium {
-    transform: scaleY(0.6);
-  }
-  
-  .block-bar-large {
-    transform: scaleY(1);
-  }
-  
-  .block-bar-alert {
-    @apply bg-red-500;
-  }
-  
-  .glass-card {
-    @apply bg-white/50 backdrop-blur-lg border border-white/20 rounded-2xl transition-all duration-300;
-  }
-  
-  .dark .glass-card {
-    @apply bg-black/20 backdrop-blur-lg border border-white/10;
-  }
-  
-  .glass-effect {
-    @apply backdrop-blur-md bg-white/5 border border-white/10;
-  }
+/* Custom Styles */
+.glass-card {
+  @apply bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700;
+  backdrop-filter: blur(10px);
+}
+
+.text-ethereum {
+  @apply text-purple-500 dark:text-purple-400;
+}
+
+.text-polygon {
+  @apply text-indigo-500 dark:text-indigo-400;
+}
+
+.text-avalanche {
+  @apply text-red-500 dark:text-red-400;
+}
+
+.text-solana {
+  @apply text-green-500 dark:text-green-400;
+}
+
+.text-binance {
+  @apply text-yellow-500 dark:text-yellow-400;
+}
+
+.glass-effect {
+  @apply bg-white bg-opacity-90 dark:bg-gray-800 dark:bg-opacity-90;
+  backdrop-filter: blur(10px);
+}
+
+.blockchain-tab {
+  @apply px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors;
+}
+
+.blockchain-tab.active {
+  @apply text-gray-900 dark:text-white font-medium;
+  @apply border-b-2 border-gray-900 dark:border-white;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.6s ease-in-out;
+}
+
+.animate-pulse-opacity {
+  animation: pulseOpacity 1.5s ease-in-out infinite;
+}
+
+.animate-data-update {
+  animation: dataUpdate 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulseOpacity {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes dataUpdate {
+  0% { color: inherit; }
+  50% { color: #10b981; }
+  100% { color: inherit; }
+}
+
+/* Block chart styles */
+.block-bar {
+  @apply mx-0.5 rounded-t transition-all;
+  height: 20px;
+  width: 10px;
+}
+
+.block-bar-small {
+  height: 40%;
+}
+
+.block-bar-medium {
+  height: 70%;
+}
+
+.block-bar-large {
+  height: 100%;
+}
+
+.block-bar-alert {
+  @apply animate-pulse;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }
