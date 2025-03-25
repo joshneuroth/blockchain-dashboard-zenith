@@ -21,17 +21,9 @@ export const NETWORKS = {
     name: "Avalanche",
     rpcs: [
       { url: "https://api.avax.network/ext/bc/C/rpc", name: "Avalanche" },
-      { url: "https://rpc.ankr.com/avalanche", name: "Ankr" }
+      // Removing Ankr since it requires an API key
     ],
     color: "avalanche"
-  },
-  solana: {
-    name: "Solana",
-    rpcs: [
-      { url: "https://api.mainnet-beta.solana.com", name: "Solana" },
-      { url: "https://solana-api.projectserum.com", name: "Serum" }
-    ],
-    color: "solana"
   },
   binance: {
     name: "Binance Chain",
@@ -82,8 +74,6 @@ export const fetchBlockchainData = async (network: string, rpcUrl: string): Prom
                       rpcUrl.includes("polygon-rpc") ? "Polygon" :
                       rpcUrl.includes("avax") ? "Avalanche" :
                       rpcUrl.includes("ankr") ? "Ankr" :
-                      rpcUrl.includes("solana-api") ? "Serum" :
-                      rpcUrl.includes("solana") ? "Solana" :
                       rpcUrl.includes("defibit") ? "Defibit" :
                       rpcUrl.includes("binance") ? "Binance" : "Unknown";
   
@@ -99,6 +89,8 @@ export const fetchBlockchainData = async (network: string, rpcUrl: string): Prom
         params: [],
         id: 1,
       }),
+      // Add a timeout to prevent hanging requests
+      signal: AbortSignal.timeout(5000),
     });
 
     if (!response.ok) {
