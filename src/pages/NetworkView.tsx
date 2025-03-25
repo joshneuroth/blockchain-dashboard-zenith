@@ -25,6 +25,52 @@ const NetworkView = () => {
   // Check if we're on the home/index page
   const isHomePage = location.pathname === '/';
 
+  // Create network-specific gradient backgrounds
+  const getNetworkGradient = () => {
+    if (darkMode) {
+      // Dark mode gradients
+      switch(networkId) {
+        case 'ethereum': 
+          return 'bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900';
+        case 'polygon': 
+          return 'bg-gradient-to-br from-purple-900 to-indigo-900';
+        case 'avalanche': 
+          return 'bg-gradient-to-br from-red-900 to-gray-900';
+        case 'binance': 
+          return 'bg-gradient-to-br from-yellow-800 to-yellow-950';
+        default: 
+          return 'from-gray-900 to-gray-800';
+      }
+    } else {
+      // Light mode gradients
+      switch(networkId) {
+        case 'ethereum': 
+          return 'bg-gradient-to-br from-[#E0C7DE] via-[#89AFF5] to-[#CAF9F7]';
+        case 'polygon': 
+          return 'bg-gradient-to-br from-[#9945FF] to-[#993DBD]';
+        case 'avalanche': 
+          return 'bg-gradient-to-br from-[#E84142] to-[#221B1C]';
+        case 'binance': 
+          return 'bg-gradient-to-br from-[#ECBA3F] to-[#FEF6DB]';
+        default: 
+          return 'from-gray-50 to-gray-100';
+      }
+    }
+  };
+
+  // Set text color based on network for better contrast
+  const getTextColorClass = () => {
+    if (darkMode) return 'text-white'; // In dark mode, always use white text
+    
+    switch(networkId) {
+      case 'ethereum': return 'text-gray-900';
+      case 'polygon': return 'text-white';
+      case 'avalanche': return 'text-white';
+      case 'binance': return 'text-gray-900';
+      default: return 'text-gray-900';
+    }
+  };
+
   if (!network) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -40,7 +86,7 @@ const NetworkView = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
+    <div className={`min-h-screen flex flex-col ${getNetworkGradient()} dark:from-gray-900 dark:to-gray-800 transition-colors duration-300`}>
       {/* Header */}
       <header className="w-full py-4 px-6 md:px-10 border-b border-gray-200 dark:border-gray-800 glass-effect">
         <div className="container mx-auto flex justify-between items-center">
@@ -101,12 +147,12 @@ const NetworkView = () => {
 
       <div className="w-full py-16 px-6 md:px-10">
         <div className="container mx-auto max-w-4xl">
-          <h1 className="text-4xl md:text-6xl font-bold mb-8">
+          <h1 className={`text-4xl md:text-6xl font-bold mb-8 ${getTextColorClass()}`}>
             {network.name} <span className="font-extralight">Monitoring</span>
           </h1>
           
           <div className="mb-8">
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className={`${getTextColorClass()} opacity-80`}>
               Detailed monitoring for {network.name} network. More metrics and analytics coming soon.
             </p>
           </div>
