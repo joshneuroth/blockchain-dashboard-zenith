@@ -1,6 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+
+import React, { useEffect, useRef, useState } from 'react';
 import { Bell } from 'lucide-react';
-import BlockComparisonChart from './BlockComparisonChart';
+import BlockComparisonChart, { TimeFilterOption } from './BlockComparisonChart';
 import { formatNumber, formatTimeDiff } from '@/lib/api';
 import { useBlockchainData } from '@/hooks/useBlockchainData';
 
@@ -17,6 +18,7 @@ const BlockchainCard: React.FC<BlockchainCardProps> = ({
 }) => {
   const { lastBlock, blockHistory, providers, isLoading, error, blockTimeMetrics } = useBlockchainData(networkId);
   const blockHeightRef = useRef<HTMLDivElement>(null);
+  const [timeFilter, setTimeFilter] = useState<TimeFilterOption>('all');
   
   useEffect(() => {
     if (blockHeightRef.current) {
@@ -112,10 +114,12 @@ const BlockchainCard: React.FC<BlockchainCardProps> = ({
           )}
           
           <div className="mt-4">
-            <h3 className="text-sm text-gray-500 mb-2">LAST 10 MINUTES BLOCK HEIGHTS</h3>
+            <h3 className="text-sm text-gray-500 mb-2">BLOCK HEIGHTS</h3>
             <BlockComparisonChart 
               blockHistory={blockHistory} 
               networkColor={networkColor}
+              timeFilter={timeFilter}
+              onTimeFilterChange={setTimeFilter}
             />
           </div>
         </>

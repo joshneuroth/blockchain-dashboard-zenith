@@ -14,6 +14,7 @@ import {
   ChartTooltipContent
 } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from 'recharts';
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 interface BlockMeasurement {
   timestamp: number;
@@ -27,9 +28,13 @@ interface BlockMeasurement {
   }
 }
 
+export type TimeFilterOption = 'all' | 'last20' | 'last10';
+
 interface BlockComparisonChartProps {
   blockHistory: BlockMeasurement[];
   networkColor: string;
+  timeFilter?: TimeFilterOption;
+  onTimeFilterChange?: (value: TimeFilterOption) => void;
 }
 
 interface BlockDetailsProps {
@@ -45,14 +50,28 @@ interface BlockDetailsProps {
 
 const BlockComparisonChart: React.FC<BlockComparisonChartProps> = ({ 
   blockHistory, 
-  networkColor
+  networkColor,
+  timeFilter = 'all',
+  onTimeFilterChange
 }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedBlock, setSelectedBlock] = useState<BlockDetailsProps | null>(null);
   
+  // Filter the chart data based on the selected time filter
+  const filteredBlockHistory = useMemo(() => {
+    if (timeFilter === 'all' || blockHistory.length === 0) {
+      return blockHistory;
+    } else if (timeFilter === 'last20') {
+      return blockHistory.slice(-20);
+    } else if (timeFilter === 'last10') {
+      return blockHistory.slice(-10);
+    }
+    return blockHistory;
+  }, [blockHistory, timeFilter]);
+  
   // Process the data for the chart
   const chartData = useMemo(() => {
-    return blockHistory.map(measurement => {
+    return filteredBlockHistory.map(measurement => {
       const result: any = {
         timestamp: measurement.timestamp,
         time: new Date(measurement.timestamp).toLocaleTimeString(),
@@ -70,7 +89,7 @@ const BlockComparisonChart: React.FC<BlockComparisonChartProps> = ({
       
       return result;
     });
-  }, [blockHistory]);
+  }, [filteredBlockHistory]);
   
   // Get color for a specific status
   const getStatusColor = (status: 'synced' | 'behind' | 'far-behind') => {
@@ -115,10 +134,10 @@ const BlockComparisonChart: React.FC<BlockComparisonChartProps> = ({
 
   // Get provider names from the most recent measurement
   const providerNames = useMemo(() => {
-    if (blockHistory.length === 0) return [];
-    const lastMeasurement = blockHistory[blockHistory.length - 1];
+    if (filteredBlockHistory.length === 0) return [];
+    const lastMeasurement = filteredBlockHistory[filteredBlockHistory.length - 1];
     return Object.keys(lastMeasurement.providers);
-  }, [blockHistory]);
+  }, [filteredBlockHistory]);
 
   // If we have no data yet, show a loading state
   if (blockHistory.length === 0) {
@@ -131,6 +150,30 @@ const BlockComparisonChart: React.FC<BlockComparisonChartProps> = ({
 
   return (
     <div className="mt-6 mb-8">
+      {onTimeFilterChange && (
+        <div className="mb-4 flex justify-end">
+          <ToggleGroup 
+            type="single" 
+            value={timeFilter}
+            onValueChange={(value) => {
+              if (value) onTimeFilterChange(value as TimeFilterOption)
+            }}
+            className="justify-end"
+            size="sm"
+          >
+            <ToggleGroupItem value="all" aria-label="Show all data">
+              All
+            </ToggleGroupItem>
+            <ToggleGroupItem value="last20" aria-label="Show last 20 readings">
+              Last 20
+            </ToggleGroupItem>
+            <ToggleGroupItem value="last10" aria-label="Show last 10 readings">
+              Last 10
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </div>
+      )}
+
       <div className="h-60">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
@@ -142,7 +185,7 @@ const BlockComparisonChart: React.FC<BlockComparisonChartProps> = ({
             <XAxis 
               dataKey="time"
               tick={{ fontSize: 10 }}
-              interval={Math.floor(chartData.length / 10)}
+              interval={Math.floor(chartData.length / 8)}
             />
             <YAxis hide />
             <Tooltip content={<CustomTooltip />} />
@@ -153,7 +196,7 @@ const BlockComparisonChart: React.FC<BlockComparisonChartProps> = ({
                 dataKey={provider}
                 name={provider}
                 fill={getStatusColor(
-                  chartData[chartData.length - 1][`${provider}_data`]?.status || 'synced'
+                  chartData[chartData.length - 1]?.[`${provider}_data`]?.status || 'synced'
                 )}
                 onClick={(data, index) => handleBarClick(data, index, provider)}
                 cursor="pointer"
