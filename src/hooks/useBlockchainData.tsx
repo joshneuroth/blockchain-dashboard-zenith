@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { NETWORKS, BlockData, NetworkData, fetchBlockchainData } from '@/lib/api';
 
@@ -71,6 +72,12 @@ export const useBlockchainData = (networkId: string) => {
             isLoading: false,
             error: null
           });
+        } else {
+          setData(prev => ({
+            ...prev,
+            isLoading: false,
+            error: 'Failed to fetch blockchain data from any provider'
+          }));
         }
       } catch (error) {
         setData(prev => ({

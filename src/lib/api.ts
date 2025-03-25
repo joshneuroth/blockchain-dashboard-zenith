@@ -64,43 +64,56 @@ export interface NetworkData {
   error: string | null;
 }
 
-// Mock function to fetch blockchain data (in a real app this would make actual RPC calls)
+// Function to fetch real blockchain data from RPC endpoints
 export const fetchBlockchainData = async (network: string, rpcUrl: string): Promise<BlockData> => {
-  // In a real implementation, this would make an actual fetch to the blockchain RPC
-  // For this demo, we'll simulate responses with random but realistic data
+  const providerName = rpcUrl.includes("llama") ? "LlamaRPC" : 
+                      rpcUrl.includes("flashbots") ? "Flashbots" :
+                      rpcUrl.includes("polygon-rpc") ? "Polygon" :
+                      rpcUrl.includes("avax") ? "Avalanche" :
+                      rpcUrl.includes("ankr") ? "Ankr" :
+                      rpcUrl.includes("solana-api") ? "Serum" :
+                      rpcUrl.includes("solana") ? "Solana" :
+                      rpcUrl.includes("defibit") ? "Defibit" :
+                      rpcUrl.includes("binance") ? "Binance" : "Unknown";
   
-  // Simulate network request delay
-  await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000));
-  
-  // Randomly generate a block height (would be fetched from blockchain in real app)
-  const baseHeight = 17897000;
-  const randomOffset = Math.floor(Math.random() * 1000);
-  const height = (baseHeight + randomOffset).toString();
-  
-  // Get current timestamp
-  const timestamp = Date.now();
-  
-  // Extract provider name from URL
-  const provider = rpcUrl.includes("llama") ? "LlamaRPC" : 
-                  rpcUrl.includes("flashbots") ? "Flashbots" :
-                  rpcUrl.includes("polygon-rpc") ? "Polygon" :
-                  rpcUrl.includes("avax") ? "Avalanche" :
-                  rpcUrl.includes("ankr") ? "Ankr" :
-                  rpcUrl.includes("solana-api") ? "Serum" :
-                  rpcUrl.includes("solana") ? "Solana" :
-                  rpcUrl.includes("defibit") ? "Defibit" :
-                  rpcUrl.includes("binance") ? "Binance" : "Unknown";
-  
-  // Simulate occasional errors
-  if (Math.random() < 0.05) {
-    throw new Error(`Failed to fetch data from ${provider}`);
+  try {
+    const response = await fetch(rpcUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        method: 'eth_blockNumber',
+        params: [],
+        id: 1,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    if (data.error) {
+      throw new Error(data.error.message || 'RPC error');
+    }
+
+    // Convert hex block number to decimal string
+    const blockHeight = data.result ? 
+      BigInt(data.result).toString() : 
+      "0";
+
+    return {
+      height: blockHeight,
+      timestamp: Date.now(),
+      provider: providerName
+    };
+  } catch (error) {
+    console.error(`Error fetching block data from ${rpcUrl}:`, error);
+    throw error;
   }
-  
-  return {
-    height,
-    timestamp,
-    provider
-  };
 };
 
 // Format large numbers with commas
