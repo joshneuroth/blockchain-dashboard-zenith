@@ -127,7 +127,17 @@ const AdminLogin = () => {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 p-4">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 p-4">
+      {/* Logo container with centering and padding */}
+      <div className="flex justify-center mb-8">
+        <img 
+          src="/lovable-uploads/c7175744-2d12-48ed-99d4-b189b9ef7757.png" 
+          alt="BlockHeight.8n Logo" 
+          className="max-w-full w-full sm:w-3/4 md:w-2/3 lg:w-1/2 px-4 py-4" 
+          style={{ maxWidth: '400px' }}
+        />
+      </div>
+      
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl">Admin Login</CardTitle>
