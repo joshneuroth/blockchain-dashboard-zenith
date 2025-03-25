@@ -53,8 +53,6 @@ export interface BlockData {
   timestamp: number;
   provider: string;
   endpoint: string;
-  blockTime?: number;
-  transactionCount?: number;
 }
 
 export interface NetworkData {
@@ -67,8 +65,6 @@ export interface NetworkData {
         endpoint: string;
         status: 'synced' | 'behind' | 'far-behind';
         blocksBehind: number;
-        blockTime?: number;
-        transactionCount?: number;
       }
     }
   }>;
@@ -99,8 +95,7 @@ export const fetchBlockchainData = async (network: string, rpcUrl: string): Prom
                       rpcUrl.includes("onfinality") ? "OnFinality" : "Unknown";
   
   try {
-    // Get latest block number
-    const blockNumberResponse = await fetch(rpcUrl, {
+    const response = await fetch(rpcUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -111,64 +106,30 @@ export const fetchBlockchainData = async (network: string, rpcUrl: string): Prom
         params: [],
         id: 1,
       }),
+      // Add a timeout to prevent hanging requests
       signal: AbortSignal.timeout(5000),
     });
 
-    if (!blockNumberResponse.ok) {
-      throw new Error(`HTTP error! status: ${blockNumberResponse.status}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const blockNumberData = await blockNumberResponse.json();
+    const data = await response.json();
     
-    if (blockNumberData.error) {
-      throw new Error(blockNumberData.error.message || 'RPC error');
+    if (data.error) {
+      throw new Error(data.error.message || 'RPC error');
     }
 
     // Convert hex block number to decimal string
-    const blockHeight = blockNumberData.result ? 
-      BigInt(blockNumberData.result).toString() : 
+    const blockHeight = data.result ? 
+      BigInt(data.result).toString() : 
       "0";
-      
-    // Get block details for the latest block
-    const blockDetailsResponse = await fetch(rpcUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        jsonrpc: '2.0',
-        method: 'eth_getBlockByNumber',
-        params: [blockNumberData.result, false],
-        id: 2,
-      }),
-      signal: AbortSignal.timeout(5000),
-    });
-    
-    let blockTime = null;
-    let transactionCount = 0;
-    
-    if (blockDetailsResponse.ok) {
-      const blockDetailsData = await blockDetailsResponse.json();
-      if (blockDetailsData.result) {
-        // Extract timestamp (in seconds) and convert to milliseconds
-        blockTime = blockDetailsData.result.timestamp ? 
-          parseInt(blockDetailsData.result.timestamp, 16) * 1000 : 
-          null;
-          
-        // Get transaction count
-        transactionCount = blockDetailsData.result.transactions ? 
-          blockDetailsData.result.transactions.length : 
-          0;
-      }
-    }
 
     return {
       height: blockHeight,
       timestamp: Date.now(),
       provider: providerName,
-      endpoint: rpcUrl,
-      blockTime,
-      transactionCount
+      endpoint: rpcUrl
     };
   } catch (error) {
     console.error(`Error fetching block data from ${rpcUrl}:`, error);
