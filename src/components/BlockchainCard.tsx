@@ -1,7 +1,8 @@
+
 import React, { useEffect, useRef, useState } from 'react';
-import { Bell, BarChart } from 'lucide-react';
+import { Bell, BarChart, Clock } from 'lucide-react';
 import BlockComparisonChart, { TimeFilterOption } from './BlockComparisonChart';
-import { formatNumber, formatTimeDiff } from '@/lib/api';
+import { formatNumber, formatTimeDiff, formatBlockTimestamp } from '@/lib/api';
 import { useBlockchainData } from '@/hooks/useBlockchainData';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -123,8 +124,14 @@ const BlockchainCard: React.FC<BlockchainCardProps> = ({
           </div>
           
           <div className="mt-2 flex flex-col text-sm text-gray-500">
-            <div>
-              LAST BLOCK: {getTimeSinceLastBlock()}
+            <div className="flex items-center gap-2">
+              <span>LAST BLOCK:</span> {getTimeSinceLastBlock()}
+              {lastBlock?.blockTimestamp && (
+                <div className="flex items-center gap-1 ml-2 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-xs">
+                  <Clock size={12} />
+                  <span>Block Time: {formatBlockTimestamp(lastBlock.blockTimestamp)}</span>
+                </div>
+              )}
             </div>
             <div className="font-medium mt-1 flex flex-wrap items-center gap-x-3">
               <span>BLOCK TIME:</span>
