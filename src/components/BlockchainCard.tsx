@@ -81,13 +81,15 @@ const BlockchainCard: React.FC<BlockchainCardProps> = ({
       return `${diffMs}ms ago`;
     } else if (diffMs < 60000) {
       return `${Math.floor(diffMs / 1000)}s ago`;
+    } else if (diffMs < 3600000) {
+      return `${Math.floor(diffMs / 60000)}m ${Math.floor((diffMs % 60000) / 1000)}s ago`;
     } else {
-      return formatTimeDiff(Math.floor(diffMs / 1000));
+      return `${Math.floor(diffMs / 3600000)}h ${Math.floor((diffMs % 3600000) / 60000)}m ago`;
     }
   };
 
   const getTransactionCount = (): string => {
-    if (!lastBlock || !lastBlock.transactionCount) return "N/A";
+    if (!lastBlock || !lastBlock.transactionCount === undefined) return "N/A";
     return formatNumber(lastBlock.transactionCount.toString());
   };
 
@@ -132,24 +134,31 @@ const BlockchainCard: React.FC<BlockchainCardProps> = ({
             {lastBlock ? formatNumber(lastBlock.height) : "0"}
           </div>
           
-          <div className="mt-2 flex flex-col text-sm text-gray-500">
-            <div className="flex flex-wrap items-center gap-x-4">
-              <span className="font-medium">BLOCK TIME:</span>
-              <span>{getBlockTime()}</span>
+          <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+              <div className="text-xs text-gray-500 uppercase font-semibold mb-1">Last Block Time</div>
+              <div className="flex items-center">
+                <span className="text-xl font-medium">{getBlockTime()}</span>
+              </div>
+              <div className="text-xs text-gray-500 mt-1">
+                {lastBlock?.blockTime ? new Date(lastBlock.blockTime).toLocaleString() : "Unknown"}
+              </div>
             </div>
-            <div className="font-medium mt-1 flex flex-wrap items-center gap-x-4">
-              <span>TRANSACTIONS:</span>
-              <span>{getTransactionCount()}</span>
-            </div>
-            <div className="font-medium mt-1 flex flex-wrap items-center gap-x-3">
-              <span>BLOCK RATE:</span>
-              <span>{formatBlocksPerMinute(blockTimeMetrics.blocksPerMinute)}</span>
-              <span className="text-xs opacity-80">({formatBlocksPerSecond(blockTimeMetrics.blocksPerMinute)})</span>
+            
+            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+              <div className="text-xs text-gray-500 uppercase font-semibold mb-1">Transactions</div>
+              <div className="flex items-center">
+                <span className="text-xl font-medium">{getTransactionCount()}</span>
+              </div>
+              <div className="text-xs text-gray-500 mt-1">
+                {formatBlocksPerMinute(blockTimeMetrics.blocksPerMinute)} 
+                <span className="opacity-80 ml-1">({formatBlocksPerSecond(blockTimeMetrics.blocksPerMinute)})</span>
+              </div>
             </div>
           </div>
           
           {lastBlock && providers && Object.keys(providers).length > 0 && (
-            <div className="mt-1 flex items-center flex-wrap gap-2">
+            <div className="mt-3 flex items-center flex-wrap gap-2">
               {Object.entries(providers).map(([name, data], index) => (
                 <div 
                   key={index} 
