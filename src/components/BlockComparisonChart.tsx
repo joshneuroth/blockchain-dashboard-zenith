@@ -142,7 +142,7 @@ const BlockComparisonChart: React.FC<BlockComparisonChartProps> = ({
             <XAxis 
               dataKey="time"
               tick={{ fontSize: 10 }}
-              interval={Math.floor(chartData.length / 6)}
+              interval={Math.floor(chartData.length / 10)}
             />
             <YAxis hide />
             <Tooltip content={<CustomTooltip />} />

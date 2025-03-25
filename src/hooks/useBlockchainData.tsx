@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { NETWORKS, BlockData, NetworkData, fetchBlockchainData } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useBlockchainData = (networkId: string) => {
   const [data, setData] = useState<NetworkData>({
@@ -27,15 +27,15 @@ export const useBlockchainData = (networkId: string) => {
       try {
         setData(prev => ({ ...prev, isLoading: true }));
         
-        // Get data from the last hour
-        const oneHourAgo = new Date();
-        oneHourAgo.setHours(oneHourAgo.getHours() - 1);
+        // Get data from the last 10 minutes
+        const tenMinutesAgo = new Date();
+        tenMinutesAgo.setMinutes(tenMinutesAgo.getMinutes() - 10);
         
         const { data: blockData, error } = await supabase
           .from('blockchain_readings')
           .select('*')
           .eq('network_id', networkId)
-          .gte('created_at', oneHourAgo.toISOString())
+          .gte('created_at', tenMinutesAgo.toISOString())
           .order('created_at', { ascending: true });
           
         if (error) throw error;
@@ -203,9 +203,13 @@ export const useBlockchainData = (networkId: string) => {
           if (error) {
             console.error("Error saving blockchain data:", error);
           }
-          
-          // Update the history with the new measurement
-          const updatedHistory = [...data.blockHistory, newMeasurement];
+
+          // Update the history with the new measurement and limit to 10 minutes
+          const tenMinutesAgo = timestamp - 10 * 60 * 1000;
+          const updatedHistory = [
+            ...data.blockHistory.filter(item => item.timestamp > tenMinutesAgo), 
+            newMeasurement
+          ];
           
           // Calculate blocks per minute metrics
           let blocksPerMinute = data.blockTimeMetrics.blocksPerMinute;
@@ -261,6 +265,7 @@ export const useBlockchainData = (networkId: string) => {
 
     fetchData();
     
+    // Set interval to 10 seconds as requested
     const intervalId = setInterval(fetchData, 10000);
     
     return () => {
