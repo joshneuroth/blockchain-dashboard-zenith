@@ -1,7 +1,6 @@
-
 import { useEffect, useRef } from 'react';
 import { NETWORKS, fetchBlockchainData } from '@/lib/api';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { toast } from '@/hooks/use-toast';
 import { NetworkData } from './types';
 import { calculateBlocksPerMinute } from './useBlockMetrics';
@@ -58,17 +57,14 @@ export const useLiveData = (
           
           throw new Error(`Failed to fetch data from any ${network.name} provider`);
         } else {
-          // Reset failure count on success
           failureCount.current = 0;
         }
         
-        // Determine the highest block
         const blockHeights = Object.values(providers).map(p => BigInt(p.height));
         const highestBlockHeight = blockHeights.length > 0 
           ? blockHeights.reduce((max, h) => h > max ? h : max).toString()
           : "0";
         
-        // Find the provider with the highest block
         const highestProvider = Object.values(providers).find(p => p.height === highestBlockHeight);
         
         if (highestProvider && isMounted.current) {
@@ -82,7 +78,6 @@ export const useLiveData = (
             }
           } = {};
           
-          // Process each provider and determine its status relative to the highest block
           Object.entries(providers).forEach(([name, providerData]) => {
             const currentHeight = BigInt(providerData.height);
             const highestHeight = BigInt(highestBlockHeight);
@@ -101,14 +96,7 @@ export const useLiveData = (
             };
           });
           
-          // Create the measurement record
-          const newMeasurement = {
-            timestamp,
-            providers: providerStatusMap
-          };
-          
           try {
-            // Save to database
             const { error } = await supabase
               .from('blockchain_readings')
               .insert({
@@ -119,21 +107,20 @@ export const useLiveData = (
               
             if (error) {
               console.error("Error saving blockchain data:", error);
-              // Continue execution even if database save fails
             }
           } catch (dbError) {
             console.error("Database error:", dbError);
-            // Continue execution even if database operations fail
           }
 
-          // Update the history with the new measurement and limit to 10 minutes
           const tenMinutesAgo = timestamp - 10 * 60 * 1000;
           const updatedHistory = [
             ...data.blockHistory.filter(item => item.timestamp > tenMinutesAgo), 
-            newMeasurement
+            {
+              timestamp,
+              providers: providerStatusMap
+            }
           ];
           
-          // Calculate blocks per minute metrics
           const blockTimeMetrics = calculateBlocksPerMinute(updatedHistory, data.blockTimeMetrics);
           
           setData({
@@ -157,10 +144,6 @@ export const useLiveData = (
       }
     };
 
-    // Call fetchData immediately
-    fetchData();
-    
-    // Set interval to 10 seconds
     const intervalId = setInterval(fetchData, 10000);
     
     return () => {

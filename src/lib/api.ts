@@ -1,4 +1,3 @@
-
 // Networks and their RPC endpoints
 export const NETWORKS = {
   ethereum: {
@@ -30,7 +29,7 @@ export const NETWORKS = {
       { url: "https://avalanche-c-chain.publicnode.com", name: "PublicNode" },
       { url: "https://avax.meowrpc.com", name: "MeowRPC" },
       { url: "https://avalanche.drpc.org", name: "DRPC" },
-      { url: "https://avalanche.api.onfinality.io/public", name: "OnFinality" }
+      { url: "https://rpc.ankr.com/avalanche-c", name: "Ankr" }
     ],
     color: "avalanche"
   },
@@ -90,8 +89,7 @@ export const fetchBlockchainData = async (network: string, rpcUrl: string): Prom
                       rpcUrl.includes("binance") ? "Binance" :
                       rpcUrl.includes("publicnode") ? "PublicNode" :
                       rpcUrl.includes("meowrpc") ? "MeowRPC" :
-                      rpcUrl.includes("edennetwork") ? "Eden Network" :
-                      rpcUrl.includes("blockpi") ? "BlockPI" :
+                      rpcUrl.includes("drpc") ? "DRPC" :
                       rpcUrl.includes("onfinality") ? "OnFinality" : "Unknown";
   
   try {
@@ -106,7 +104,6 @@ export const fetchBlockchainData = async (network: string, rpcUrl: string): Prom
         params: [],
         id: 1,
       }),
-      // Add a timeout to prevent hanging requests
       signal: AbortSignal.timeout(5000),
     });
 
