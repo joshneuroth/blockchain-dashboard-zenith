@@ -28,8 +28,6 @@ interface BlockActivityChartProps {
 const BlockActivityChart: React.FC<BlockActivityChartProps> = ({ blockHistory, networkColor }) => {
   const [tooltipData, setTooltipData] = useState<{
     visible: boolean;
-    x: number;
-    y: number;
     provider: string;
     endpoint: string;
     height: string;
@@ -67,15 +65,12 @@ const BlockActivityChart: React.FC<BlockActivityChartProps> = ({ blockHistory, n
 
   // Handle mouse over for tooltip display
   const handleMouseOver = (
-    e: React.MouseEvent, 
     block: typeof blockHistory[0], 
     provider: string, 
     height: string,
     endpoint?: string
   ) => {
     if (block.timestamp === 0) return;
-    
-    const rect = e.currentTarget.getBoundingClientRect();
     
     // Calculate block difference from highest block if available
     let blockDiff;
@@ -90,8 +85,6 @@ const BlockActivityChart: React.FC<BlockActivityChartProps> = ({ blockHistory, n
     
     setTooltipData({
       visible: true,
-      x: rect.left + window.scrollX,
-      y: rect.top + window.scrollY - 70,
       provider,
       endpoint: endpoint || 'Unknown endpoint',
       height,
@@ -115,21 +108,45 @@ const BlockActivityChart: React.FC<BlockActivityChartProps> = ({ blockHistory, n
           if (!hasProviderData) {
             // Handle single data point like before
             return (
-              <div 
-                key={index} 
-                className={`block-bar ${getBarSize(block.timeDiff)} ${isAlertBlock(block.timeDiff) ? 'block-bar-alert' : ''} cursor-pointer`}
-                style={{ 
-                  backgroundColor: block.height !== "0" 
-                    ? isAlertBlock(block.timeDiff) 
-                      ? '#ef4444' // red for alerts
-                      : getNetworkColor(networkColor)
-                    : '#e5e7eb' // grey for empty blocks
-                }}
-                onMouseOver={(e) => handleMouseOver(e, block, block.provider || '', block.height)}
-                onMouseOut={handleMouseOut}
-              >
-                <span className="sr-only">Block at {new Date(block.timestamp).toLocaleTimeString()}</span>
-              </div>
+              <TooltipProvider key={index}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div 
+                      className={`block-bar ${getBarSize(block.timeDiff)} ${isAlertBlock(block.timeDiff) ? 'block-bar-alert' : ''} cursor-pointer`}
+                      style={{ 
+                        backgroundColor: block.height !== "0" 
+                          ? isAlertBlock(block.timeDiff) 
+                            ? '#ef4444' // red for alerts
+                            : getNetworkColor(networkColor)
+                          : '#e5e7eb' // grey for empty blocks
+                      }}
+                      onMouseOver={() => handleMouseOver(block, block.provider || '', block.height)}
+                      onMouseOut={handleMouseOut}
+                    >
+                      <span className="sr-only">Block at {new Date(block.timestamp).toLocaleTimeString()}</span>
+                    </div>
+                  </TooltipTrigger>
+                  {tooltipData && tooltipData.visible && block.provider === tooltipData.provider && (
+                    <TooltipContent side="top" className="z-50 bg-white dark:bg-gray-800 p-3 rounded-md shadow-lg text-xs border border-gray-200 dark:border-gray-700 w-64">
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="font-bold text-sm">{tooltipData.provider}</div>
+                        {tooltipData.blockDiff !== undefined && tooltipData.blockDiff > 0 && (
+                          <div className="bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 px-2 py-0.5 rounded text-xs font-medium">
+                            -{tooltipData.blockDiff} blocks
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-gray-500 dark:text-gray-400 text-xs mb-1 break-all">
+                        {tooltipData.endpoint}
+                      </div>
+                      <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                        <div>Block: {formatNumber(tooltipData.height)}</div>
+                        <div>Time: {tooltipData.time}</div>
+                      </div>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
             );
           }
           
@@ -149,61 +166,56 @@ const BlockActivityChart: React.FC<BlockActivityChartProps> = ({ blockHistory, n
                 const endpoint = providerData.endpoint;
                 
                 return (
-                  <div 
-                    key={`${index}-${pIdx}`}
-                    className={`block-bar ${getBarSize(block.timeDiff)} ${isAlertBlock(block.timeDiff) ? 'block-bar-alert' : ''} cursor-pointer`}
-                    style={{ 
-                      width: `${barWidth}%`,
-                      backgroundColor: height !== "0" 
-                        ? isAlertBlock(block.timeDiff) 
-                          ? '#ef4444' // red for alerts
-                          : getNetworkColor(networkColor)
-                        : '#e5e7eb', // grey for empty blocks
-                      opacity: pIdx === 0 ? 1 : 0.7, // Make the second provider slightly transparent
-                      marginLeft: pIdx > 0 ? '1px' : '0'
-                    }}
-                    onMouseOver={(e) => handleMouseOver(e, block, provider, height, endpoint)}
-                    onMouseOut={handleMouseOut}
-                  >
-                    <span className="sr-only">
-                      Block {height} from {provider} at {new Date(providerData.timestamp).toLocaleTimeString()}
-                    </span>
-                  </div>
+                  <TooltipProvider key={`${index}-${pIdx}`}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div 
+                          className={`block-bar ${getBarSize(block.timeDiff)} ${isAlertBlock(block.timeDiff) ? 'block-bar-alert' : ''} cursor-pointer`}
+                          style={{ 
+                            width: `${barWidth}%`,
+                            backgroundColor: height !== "0" 
+                              ? isAlertBlock(block.timeDiff) 
+                                ? '#ef4444' // red for alerts
+                                : getNetworkColor(networkColor)
+                              : '#e5e7eb', // grey for empty blocks
+                            opacity: pIdx === 0 ? 1 : 0.7, // Make the second provider slightly transparent
+                            marginLeft: pIdx > 0 ? '1px' : '0'
+                          }}
+                          onMouseOver={() => handleMouseOver(block, provider, height, endpoint)}
+                          onMouseOut={handleMouseOut}
+                        >
+                          <span className="sr-only">
+                            Block {height} from {provider} at {new Date(providerData.timestamp).toLocaleTimeString()}
+                          </span>
+                        </div>
+                      </TooltipTrigger>
+                      {tooltipData && tooltipData.visible && provider === tooltipData.provider && (
+                        <TooltipContent side="top" className="z-50 bg-white dark:bg-gray-800 p-3 rounded-md shadow-lg text-xs border border-gray-200 dark:border-gray-700 w-64">
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="font-bold text-sm">{tooltipData.provider}</div>
+                            {tooltipData.blockDiff !== undefined && tooltipData.blockDiff > 0 && (
+                              <div className="bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 px-2 py-0.5 rounded text-xs font-medium">
+                                -{tooltipData.blockDiff} blocks
+                              </div>
+                            )}
+                          </div>
+                          <div className="text-gray-500 dark:text-gray-400 text-xs mb-1 break-all">
+                            {tooltipData.endpoint}
+                          </div>
+                          <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                            <div>Block: {formatNumber(tooltipData.height)}</div>
+                            <div>Time: {tooltipData.time}</div>
+                          </div>
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                  </TooltipProvider>
                 );
               })}
             </div>
           );
         })}
       </div>
-      
-      {/* Custom Tooltip */}
-      {tooltipData && tooltipData.visible && (
-        <div 
-          className="absolute bg-white dark:bg-gray-800 p-3 rounded-md shadow-lg text-xs z-10 pointer-events-none border border-gray-200 dark:border-gray-700"
-          style={{ 
-            left: `${tooltipData.x}px`, 
-            top: `${tooltipData.y}px`,
-            transform: 'translateX(-50%)',
-            minWidth: '180px'
-          }}
-        >
-          <div className="flex items-center justify-between mb-1">
-            <div className="font-bold text-sm">{tooltipData.provider}</div>
-            {tooltipData.blockDiff !== undefined && tooltipData.blockDiff > 0 && (
-              <div className="bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 px-2 py-0.5 rounded text-xs font-medium">
-                -{tooltipData.blockDiff} blocks
-              </div>
-            )}
-          </div>
-          <div className="text-gray-500 dark:text-gray-400 text-xs mb-1 break-all">
-            {tooltipData.endpoint}
-          </div>
-          <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-            <div>Block: {formatNumber(tooltipData.height)}</div>
-            <div>Time: {tooltipData.time}</div>
-          </div>
-        </div>
-      )}
       
       <div className="flex justify-between mt-2 text-xs text-gray-500">
         {[...Array(7)].map((_, i) => {
