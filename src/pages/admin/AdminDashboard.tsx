@@ -46,6 +46,15 @@ const AdminDashboard = () => {
       </header>
       
       <main className="container mx-auto px-4 py-8">
+        {/* Logo container with centering and padding */}
+        <div className="flex justify-center mb-8">
+          <img 
+            src="/lovable-uploads/c7175744-2d12-48ed-99d4-b189b9ef7757.png" 
+            alt="BlockHeight.8n Logo" 
+            className="max-w-full w-full sm:w-3/4 md:w-2/3 lg:w-1/2 px-4 py-4" 
+          />
+        </div>
+
         <Card>
           <CardHeader>
             <CardTitle>Network Configuration</CardTitle>
