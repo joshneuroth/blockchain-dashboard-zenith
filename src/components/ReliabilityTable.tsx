@@ -10,12 +10,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { 
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { HelpCircle } from 'lucide-react';
 
 interface ReliabilityTableProps {
@@ -59,16 +53,12 @@ const ReliabilityTable: React.FC<ReliabilityTableProps> = ({
             <TableHead className="text-right">
               <div className="flex items-center justify-end gap-1">
                 At Height
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <HelpCircle size={14} className="text-muted-foreground" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>The percentage of time the endpoint was at block height compared to other providers.</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <div className="relative inline-block">
+                  <HelpCircle size={14} className="text-muted-foreground cursor-help" />
+                  <span className="absolute w-64 bg-popover text-popover-foreground text-xs rounded p-2 -left-28 -top-20 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity shadow-md border pointer-events-none z-50 group">
+                    The percentage of time the endpoint was at block height compared to other providers.
+                  </span>
+                </div>
               </div>
             </TableHead>
           </TableRow>
