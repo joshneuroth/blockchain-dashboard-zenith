@@ -51,6 +51,19 @@ const BlockchainCard: React.FC<BlockchainCardProps> = ({
     return `${bpm.toFixed(1)} blocks/min`;
   };
 
+  // Calculate milliseconds since last block
+  const getTimeSinceLastBlock = (): string => {
+    if (!lastBlock) return "N/A";
+    
+    const millisecondsDiff = Date.now() - lastBlock.timestamp;
+    
+    if (millisecondsDiff < 1000) {
+      return `${millisecondsDiff}ms ago`;
+    } else {
+      return formatTimeDiff(Math.floor(millisecondsDiff / 1000));
+    }
+  };
+
   return (
     <div className="glass-card p-6 mb-6 animate-fade-in">
       <div className="flex justify-between items-center">
@@ -82,7 +95,7 @@ const BlockchainCard: React.FC<BlockchainCardProps> = ({
           
           <div className="mt-2 flex flex-col text-sm text-gray-500">
             <div>
-              LAST BLOCK: ABOUT {lastBlock ? formatTimeDiff(Math.floor((Date.now() - lastBlock.timestamp) / 1000)) : "N/A"}
+              LAST BLOCK: {getTimeSinceLastBlock()}
             </div>
             <div className="font-medium mt-1">
               BLOCK TIME: {formatBlocksPerMinute(blockTimeMetrics.blocksPerMinute)}
