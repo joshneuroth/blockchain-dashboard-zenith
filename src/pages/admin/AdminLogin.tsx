@@ -7,11 +7,13 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { AlertCircle } from 'lucide-react';
 
 const AdminLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
   const { signIn, isAdmin, user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -24,6 +26,7 @@ const AdminLogin = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoginError(null);
     
     if (!email || !password) {
       toast({
@@ -37,19 +40,28 @@ const AdminLogin = () => {
     setIsLoading(true);
     
     try {
+      console.log("Calling signIn from AdminLogin component");
       const { error } = await signIn(email, password);
       
       if (error) {
+        console.error("Login error details:", error);
+        setLoginError(
+          error.message || 
+          (error.toString().includes("fetch") ? 
+            "Network error: Unable to connect to authentication service. Please check your internet connection or try again later." : 
+            "An unexpected error occurred")
+        );
         toast({
           title: "Authentication failed",
-          description: error.message,
+          description: error.message || "An unexpected error occurred",
           variant: "destructive",
         });
-        return;
       }
       
       // The auth state change will trigger a redirect if the user is an admin
     } catch (error: any) {
+      console.error("Login exception:", error);
+      setLoginError("An unexpected error occurred. Please try again.");
       toast({
         title: "Error",
         description: error.message || "An unexpected error occurred",
@@ -71,6 +83,12 @@ const AdminLogin = () => {
         </CardHeader>
         <form onSubmit={handleLogin}>
           <CardContent className="space-y-4">
+            {loginError && (
+              <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md flex items-start gap-2 text-red-600 dark:text-red-400">
+                <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                <div className="text-sm">{loginError}</div>
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
