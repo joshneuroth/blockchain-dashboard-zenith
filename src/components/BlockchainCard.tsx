@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 import { Bell } from 'lucide-react';
 import BlockComparisonChart from './BlockComparisonChart';
@@ -19,7 +18,6 @@ const BlockchainCard: React.FC<BlockchainCardProps> = ({
   const { lastBlock, blockHistory, providers, isLoading, error, blockTimeMetrics } = useBlockchainData(networkId);
   const blockHeightRef = useRef<HTMLDivElement>(null);
   
-  // Animation effect when block height updates
   useEffect(() => {
     if (blockHeightRef.current) {
       blockHeightRef.current.classList.add('animate-data-update');
@@ -33,7 +31,6 @@ const BlockchainCard: React.FC<BlockchainCardProps> = ({
     }
   }, [lastBlock?.height]);
   
-  // Get the color class based on network
   const getColorClass = () => {
     switch (networkId) {
       case 'ethereum': return 'text-ethereum';
@@ -45,13 +42,11 @@ const BlockchainCard: React.FC<BlockchainCardProps> = ({
     }
   };
 
-  // Format blocks per minute
   const formatBlocksPerMinute = (bpm: number): string => {
     if (bpm === 0 || isNaN(bpm)) return "Calculating...";
     return `${bpm.toFixed(1)} blocks/min`;
   };
 
-  // Calculate milliseconds since last block
   const getTimeSinceLastBlock = (): string => {
     if (!lastBlock) return "N/A";
     
