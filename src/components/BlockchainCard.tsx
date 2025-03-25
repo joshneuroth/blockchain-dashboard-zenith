@@ -1,14 +1,12 @@
-
 import React, { useEffect, useRef, useState } from 'react';
-import { Bell, BarChart, Clock } from 'lucide-react';
+import { Bell, BarChart } from 'lucide-react';
 import BlockComparisonChart, { TimeFilterOption } from './BlockComparisonChart';
-import { formatNumber, formatTimeDiff, formatBlockTimestamp } from '@/lib/api';
+import { formatNumber, formatTimeDiff } from '@/lib/api';
 import { useBlockchainData } from '@/hooks/useBlockchainData';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import ReliabilityTable from './ReliabilityTable';
 import { useReliabilityData, TimePeriod } from '@/hooks/blockchain/useReliabilityData';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface BlockchainCardProps {
   networkId: string;
@@ -125,23 +123,8 @@ const BlockchainCard: React.FC<BlockchainCardProps> = ({
           </div>
           
           <div className="mt-2 flex flex-col text-sm text-gray-500">
-            <div className="flex items-center gap-2">
-              <span>LAST BLOCK:</span> 
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="cursor-help underline decoration-dotted">
-                      {getTimeSinceLastBlock()}
-                    </span>
-                  </TooltipTrigger>
-                  {lastBlock?.blockTimestamp && (
-                    <TooltipContent className="flex items-center gap-1 p-2">
-                      <Clock size={14} />
-                      <span>Block Time: {formatBlockTimestamp(lastBlock.blockTimestamp)}</span>
-                    </TooltipContent>
-                  )}
-                </Tooltip>
-              </TooltipProvider>
+            <div>
+              LAST BLOCK: {getTimeSinceLastBlock()}
             </div>
             <div className="font-medium mt-1 flex flex-wrap items-center gap-x-3">
               <span>BLOCK TIME:</span>

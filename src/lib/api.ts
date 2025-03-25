@@ -1,3 +1,4 @@
+
 // Networks and their RPC endpoints
 export const NETWORKS = {
   ethereum: {
@@ -52,7 +53,6 @@ export interface BlockData {
   timestamp: number;
   provider: string;
   endpoint: string;
-  blockTimestamp?: number; // Added block timestamp from the chain
 }
 
 export interface NetworkData {
@@ -95,8 +95,7 @@ export const fetchBlockchainData = async (network: string, rpcUrl: string): Prom
                       rpcUrl.includes("onfinality") ? "OnFinality" : "Unknown";
   
   try {
-    // First fetch the latest block number
-    const blockNumberResponse = await fetch(rpcUrl, {
+    const response = await fetch(rpcUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -111,52 +110,26 @@ export const fetchBlockchainData = async (network: string, rpcUrl: string): Prom
       signal: AbortSignal.timeout(5000),
     });
 
-    if (!blockNumberResponse.ok) {
-      throw new Error(`HTTP error! status: ${blockNumberResponse.status}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const blockNumberData = await blockNumberResponse.json();
+    const data = await response.json();
     
-    if (blockNumberData.error) {
-      throw new Error(blockNumberData.error.message || 'RPC error');
+    if (data.error) {
+      throw new Error(data.error.message || 'RPC error');
     }
 
     // Convert hex block number to decimal string
-    const blockHeight = blockNumberData.result ? 
-      BigInt(blockNumberData.result).toString() : 
+    const blockHeight = data.result ? 
+      BigInt(data.result).toString() : 
       "0";
-      
-    // Now fetch the block details to get the timestamp
-    const blockDetailsResponse = await fetch(rpcUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        jsonrpc: '2.0',
-        method: 'eth_getBlockByNumber',
-        params: [blockNumberData.result, false],
-        id: 2,
-      }),
-      signal: AbortSignal.timeout(5000),
-    });
-    
-    let blockTimestamp;
-    
-    if (blockDetailsResponse.ok) {
-      const blockDetails = await blockDetailsResponse.json();
-      if (blockDetails.result && blockDetails.result.timestamp) {
-        // Convert hex timestamp to decimal and then to milliseconds
-        blockTimestamp = parseInt(blockDetails.result.timestamp, 16) * 1000;
-      }
-    }
 
     return {
       height: blockHeight,
       timestamp: Date.now(),
       provider: providerName,
-      endpoint: rpcUrl,
-      blockTimestamp
+      endpoint: rpcUrl
     };
   } catch (error) {
     console.error(`Error fetching block data from ${rpcUrl}:`, error);
@@ -178,12 +151,4 @@ export const formatTimeDiff = (diff: number): string => {
   } else {
     return `${Math.floor(diff / 3600)}h ago`;
   }
-};
-
-// Format blockchain timestamp
-export const formatBlockTimestamp = (timestamp: number | undefined): string => {
-  if (!timestamp) return "Unknown";
-  
-  const date = new Date(timestamp);
-  return date.toLocaleString();
 };
