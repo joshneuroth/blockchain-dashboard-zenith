@@ -94,7 +94,9 @@ export const useLiveData = (
               height: providerData.height,
               endpoint: providerData.endpoint,
               status,
-              blocksBehind
+              blocksBehind,
+              blockTime: providerData.blockTime || null,
+              transactionCount: providerData.transactionCount || 0
             };
           });
           

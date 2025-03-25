@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { Bell, BarChart } from 'lucide-react';
 import BlockComparisonChart, { TimeFilterOption } from './BlockComparisonChart';
@@ -69,16 +70,25 @@ const BlockchainCard: React.FC<BlockchainCardProps> = ({
     return `${bps.toFixed(2)} blocks/sec`;
   };
 
-  const getTimeSinceLastBlock = (): string => {
-    if (!lastBlock) return "N/A";
+  const getBlockTime = (): string => {
+    if (!lastBlock || !lastBlock.blockTime) return "N/A";
     
-    const millisecondsDiff = Date.now() - lastBlock.timestamp;
+    const blockTime = new Date(lastBlock.blockTime);
+    const now = new Date();
+    const diffMs = now.getTime() - blockTime.getTime();
     
-    if (millisecondsDiff < 1000) {
-      return `${millisecondsDiff}ms ago`;
+    if (diffMs < 1000) {
+      return `${diffMs}ms ago`;
+    } else if (diffMs < 60000) {
+      return `${Math.floor(diffMs / 1000)}s ago`;
     } else {
-      return formatTimeDiff(Math.floor(millisecondsDiff / 1000));
+      return formatTimeDiff(Math.floor(diffMs / 1000));
     }
+  };
+
+  const getTransactionCount = (): string => {
+    if (!lastBlock || !lastBlock.transactionCount) return "N/A";
+    return formatNumber(lastBlock.transactionCount.toString());
   };
 
   return (
@@ -123,11 +133,16 @@ const BlockchainCard: React.FC<BlockchainCardProps> = ({
           </div>
           
           <div className="mt-2 flex flex-col text-sm text-gray-500">
-            <div>
-              LAST BLOCK: {getTimeSinceLastBlock()}
+            <div className="flex flex-wrap items-center gap-x-4">
+              <span className="font-medium">BLOCK TIME:</span>
+              <span>{getBlockTime()}</span>
+            </div>
+            <div className="font-medium mt-1 flex flex-wrap items-center gap-x-4">
+              <span>TRANSACTIONS:</span>
+              <span>{getTransactionCount()}</span>
             </div>
             <div className="font-medium mt-1 flex flex-wrap items-center gap-x-3">
-              <span>BLOCK TIME:</span>
+              <span>BLOCK RATE:</span>
               <span>{formatBlocksPerMinute(blockTimeMetrics.blocksPerMinute)}</span>
               <span className="text-xs opacity-80">({formatBlocksPerSecond(blockTimeMetrics.blocksPerMinute)})</span>
             </div>

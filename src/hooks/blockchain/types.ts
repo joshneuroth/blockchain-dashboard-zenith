@@ -16,6 +16,8 @@ export interface NetworkData {
         endpoint: string;
         status: 'synced' | 'behind' | 'far-behind';
         blocksBehind: number;
+        blockTime?: number;
+        transactionCount?: number;
       }
     }
   }>;
