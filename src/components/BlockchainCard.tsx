@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import ReliabilityTable from './ReliabilityTable';
 import { useReliabilityData, TimePeriod } from '@/hooks/blockchain/useReliabilityData';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface BlockchainCardProps {
   networkId: string;
@@ -125,13 +126,22 @@ const BlockchainCard: React.FC<BlockchainCardProps> = ({
           
           <div className="mt-2 flex flex-col text-sm text-gray-500">
             <div className="flex items-center gap-2">
-              <span>LAST BLOCK:</span> {getTimeSinceLastBlock()}
-              {lastBlock?.blockTimestamp && (
-                <div className="flex items-center gap-1 ml-2 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-xs">
-                  <Clock size={12} />
-                  <span>Block Time: {formatBlockTimestamp(lastBlock.blockTimestamp)}</span>
-                </div>
-              )}
+              <span>LAST BLOCK:</span> 
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="cursor-help underline decoration-dotted">
+                      {getTimeSinceLastBlock()}
+                    </span>
+                  </TooltipTrigger>
+                  {lastBlock?.blockTimestamp && (
+                    <TooltipContent className="flex items-center gap-1 p-2">
+                      <Clock size={14} />
+                      <span>Block Time: {formatBlockTimestamp(lastBlock.blockTimestamp)}</span>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
             </div>
             <div className="font-medium mt-1 flex flex-wrap items-center gap-x-3">
               <span>BLOCK TIME:</span>
