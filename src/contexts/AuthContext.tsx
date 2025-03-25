@@ -23,26 +23,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Set up auth state listener
     try {
+      console.log("Setting up auth state listener");
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
         async (event, session) => {
-          console.log("Auth state changed:", event, !!session);
+          console.log("Auth state changed:", event, !!session, session?.user?.id);
           setSession(session);
           setUser(session?.user ?? null);
           
           if (session?.user) {
             // Check if user is admin using the new user_roles table
             try {
+              console.log("Checking admin role for user:", session.user.id);
               const { data, error } = await supabase
                 .from('user_roles')
                 .select('role')
                 .eq('user_id', session.user.id)
                 .eq('role', 'admin')
-                .single();
+                .maybeSingle();
               
               if (error) {
                 console.error("Error checking admin role:", error);
               }
               
+              console.log("Admin role check result:", data);
               setIsAdmin(!!data);
             } catch (err) {
               console.error("Exception checking admin role:", err);
@@ -57,17 +60,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       );
 
       // Check for existing session
+      console.log("Checking for existing session");
       supabase.auth.getSession().then(async ({ data: { session }, error }) => {
         if (error) {
           console.error("Error getting session:", error);
         }
         
+        console.log("Existing session check result:", !!session, session?.user?.id);
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
           // Check if user is admin using the new user_roles table
           try {
+            console.log("Checking admin role for existing user:", session.user.id);
             const { data, error } = await supabase
               .from('user_roles')
               .select('role')
@@ -76,12 +82,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               .maybeSingle();
             
             if (error) {
-              console.error("Error checking admin role:", error);
+              console.error("Error checking admin role for existing user:", error);
             }
             
+            console.log("Admin role check result for existing user:", data);
             setIsAdmin(!!data);
           } catch (err) {
-            console.error("Exception checking admin role:", err);
+            console.error("Exception checking admin role for existing user:", err);
             setIsAdmin(false);
           }
         }
@@ -90,6 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       return () => {
+        console.log("Cleaning up auth subscription");
         subscription.unsubscribe();
       };
     } catch (err) {
@@ -101,29 +109,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (email: string, password: string) => {
     try {
       console.log("Attempting sign in with:", email);
+      setIsLoading(true);
+      
+      // Log the Supabase URL being used
+      console.log("Supabase URL:", import.meta.env.VITE_SUPABASE_URL || 'Using mock URL');
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       
       if (error) {
-        console.error("Sign in error:", error);
+        console.error("Sign in error:", error.message, error);
       } else {
-        console.log("Sign in successful:", !!data.user);
+        console.log("Sign in successful:", !!data.user, data.user?.id);
       }
       
       return { error };
     } catch (err) {
       console.error("Exception during sign in:", err);
       return { error: err };
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const signOut = async () => {
     try {
+      setIsLoading(true);
+      console.log("Signing out");
       await supabase.auth.signOut();
     } catch (err) {
       console.error("Sign out error:", err);
+    } finally {
+      setIsLoading(false);
     }
   };
 

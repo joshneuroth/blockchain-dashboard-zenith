@@ -5,14 +5,28 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mock.supabase.co';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'mock-key';
 
+// Log Supabase configuration for debugging
+console.log("Supabase client configuration:", {
+  url: supabaseUrl,
+  usingMock: !import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY
+});
+
 // Create a mock Supabase client if environment variables are not provided
 const isMock = !import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Create the Supabase client
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Create the Supabase client with explicit auth settings
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+  }
+});
 
 // If using mock, replace the methods we need with mock implementations
 if (isMock) {
+  console.warn("Using mock Supabase client. For production use, please provide VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.");
+  
   // Mock implementation for blockchain_readings table
   const mockData: Record<string, any[]> = {
     blockchain_readings: []

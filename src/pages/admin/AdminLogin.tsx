@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -14,24 +14,48 @@ const AdminLogin = () => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
-  const { signIn, isAdmin, user } = useAuth();
+  const { signIn, isAdmin, user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Check environment and Supabase URL
+  useEffect(() => {
+    console.log("AdminLogin component mounted");
+    console.log("Environment check:", {
+      supabaseUrl: import.meta.env.VITE_SUPABASE_URL || 'Not set',
+      supabaseKey: import.meta.env.VITE_SUPABASE_ANON_KEY ? 'Set (not shown)' : 'Not set',
+      nodeEnv: import.meta.env.NODE_ENV,
+      isDev: import.meta.env.DEV,
+      isProd: import.meta.env.PROD,
+    });
+    
+    // Check if user is already logged in and is admin
+    if (user) {
+      console.log("User is logged in:", user.id);
+      console.log("Is admin:", isAdmin);
+    } else {
+      console.log("No user is logged in");
+    }
+  }, [user, isAdmin]);
+
   // If user is already logged in and is admin, redirect to dashboard
-  if (user && isAdmin) {
-    navigate('/admin/dashboard');
-    return null;
-  }
+  useEffect(() => {
+    if (user && isAdmin && !authLoading) {
+      console.log("User is admin, redirecting to dashboard");
+      navigate('/admin/dashboard');
+    }
+  }, [user, isAdmin, authLoading, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError(null);
     
     if (!email || !password) {
+      const errorMessage = "Please enter both email and password";
+      setLoginError(errorMessage);
       toast({
         title: "Error",
-        description: "Please enter both email and password",
+        description: errorMessage,
         variant: "destructive",
       });
       return;
@@ -45,32 +69,62 @@ const AdminLogin = () => {
       
       if (error) {
         console.error("Login error details:", error);
-        setLoginError(
-          error.message || 
+        
+        const errorMessage = error.message || 
           (error.toString().includes("fetch") ? 
-            "Network error: Unable to connect to authentication service. Please check your internet connection or try again later." : 
-            "An unexpected error occurred")
-        );
+            "Network error: Unable to connect to authentication service. Please check your internet connection and make sure Supabase is properly configured." : 
+            "An unexpected error occurred");
+        
+        setLoginError(errorMessage);
+        
         toast({
           title: "Authentication failed",
-          description: error.message || "An unexpected error occurred",
+          description: errorMessage,
           variant: "destructive",
         });
+      } else {
+        console.log("Sign in completed without error");
       }
       
       // The auth state change will trigger a redirect if the user is an admin
     } catch (error: any) {
       console.error("Login exception:", error);
-      setLoginError("An unexpected error occurred. Please try again.");
+      const errorMessage = "An unexpected error occurred. Please try again.";
+      setLoginError(errorMessage);
       toast({
         title: "Error",
-        description: error.message || "An unexpected error occurred",
+        description: error.message || errorMessage,
         variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="text-2xl">Loading</CardTitle>
+            <CardDescription>
+              Please wait while we check your authentication status...
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Don't render the login form if user is authenticated and admin
+  if (user && isAdmin) {
+    return null;
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 p-4">

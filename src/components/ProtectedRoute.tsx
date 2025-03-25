@@ -1,7 +1,8 @@
 
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
+import { useEffect } from 'react';
 
 type ProtectedRouteProps = {
   children: React.ReactNode;
@@ -10,6 +11,18 @@ type ProtectedRouteProps = {
 
 const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   const { user, isLoading, isAdmin } = useAuth();
+  const location = useLocation();
+
+  useEffect(() => {
+    console.log("ProtectedRoute render state:", {
+      pathname: location.pathname,
+      isLoading,
+      userExists: !!user, 
+      userId: user?.id,
+      isAdmin,
+      requiredRole
+    });
+  }, [isLoading, user, isAdmin, location.pathname, requiredRole]);
 
   if (isLoading) {
     return (
@@ -21,13 +34,16 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   }
 
   if (!user) {
+    console.log("ProtectedRoute: No user found, redirecting to /admin");
     return <Navigate to="/admin" replace />;
   }
 
   if (requiredRole === 'admin' && !isAdmin) {
+    console.log("ProtectedRoute: User is not admin, redirecting to /admin");
     return <Navigate to="/admin" replace />;
   }
 
+  console.log("ProtectedRoute: Access granted");
   return <>{children}</>;
 };
 
