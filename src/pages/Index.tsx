@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Moon, Sun, Home } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import BlockchainCard from '@/components/BlockchainCard';
 import NewsletterForm from '@/components/NewsletterForm';
 import { NETWORKS } from '@/lib/api';
@@ -9,6 +9,7 @@ import { NETWORKS } from '@/lib/api';
 const Index = () => {
   const [darkMode, setDarkMode] = useState(false);
   const [activeNetwork, setActiveNetwork] = useState<string | null>(null);
+  const location = useLocation();
   
   // Handle dark mode toggle
   useEffect(() => {
@@ -21,8 +22,17 @@ const Index = () => {
   
   // Set initial active network
   useEffect(() => {
-    setActiveNetwork('ethereum');
-  }, []);
+    // Only set activeNetwork when viewing a specific network page
+    const pathParts = location.pathname.split('/');
+    if (pathParts.length > 1 && pathParts[1] !== '') {
+      setActiveNetwork(pathParts[1]);
+    } else {
+      setActiveNetwork(null);
+    }
+  }, [location]);
+
+  // Check if we're on the home/index page
+  const isHomePage = location.pathname === '/';
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
@@ -36,7 +46,11 @@ const Index = () => {
             
             <Link 
               to="/" 
-              className="ml-4 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              className={`ml-4 p-2 rounded-full transition-colors ${
+                isHomePage 
+                  ? 'bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-gray-100' 
+                  : 'hover:bg-gray-200 dark:hover:bg-gray-700'
+              }`}
               aria-label="Home"
             >
               <Home size={20} />
@@ -48,7 +62,6 @@ const Index = () => {
                   key={id}
                   to={`/${id}`}
                   className={`blockchain-tab ${activeNetwork === id ? 'active' : ''}`}
-                  onClick={() => setActiveNetwork(id)}
                 >
                   {network.name}
                 </Link>
@@ -74,7 +87,6 @@ const Index = () => {
               key={id}
               to={`/${id}`}
               className={`blockchain-tab ${activeNetwork === id ? 'active' : ''} whitespace-nowrap`}
-              onClick={() => setActiveNetwork(id)}
             >
               {network.name}
             </Link>
