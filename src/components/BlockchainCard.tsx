@@ -16,7 +16,7 @@ const BlockchainCard: React.FC<BlockchainCardProps> = ({
   networkName,
   networkColor 
 }) => {
-  const { lastBlock, blockHistory, providers, isLoading, error } = useBlockchainData(networkId);
+  const { lastBlock, blockHistory, providers, isLoading, error, blockTimeMetrics } = useBlockchainData(networkId);
   const blockHeightRef = useRef<HTMLDivElement>(null);
   
   // Animation effect when block height updates
@@ -43,6 +43,12 @@ const BlockchainCard: React.FC<BlockchainCardProps> = ({
       case 'binance': return 'text-binance';
       default: return 'text-primary';
     }
+  };
+
+  // Format blocks per minute
+  const formatBlocksPerMinute = (bpm: number): string => {
+    if (bpm === 0 || isNaN(bpm)) return "Calculating...";
+    return `${bpm.toFixed(1)} blocks/min`;
   };
 
   return (
@@ -74,8 +80,13 @@ const BlockchainCard: React.FC<BlockchainCardProps> = ({
             {lastBlock ? formatNumber(lastBlock.height) : "0"}
           </div>
           
-          <div className="mt-2 text-sm text-gray-500">
-            LAST BLOCK: ABOUT {lastBlock ? formatTimeDiff(Math.floor((Date.now() - lastBlock.timestamp) / 1000)) : "N/A"}
+          <div className="mt-2 flex flex-col text-sm text-gray-500">
+            <div>
+              LAST BLOCK: ABOUT {lastBlock ? formatTimeDiff(Math.floor((Date.now() - lastBlock.timestamp) / 1000)) : "N/A"}
+            </div>
+            <div className="font-medium mt-1">
+              BLOCK TIME: {formatBlocksPerMinute(blockTimeMetrics.blocksPerMinute)}
+            </div>
           </div>
           
           {lastBlock && providers && Object.keys(providers).length > 0 && (

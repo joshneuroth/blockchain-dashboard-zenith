@@ -1,4 +1,3 @@
-
 // Networks and their RPC endpoints
 export const NETWORKS = {
   ethereum: {
@@ -62,6 +61,10 @@ export interface NetworkData {
   };
   isLoading: boolean;
   error: string | null;
+  blockTimeMetrics: {
+    blocksPerMinute: number;
+    lastCalculated: number;
+  };
 }
 
 // Function to fetch real blockchain data from RPC endpoints

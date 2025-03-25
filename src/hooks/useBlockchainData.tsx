@@ -8,7 +8,11 @@ export const useBlockchainData = (networkId: string) => {
     blockHistory: [],
     providers: {},
     isLoading: true,
-    error: null
+    error: null,
+    blockTimeMetrics: {
+      blocksPerMinute: 0,
+      lastCalculated: 0
+    }
   });
 
   useEffect(() => {
@@ -65,12 +69,34 @@ export const useBlockchainData = (networkId: string) => {
             updatedHistory.pop();
           }
           
+          // Calculate blocks per minute
+          let blocksPerMinute = data.blockTimeMetrics.blocksPerMinute;
+          const now = Date.now();
+          
+          // Recalculate blocks per minute every 30 seconds
+          if (now - data.blockTimeMetrics.lastCalculated > 30000 && updatedHistory.length >= 2) {
+            // Calculate time range in minutes
+            const oldestBlockTime = updatedHistory[updatedHistory.length - 1].timestamp;
+            const newestBlockTime = updatedHistory[0].timestamp;
+            const minutesElapsed = (newestBlockTime - oldestBlockTime) / 60000;
+            
+            if (minutesElapsed > 0) {
+              // Count blocks in the time range
+              const blocksCount = updatedHistory.length;
+              blocksPerMinute = blocksCount / minutesElapsed;
+            }
+          }
+          
           setData({
             lastBlock: highestProvider,
             blockHistory: updatedHistory,
             providers,
             isLoading: false,
-            error: null
+            error: null,
+            blockTimeMetrics: {
+              blocksPerMinute: blocksPerMinute,
+              lastCalculated: now
+            }
           });
         } else {
           setData(prev => ({
