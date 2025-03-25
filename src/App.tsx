@@ -25,8 +25,8 @@ const queryClient = new QueryClient({
 const App = () => {
   // Check and log environment variables for debugging
   console.log("App starting with environment:", {
-    supabaseUrl: import.meta.env.VITE_SUPABASE_URL ? "Set" : "Not set",
-    supabaseKey: import.meta.env.VITE_SUPABASE_ANON_KEY ? "Set" : "Not set",
+    supabaseUrl: import.meta.env.VITE_SUPABASE_URL || "Using fallback",
+    supabaseKey: import.meta.env.VITE_SUPABASE_ANON_KEY ? "Set" : "Using fallback",
     nodeEnv: import.meta.env.NODE_ENV,
     isDev: import.meta.env.DEV,
     isProd: import.meta.env.PROD,
