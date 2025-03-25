@@ -76,6 +76,8 @@ export const useLiveData = (
               endpoint: string;
               status: 'synced' | 'behind' | 'far-behind';
               blocksBehind: number;
+              blockTime?: number;
+              transactionCount?: number;
             }
           } = {};
           
@@ -95,7 +97,7 @@ export const useLiveData = (
               endpoint: providerData.endpoint,
               status,
               blocksBehind,
-              blockTime: providerData.blockTime || null,
+              blockTime: providerData.blockTime || undefined,
               transactionCount: providerData.transactionCount || 0
             };
           });
