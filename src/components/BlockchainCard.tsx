@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { Bell, BarChart } from 'lucide-react';
 import BlockComparisonChart, { TimeFilterOption } from './BlockComparisonChart';
@@ -95,7 +96,7 @@ const BlockchainCard: React.FC<BlockchainCardProps> = ({
             disabled={blockHistory.length === 0}
           >
             <BarChart size={16} />
-            <span className="hidden sm:inline">Reliability</span>
+            <span className="hidden sm:inline">Expand Reliability</span>
           </Button>
           <button 
             className="rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
@@ -160,6 +161,7 @@ const BlockchainCard: React.FC<BlockchainCardProps> = ({
         </>
       )}
 
+      {/* Reliability Dialog */}
       <Dialog open={reliabilityDialogOpen} onOpenChange={setReliabilityDialogOpen}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
