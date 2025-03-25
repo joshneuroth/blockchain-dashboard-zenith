@@ -1,7 +1,7 @@
 
 import { useEffect, useRef } from 'react';
 import { NETWORKS, fetchBlockchainData } from '@/lib/api';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { NetworkData } from './types';
 import { calculateBlocksPerMinute } from './useBlockMetrics';
@@ -40,8 +40,6 @@ export const useLiveData = (
             const blockData = result.value;
             providers[blockData.provider] = blockData;
             successfulFetches++;
-          } else {
-            console.error(`Failed to fetch from ${network.rpcs[index].name}:`, result.reason);
           }
         });
         
@@ -61,11 +59,13 @@ export const useLiveData = (
           failureCount.current = 0;
         }
         
+        // Determine the highest block
         const blockHeights = Object.values(providers).map(p => BigInt(p.height));
         const highestBlockHeight = blockHeights.length > 0 
           ? blockHeights.reduce((max, h) => h > max ? h : max).toString()
           : "0";
         
+        // Find the provider with the highest block
         const highestProvider = Object.values(providers).find(p => p.height === highestBlockHeight);
         
         if (highestProvider && isMounted.current) {
@@ -79,6 +79,7 @@ export const useLiveData = (
             }
           } = {};
           
+          // Process each provider and determine its status relative to the highest block
           Object.entries(providers).forEach(([name, providerData]) => {
             const currentHeight = BigInt(providerData.height);
             const highestHeight = BigInt(highestBlockHeight);
@@ -97,31 +98,33 @@ export const useLiveData = (
             };
           });
           
-          try {
-            const { error } = await supabase
-              .from('blockchain_readings')
-              .insert({
-                network_id: networkId,
-                providers_data: JSON.stringify(providerStatusMap),
-                created_at: new Date(timestamp).toISOString()
-              });
-              
-            if (error) {
-              console.error("Error saving blockchain data:", error);
-            }
-          } catch (dbError) {
-            console.error("Database error:", dbError);
+          // Create the measurement record
+          const newMeasurement = {
+            timestamp,
+            providers: providerStatusMap
+          };
+          
+          // Save to database
+          const { error } = await supabase
+            .from('blockchain_readings')
+            .insert({
+              network_id: networkId,
+              providers_data: JSON.stringify(providerStatusMap),
+              created_at: new Date(timestamp).toISOString()
+            });
+            
+          if (error) {
+            console.error("Error saving blockchain data:", error);
           }
 
+          // Update the history with the new measurement and limit to 10 minutes
           const tenMinutesAgo = timestamp - 10 * 60 * 1000;
           const updatedHistory = [
             ...data.blockHistory.filter(item => item.timestamp > tenMinutesAgo), 
-            {
-              timestamp,
-              providers: providerStatusMap
-            }
+            newMeasurement
           ];
           
+          // Calculate blocks per minute metrics
           const blockTimeMetrics = calculateBlocksPerMinute(updatedHistory, data.blockTimeMetrics);
           
           setData({
@@ -132,15 +135,9 @@ export const useLiveData = (
             error: null,
             blockTimeMetrics
           });
-          
-          // Update initial load flag after first successful fetch
-          if (isInitialLoad.current) {
-            isInitialLoad.current = false;
-          }
         }
       } catch (error) {
-        console.error("Error in fetchData:", error);
-        if (isMounted.current) {
+        if (isMounted.current && !isInitialLoad.current) {
           setData(prev => ({
             ...prev,
             isLoading: false,
@@ -150,9 +147,9 @@ export const useLiveData = (
       }
     };
 
-    // Call fetchData immediately on mount and when dependencies change
     fetchData();
     
+    // Set interval to 10 seconds
     const intervalId = setInterval(fetchData, 10000);
     
     return () => {

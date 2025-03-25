@@ -1,3 +1,4 @@
+
 // Networks and their RPC endpoints
 export const NETWORKS = {
   ethereum: {
@@ -7,7 +8,7 @@ export const NETWORKS = {
       { url: "https://rpc.flashbots.net", name: "Flashbots" },
       { url: "https://ethereum.publicnode.com", name: "PublicNode" },
       { url: "https://eth.meowrpc.com", name: "MeowRPC" },
-      { url: "https://eth.drpc.org", name: "DRPC" }
+      { url: "https://api.edennetwork.io/v1/rpc", name: "Eden Network" }
     ],
     color: "ethereum"
   },
@@ -28,8 +29,8 @@ export const NETWORKS = {
       { url: "https://api.avax.network/ext/bc/C/rpc", name: "Avalanche" },
       { url: "https://avalanche-c-chain.publicnode.com", name: "PublicNode" },
       { url: "https://avax.meowrpc.com", name: "MeowRPC" },
-      { url: "https://avalanche.drpc.org", name: "DRPC" },
-      { url: "https://avalanche.api.onfinality.io/public", name: "OnFinality" }
+      { url: "https://avalanche.blockpi.network/v1/rpc/public", name: "BlockPI" },
+      { url: "https://rpc.ankr.com/avalanche", name: "Ankr" }
     ],
     color: "avalanche"
   },
@@ -40,7 +41,7 @@ export const NETWORKS = {
       { url: "https://bsc-dataseed1.defibit.io", name: "Defibit" },
       { url: "https://bsc.meowrpc.com", name: "MeowRPC" },
       { url: "https://bsc.publicnode.com", name: "PublicNode" },
-      { url: "https://bsc.drpc.org", name: "DRPC" }
+      { url: "https://binance.blockpi.network/v1/rpc/public", name: "BlockPI" }
     ],
     color: "binance"
   }
@@ -84,11 +85,13 @@ export const fetchBlockchainData = async (network: string, rpcUrl: string): Prom
                       rpcUrl.includes("flashbots") ? "Flashbots" :
                       rpcUrl.includes("polygon-rpc") ? "Polygon" :
                       rpcUrl.includes("avax") ? "Avalanche" :
+                      rpcUrl.includes("ankr") ? "Ankr" :
                       rpcUrl.includes("defibit") ? "Defibit" :
                       rpcUrl.includes("binance") ? "Binance" :
                       rpcUrl.includes("publicnode") ? "PublicNode" :
                       rpcUrl.includes("meowrpc") ? "MeowRPC" :
-                      rpcUrl.includes("drpc") ? "DRPC" :
+                      rpcUrl.includes("edennetwork") ? "Eden Network" :
+                      rpcUrl.includes("blockpi") ? "BlockPI" :
                       rpcUrl.includes("onfinality") ? "OnFinality" : "Unknown";
   
   try {
@@ -103,6 +106,7 @@ export const fetchBlockchainData = async (network: string, rpcUrl: string): Prom
         params: [],
         id: 1,
       }),
+      // Add a timeout to prevent hanging requests
       signal: AbortSignal.timeout(5000),
     });
 
