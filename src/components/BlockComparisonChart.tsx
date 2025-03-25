@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { formatNumber } from '@/lib/api';
 import {
@@ -51,14 +50,13 @@ interface BlockDetailsProps {
 const BlockComparisonChart: React.FC<BlockComparisonChartProps> = ({ 
   blockHistory, 
   networkColor,
-  timeFilter = 'all',
+  timeFilter = 'last10',
   onTimeFilterChange
 }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedBlock, setSelectedBlock] = useState<BlockDetailsProps | null>(null);
   const [internalTimeFilter, setInternalTimeFilter] = useState<TimeFilterOption>(timeFilter);
   
-  // Use the internal state if no external control is provided
   const currentTimeFilter = onTimeFilterChange ? timeFilter : internalTimeFilter;
   const handleFilterChange = (value: TimeFilterOption) => {
     if (value) {
@@ -70,7 +68,6 @@ const BlockComparisonChart: React.FC<BlockComparisonChartProps> = ({
     }
   };
   
-  // Filter the chart data based on the selected time filter
   const filteredBlockHistory = useMemo(() => {
     if (currentTimeFilter === 'all' || blockHistory.length === 0) {
       return blockHistory;
@@ -82,7 +79,6 @@ const BlockComparisonChart: React.FC<BlockComparisonChartProps> = ({
     return blockHistory;
   }, [blockHistory, currentTimeFilter]);
   
-  // Process the data for the chart
   const chartData = useMemo(() => {
     return filteredBlockHistory.map(measurement => {
       const result: any = {
@@ -90,7 +86,6 @@ const BlockComparisonChart: React.FC<BlockComparisonChartProps> = ({
         time: new Date(measurement.timestamp).toLocaleTimeString(),
       };
       
-      // Add each provider as a data point
       Object.entries(measurement.providers).forEach(([providerName, providerData]) => {
         result[providerName] = providerData.status === 'synced' ? 5 : 
                               providerData.status === 'behind' ? 3 : 1;
@@ -104,17 +99,15 @@ const BlockComparisonChart: React.FC<BlockComparisonChartProps> = ({
     });
   }, [filteredBlockHistory]);
   
-  // Get color for a specific status
   const getStatusColor = (status: 'synced' | 'behind' | 'far-behind') => {
     switch (status) {
-      case 'synced': return '#22c55e'; // green
-      case 'behind': return '#eab308'; // yellow
-      case 'far-behind': return '#ef4444'; // red
-      default: return '#e5e7eb'; // gray
+      case 'synced': return '#22c55e';
+      case 'behind': return '#eab308';
+      case 'far-behind': return '#ef4444';
+      default: return '#e5e7eb';
     }
   };
 
-  // Get the network color
   const getNetworkColor = (networkColor: string) => {
     switch (networkColor) {
       case 'ethereum': return '#8A7BF7';
@@ -126,7 +119,6 @@ const BlockComparisonChart: React.FC<BlockComparisonChartProps> = ({
     }
   };
   
-  // Handle clicking on a block measurement
   const handleBarClick = (data: any, index: number, providerName: string) => {
     const providerData = data[`${providerName}_data`];
     if (!providerData) return;
@@ -140,19 +132,16 @@ const BlockComparisonChart: React.FC<BlockComparisonChartProps> = ({
     setDialogOpen(true);
   };
   
-  // Format the timestamp for display
   const formatTimestamp = (timestamp: number) => {
     return new Date(timestamp).toLocaleTimeString();
   };
 
-  // Get provider names from the most recent measurement
   const providerNames = useMemo(() => {
     if (filteredBlockHistory.length === 0) return [];
     const lastMeasurement = filteredBlockHistory[filteredBlockHistory.length - 1];
     return Object.keys(lastMeasurement.providers);
   }, [filteredBlockHistory]);
 
-  // If we have no data yet, show a loading state
   if (blockHistory.length === 0) {
     return (
       <div className="mt-6 mb-8 h-40 flex items-center justify-center text-gray-400">
@@ -217,7 +206,6 @@ const BlockComparisonChart: React.FC<BlockComparisonChartProps> = ({
         </ResponsiveContainer>
       </div>
       
-      {/* Legend */}
       <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 text-xs text-gray-500">
         <div className="flex items-center space-x-4">
           <div className="flex items-center">
@@ -238,7 +226,6 @@ const BlockComparisonChart: React.FC<BlockComparisonChartProps> = ({
         </div>
       </div>
       
-      {/* Block Details Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -291,7 +278,6 @@ const BlockComparisonChart: React.FC<BlockComparisonChartProps> = ({
   );
 };
 
-// Custom tooltip for the chart
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload || !payload.length) return null;
   

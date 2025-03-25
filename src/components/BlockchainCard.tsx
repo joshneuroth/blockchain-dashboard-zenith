@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { Bell } from 'lucide-react';
 import BlockComparisonChart, { TimeFilterOption } from './BlockComparisonChart';
@@ -18,7 +17,7 @@ const BlockchainCard: React.FC<BlockchainCardProps> = ({
 }) => {
   const { lastBlock, blockHistory, providers, isLoading, error, blockTimeMetrics } = useBlockchainData(networkId);
   const blockHeightRef = useRef<HTMLDivElement>(null);
-  const [timeFilter, setTimeFilter] = useState<TimeFilterOption>('all');
+  const [timeFilter, setTimeFilter] = useState<TimeFilterOption>('last10');
   
   useEffect(() => {
     if (blockHeightRef.current) {
@@ -47,6 +46,12 @@ const BlockchainCard: React.FC<BlockchainCardProps> = ({
   const formatBlocksPerMinute = (bpm: number): string => {
     if (bpm === 0 || isNaN(bpm)) return "Calculating...";
     return `${bpm.toFixed(1)} blocks/min`;
+  };
+
+  const formatBlocksPerSecond = (bpm: number): string => {
+    if (bpm === 0 || isNaN(bpm)) return "Calculating...";
+    const bps = bpm / 60;
+    return `${bps.toFixed(2)} blocks/sec`;
   };
 
   const getTimeSinceLastBlock = (): string => {
@@ -94,8 +99,10 @@ const BlockchainCard: React.FC<BlockchainCardProps> = ({
             <div>
               LAST BLOCK: {getTimeSinceLastBlock()}
             </div>
-            <div className="font-medium mt-1">
-              BLOCK TIME: {formatBlocksPerMinute(blockTimeMetrics.blocksPerMinute)}
+            <div className="font-medium mt-1 flex flex-wrap items-center gap-x-3">
+              <span>BLOCK TIME:</span>
+              <span>{formatBlocksPerMinute(blockTimeMetrics.blocksPerMinute)}</span>
+              <span className="text-xs opacity-80">({formatBlocksPerSecond(blockTimeMetrics.blocksPerMinute)})</span>
             </div>
           </div>
           
