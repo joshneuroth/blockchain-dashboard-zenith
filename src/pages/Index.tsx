@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Moon, Sun } from 'lucide-react';
 import BlockchainCard from '@/components/BlockchainCard';
@@ -71,22 +70,21 @@ const Index = () => {
         </div>
       </div>
       
-      {/* Hero Section */}
+      {/* Hero Section - Aligned with blockchain cards container */}
       <section className="w-full py-16 px-6 md:px-10 animate-slide-in">
-        <div className="container mx-auto">
-          <div className="max-w-3xl">
+        <div className="container mx-auto max-w-4xl">
+          <div>
             <h1 className="text-4xl md:text-6xl font-bold mb-4">
               Experience <span className="font-extralight">TRANSPARENCY</span>
               <br />With Blockheight
             </h1>
             
             <div className="flex my-8">
-              <div className="mr-8">
+              <div>
                 <div className="text-xs text-gray-500 mb-1">WHAT IS BLOCK HEIGHT?</div>
                 <div className="text-sm max-w-md">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore 
-                  magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo 
-                  consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+                  This is a blockchain monitoring dashboard called "blockheight.xyz" that provides real-time transparency 
+                  and monitoring of various blockchain networks across different RPC endpoints.
                 </div>
               </div>
             </div>
