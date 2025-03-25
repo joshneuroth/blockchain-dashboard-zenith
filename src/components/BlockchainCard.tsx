@@ -1,5 +1,6 @@
+
 import React, { useEffect, useRef, useState } from 'react';
-import { Bell, BarChart } from 'lucide-react';
+import { BarChart } from 'lucide-react';
 import BlockComparisonChart, { TimeFilterOption } from './BlockComparisonChart';
 import { formatNumber, formatTimeDiff } from '@/lib/api';
 import { useBlockchainData } from '@/hooks/useBlockchainData';
@@ -7,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import ReliabilityTable from './ReliabilityTable';
 import { useReliabilityData, TimePeriod } from '@/hooks/blockchain/useReliabilityData';
+import MonitorPaymentModal from './MonitorPaymentModal';
 
 interface BlockchainCardProps {
   networkId: string;
@@ -24,6 +26,7 @@ const BlockchainCard: React.FC<BlockchainCardProps> = ({
   const [timeFilter, setTimeFilter] = useState<TimeFilterOption>('last10');
   const [reliabilityDialogOpen, setReliabilityDialogOpen] = useState(false);
   const [reliabilityTimePeriod, setReliabilityTimePeriod] = useState<TimePeriod>('all-time');
+  const [monitorModalOpen, setMonitorModalOpen] = useState(false);
   
   const reliabilityData = useReliabilityData({ 
     lastBlock, 
@@ -96,12 +99,14 @@ const BlockchainCard: React.FC<BlockchainCardProps> = ({
             <BarChart size={16} />
             <span className="hidden sm:inline">Reliability</span>
           </Button>
-          <button 
-            className="rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            aria-label="Notify about changes"
+          <Button 
+            variant="default" 
+            size="sm"
+            className="bg-black text-white hover:bg-black/80 dark:bg-green-600 dark:hover:bg-green-700 dark:text-white"
+            onClick={() => setMonitorModalOpen(true)}
           >
-            <Bell size={18} />
-          </button>
+            Monitor your RPC
+          </Button>
         </div>
       </div>
       
@@ -171,6 +176,12 @@ const BlockchainCard: React.FC<BlockchainCardProps> = ({
           />
         </DialogContent>
       </Dialog>
+      
+      <MonitorPaymentModal
+        open={monitorModalOpen}
+        onOpenChange={setMonitorModalOpen}
+        networkName={networkName}
+      />
     </div>
   );
 };

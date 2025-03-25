@@ -1,5 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
-import { Moon, Sun } from 'lucide-react';
+import { Moon, Sun, Home } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import BlockchainCard from '@/components/BlockchainCard';
 import NewsletterForm from '@/components/NewsletterForm';
 import { NETWORKS } from '@/lib/api';
@@ -32,15 +34,24 @@ const Index = () => {
               blockheight<span className="text-gray-500">.xyz</span>
             </h1>
             
-            <div className="ml-8 blockchain-tabs hidden md:flex">
+            <Link 
+              to="/" 
+              className="ml-4 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              aria-label="Home"
+            >
+              <Home size={20} />
+            </Link>
+            
+            <div className="ml-4 blockchain-tabs hidden md:flex">
               {Object.entries(NETWORKS).map(([id, network]) => (
-                <button
+                <Link
                   key={id}
-                  onClick={() => setActiveNetwork(id)}
+                  to={`/${id}`}
                   className={`blockchain-tab ${activeNetwork === id ? 'active' : ''}`}
+                  onClick={() => setActiveNetwork(id)}
                 >
                   {network.name}
-                </button>
+                </Link>
               ))}
             </div>
           </div>
@@ -59,13 +70,14 @@ const Index = () => {
       <div className="md:hidden p-4 overflow-x-auto">
         <div className="blockchain-tabs flex">
           {Object.entries(NETWORKS).map(([id, network]) => (
-            <button
+            <Link
               key={id}
-              onClick={() => setActiveNetwork(id)}
+              to={`/${id}`}
               className={`blockchain-tab ${activeNetwork === id ? 'active' : ''} whitespace-nowrap`}
+              onClick={() => setActiveNetwork(id)}
             >
               {network.name}
-            </button>
+            </Link>
           ))}
         </div>
       </div>
