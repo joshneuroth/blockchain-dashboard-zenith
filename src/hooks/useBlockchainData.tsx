@@ -62,45 +62,58 @@ export const useBlockchainData = (networkId: string) => {
           failureCount.current = 0;
         }
         
+        // Determine the highest block
         const blockHeights = Object.values(providers).map(p => BigInt(p.height));
         const highestBlockHeight = blockHeights.length > 0 
           ? blockHeights.reduce((max, h) => h > max ? h : max).toString()
           : "0";
         
+        // Find the provider with the highest block
         const highestProvider = Object.values(providers).find(p => p.height === highestBlockHeight);
         
         if (highestProvider && isMounted.current) {
-          const updatedHistory = [...data.blockHistory];
-          
           const timestamp = Date.now();
-          const lastTimestamp = data.blockHistory.length > 0 
-            ? data.blockHistory[0].timestamp 
-            : timestamp;
+          const providerStatusMap: {
+            [key: string]: {
+              height: string;
+              endpoint: string;
+              status: 'synced' | 'behind' | 'far-behind';
+              blocksBehind: number;
+            }
+          } = {};
           
-          const timeDiff = Math.floor((timestamp - lastTimestamp) / 1000);
-          
-          const providerData: { [key: string]: { height: string; timestamp: number } } = {};
-          Object.entries(providers).forEach(([name, data]) => {
-            providerData[name] = {
-              height: data.height,
-              timestamp: data.timestamp
+          // Process each provider and determine its status relative to the highest block
+          Object.entries(providers).forEach(([name, providerData]) => {
+            const currentHeight = BigInt(providerData.height);
+            const highestHeight = BigInt(highestBlockHeight);
+            const blocksBehind = Number(highestHeight - currentHeight);
+            
+            let status: 'synced' | 'behind' | 'far-behind' = 'synced';
+            if (blocksBehind > 0) {
+              status = blocksBehind === 1 ? 'behind' : 'far-behind';
+            }
+            
+            providerStatusMap[name] = {
+              height: providerData.height,
+              endpoint: providerData.endpoint,
+              status,
+              blocksBehind
             };
           });
           
-          if (data.lastBlock?.height !== highestBlockHeight) {
-            updatedHistory.unshift({
-              height: highestBlockHeight,
-              timestamp,
-              timeDiff: timeDiff,
-              provider: highestProvider.provider,
-              providerData
-            });
-          }
+          // Update the history with the new measurement
+          const updatedHistory = [...data.blockHistory];
+          updatedHistory.unshift({
+            timestamp,
+            providers: providerStatusMap
+          });
           
+          // Keep only the most recent measurements
           if (updatedHistory.length > 18) {
             updatedHistory.pop();
           }
           
+          // Calculate blocks per minute metrics
           let blocksPerMinute = data.blockTimeMetrics.blocksPerMinute;
           const now = Date.now();
           
@@ -110,8 +123,21 @@ export const useBlockchainData = (networkId: string) => {
             const minutesElapsed = (newestBlockTime - oldestBlockTime) / 60000;
             
             if (minutesElapsed > 0) {
-              const blocksCount = updatedHistory.length;
-              blocksPerMinute = blocksCount / minutesElapsed;
+              // Get the highest blocks from oldest and newest measurements
+              const oldestMeasurement = updatedHistory[updatedHistory.length - 1];
+              const newestMeasurement = updatedHistory[0];
+              
+              // Find highest block in oldest measurement
+              const oldestHeights = Object.values(oldestMeasurement.providers).map(p => BigInt(p.height));
+              const oldestHighest = oldestHeights.reduce((max, h) => h > max ? h : max, BigInt(0));
+              
+              // Find highest block in newest measurement
+              const newestHeights = Object.values(newestMeasurement.providers).map(p => BigInt(p.height));
+              const newestHighest = newestHeights.reduce((max, h) => h > max ? h : max, BigInt(0));
+              
+              // Calculate blocks per minute
+              const blocksDiff = Number(newestHighest - oldestHighest);
+              blocksPerMinute = blocksDiff / minutesElapsed;
             }
           }
           

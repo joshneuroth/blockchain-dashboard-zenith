@@ -5,7 +5,10 @@ export const NETWORKS = {
     name: "Ethereum",
     rpcs: [
       { url: "https://eth.llamarpc.com", name: "LlamaRPC" },
-      { url: "https://rpc.flashbots.net", name: "Flashbots" }
+      { url: "https://rpc.flashbots.net", name: "Flashbots" },
+      { url: "https://ethereum.publicnode.com", name: "PublicNode" },
+      { url: "https://eth.meowrpc.com", name: "MeowRPC" },
+      { url: "https://api.edennetwork.io/v1/rpc", name: "Eden Network" }
     ],
     color: "ethereum"
   },
@@ -13,7 +16,10 @@ export const NETWORKS = {
     name: "Polygon",
     rpcs: [
       { url: "https://polygon.llamarpc.com", name: "LlamaRPC" },
-      { url: "https://polygon-rpc.com", name: "Polygon" }
+      { url: "https://polygon-rpc.com", name: "Polygon" },
+      { url: "https://polygon.meowrpc.com", name: "MeowRPC" },
+      { url: "https://polygon-bor.publicnode.com", name: "PublicNode" },
+      { url: "https://polygon.api.onfinality.io/public", name: "OnFinality" }
     ],
     color: "polygon"
   },
@@ -21,7 +27,10 @@ export const NETWORKS = {
     name: "Avalanche",
     rpcs: [
       { url: "https://api.avax.network/ext/bc/C/rpc", name: "Avalanche" },
-      // Removing Ankr since it requires an API key
+      { url: "https://avalanche-c-chain.publicnode.com", name: "PublicNode" },
+      { url: "https://avax.meowrpc.com", name: "MeowRPC" },
+      { url: "https://avalanche.blockpi.network/v1/rpc/public", name: "BlockPI" },
+      { url: "https://rpc.ankr.com/avalanche", name: "Ankr" }
     ],
     color: "avalanche"
   },
@@ -29,7 +38,10 @@ export const NETWORKS = {
     name: "Binance Chain",
     rpcs: [
       { url: "https://bsc-dataseed.binance.org", name: "Binance" },
-      { url: "https://bsc-dataseed1.defibit.io", name: "Defibit" }
+      { url: "https://bsc-dataseed1.defibit.io", name: "Defibit" },
+      { url: "https://bsc.meowrpc.com", name: "MeowRPC" },
+      { url: "https://bsc.publicnode.com", name: "PublicNode" },
+      { url: "https://binance.blockpi.network/v1/rpc/public", name: "BlockPI" }
     ],
     color: "binance"
   }
@@ -40,19 +52,19 @@ export interface BlockData {
   height: string;
   timestamp: number;
   provider: string;
+  endpoint: string;
 }
 
 export interface NetworkData {
   lastBlock: BlockData | null;
   blockHistory: Array<{
-    height: string;
     timestamp: number;
-    timeDiff: number;
-    provider?: string;
-    providerData?: {
+    providers: {
       [key: string]: {
         height: string;
-        timestamp: number;
+        endpoint: string;
+        status: 'synced' | 'behind' | 'far-behind';
+        blocksBehind: number;
       }
     }
   }>;
@@ -75,7 +87,12 @@ export const fetchBlockchainData = async (network: string, rpcUrl: string): Prom
                       rpcUrl.includes("avax") ? "Avalanche" :
                       rpcUrl.includes("ankr") ? "Ankr" :
                       rpcUrl.includes("defibit") ? "Defibit" :
-                      rpcUrl.includes("binance") ? "Binance" : "Unknown";
+                      rpcUrl.includes("binance") ? "Binance" :
+                      rpcUrl.includes("publicnode") ? "PublicNode" :
+                      rpcUrl.includes("meowrpc") ? "MeowRPC" :
+                      rpcUrl.includes("edennetwork") ? "Eden Network" :
+                      rpcUrl.includes("blockpi") ? "BlockPI" :
+                      rpcUrl.includes("onfinality") ? "OnFinality" : "Unknown";
   
   try {
     const response = await fetch(rpcUrl, {
@@ -111,7 +128,8 @@ export const fetchBlockchainData = async (network: string, rpcUrl: string): Prom
     return {
       height: blockHeight,
       timestamp: Date.now(),
-      provider: providerName
+      provider: providerName,
+      endpoint: rpcUrl
     };
   } catch (error) {
     console.error(`Error fetching block data from ${rpcUrl}:`, error);
