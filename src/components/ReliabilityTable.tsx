@@ -49,7 +49,7 @@ const ReliabilityTable: React.FC<ReliabilityTableProps> = ({
             <TableHead>Provider</TableHead>
             <TableHead className="text-right">Total Readings</TableHead>
             <TableHead className="text-right">In Sync</TableHead>
-            <TableHead className="text-right">Reliability</TableHead>
+            <TableHead className="text-right">At Height Reliability</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
