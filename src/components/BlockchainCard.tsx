@@ -1,8 +1,13 @@
+
 import React, { useEffect, useRef, useState } from 'react';
-import { Bell } from 'lucide-react';
+import { Bell, BarChart } from 'lucide-react';
 import BlockComparisonChart, { TimeFilterOption } from './BlockComparisonChart';
 import { formatNumber, formatTimeDiff } from '@/lib/api';
 import { useBlockchainData } from '@/hooks/useBlockchainData';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import ReliabilityTable from './ReliabilityTable';
+import { useReliabilityData, TimePeriod } from '@/hooks/blockchain/useReliabilityData';
 
 interface BlockchainCardProps {
   networkId: string;
@@ -18,6 +23,18 @@ const BlockchainCard: React.FC<BlockchainCardProps> = ({
   const { lastBlock, blockHistory, providers, isLoading, error, blockTimeMetrics } = useBlockchainData(networkId);
   const blockHeightRef = useRef<HTMLDivElement>(null);
   const [timeFilter, setTimeFilter] = useState<TimeFilterOption>('last10');
+  const [reliabilityDialogOpen, setReliabilityDialogOpen] = useState(false);
+  const [reliabilityTimePeriod, setReliabilityTimePeriod] = useState<TimePeriod>('all-time');
+  
+  // Get reliability data
+  const reliabilityData = useReliabilityData({ 
+    lastBlock, 
+    blockHistory, 
+    providers, 
+    isLoading, 
+    error, 
+    blockTimeMetrics 
+  }, reliabilityTimePeriod);
   
   useEffect(() => {
     if (blockHeightRef.current) {
@@ -70,12 +87,24 @@ const BlockchainCard: React.FC<BlockchainCardProps> = ({
     <div className="glass-card p-6 mb-6 animate-fade-in">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-medium">{networkName}</h2>
-        <button 
-          className="rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          aria-label="Notify about changes"
-        >
-          <Bell size={18} />
-        </button>
+        <div className="flex space-x-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="flex items-center gap-1"
+            onClick={() => setReliabilityDialogOpen(true)}
+            disabled={blockHistory.length === 0}
+          >
+            <BarChart size={16} />
+            <span className="hidden sm:inline">Expand Reliability</span>
+          </Button>
+          <button 
+            className="rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            aria-label="Notify about changes"
+          >
+            <Bell size={18} />
+          </button>
+        </div>
       </div>
       
       {isLoading && blockHistory.length === 0 ? (
@@ -131,6 +160,20 @@ const BlockchainCard: React.FC<BlockchainCardProps> = ({
           </div>
         </>
       )}
+
+      {/* Reliability Dialog */}
+      <Dialog open={reliabilityDialogOpen} onOpenChange={setReliabilityDialogOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>{networkName} Provider Reliability</DialogTitle>
+          </DialogHeader>
+          <ReliabilityTable 
+            data={reliabilityData}
+            timePeriod={reliabilityTimePeriod}
+            onTimePeriodChange={setReliabilityTimePeriod}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
