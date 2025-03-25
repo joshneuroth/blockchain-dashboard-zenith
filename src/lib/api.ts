@@ -8,7 +8,7 @@ export const NETWORKS = {
       { url: "https://rpc.flashbots.net", name: "Flashbots" },
       { url: "https://ethereum.publicnode.com", name: "PublicNode" },
       { url: "https://eth.meowrpc.com", name: "MeowRPC" },
-      { url: "https://api.edennetwork.io/v1/rpc", name: "Eden Network" }
+      { url: "https://eth.drpc.org", name: "DRPC" }
     ],
     color: "ethereum"
   },
@@ -29,8 +29,8 @@ export const NETWORKS = {
       { url: "https://api.avax.network/ext/bc/C/rpc", name: "Avalanche" },
       { url: "https://avalanche-c-chain.publicnode.com", name: "PublicNode" },
       { url: "https://avax.meowrpc.com", name: "MeowRPC" },
-      { url: "https://avalanche.blockpi.network/v1/rpc/public", name: "BlockPI" },
-      { url: "https://rpc.ankr.com/avalanche", name: "Ankr" }
+      { url: "https://avalanche.drpc.org", name: "DRPC" },
+      { url: "https://avalanche.api.onfinality.io/public", name: "OnFinality" }
     ],
     color: "avalanche"
   },
@@ -41,7 +41,7 @@ export const NETWORKS = {
       { url: "https://bsc-dataseed1.defibit.io", name: "Defibit" },
       { url: "https://bsc.meowrpc.com", name: "MeowRPC" },
       { url: "https://bsc.publicnode.com", name: "PublicNode" },
-      { url: "https://binance.blockpi.network/v1/rpc/public", name: "BlockPI" }
+      { url: "https://bsc.drpc.org", name: "DRPC" }
     ],
     color: "binance"
   }
