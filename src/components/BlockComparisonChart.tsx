@@ -56,18 +56,31 @@ const BlockComparisonChart: React.FC<BlockComparisonChartProps> = ({
 }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedBlock, setSelectedBlock] = useState<BlockDetailsProps | null>(null);
+  const [internalTimeFilter, setInternalTimeFilter] = useState<TimeFilterOption>(timeFilter);
+  
+  // Use the internal state if no external control is provided
+  const currentTimeFilter = onTimeFilterChange ? timeFilter : internalTimeFilter;
+  const handleFilterChange = (value: TimeFilterOption) => {
+    if (value) {
+      if (onTimeFilterChange) {
+        onTimeFilterChange(value);
+      } else {
+        setInternalTimeFilter(value);
+      }
+    }
+  };
   
   // Filter the chart data based on the selected time filter
   const filteredBlockHistory = useMemo(() => {
-    if (timeFilter === 'all' || blockHistory.length === 0) {
+    if (currentTimeFilter === 'all' || blockHistory.length === 0) {
       return blockHistory;
-    } else if (timeFilter === 'last20') {
+    } else if (currentTimeFilter === 'last20') {
       return blockHistory.slice(-20);
-    } else if (timeFilter === 'last10') {
+    } else if (currentTimeFilter === 'last10') {
       return blockHistory.slice(-10);
     }
     return blockHistory;
-  }, [blockHistory, timeFilter]);
+  }, [blockHistory, currentTimeFilter]);
   
   // Process the data for the chart
   const chartData = useMemo(() => {
@@ -150,29 +163,27 @@ const BlockComparisonChart: React.FC<BlockComparisonChartProps> = ({
 
   return (
     <div className="mt-6 mb-8">
-      {onTimeFilterChange && (
-        <div className="mb-4 flex justify-end">
-          <ToggleGroup 
-            type="single" 
-            value={timeFilter}
-            onValueChange={(value) => {
-              if (value) onTimeFilterChange(value as TimeFilterOption)
-            }}
-            className="justify-end"
-            size="sm"
-          >
-            <ToggleGroupItem value="all" aria-label="Show all data">
-              All
-            </ToggleGroupItem>
-            <ToggleGroupItem value="last20" aria-label="Show last 20 readings">
-              Last 20
-            </ToggleGroupItem>
-            <ToggleGroupItem value="last10" aria-label="Show last 10 readings">
-              Last 10
-            </ToggleGroupItem>
-          </ToggleGroup>
-        </div>
-      )}
+      <div className="mb-4 flex justify-end">
+        <ToggleGroup 
+          type="single" 
+          value={currentTimeFilter}
+          onValueChange={(value) => {
+            if (value) handleFilterChange(value as TimeFilterOption);
+          }}
+          className="justify-end"
+          size="sm"
+        >
+          <ToggleGroupItem value="all" aria-label="Show all data">
+            All
+          </ToggleGroupItem>
+          <ToggleGroupItem value="last20" aria-label="Show last 20 readings">
+            Last 20
+          </ToggleGroupItem>
+          <ToggleGroupItem value="last10" aria-label="Show last 10 readings">
+            Last 10
+          </ToggleGroupItem>
+        </ToggleGroup>
+      </div>
 
       <div className="h-60">
         <ResponsiveContainer width="100%" height="100%">
