@@ -8,6 +8,7 @@ export interface LatencyResult {
   latency: number | null; // in milliseconds
   status: 'loading' | 'success' | 'error';
   errorMessage?: string;
+  errorType?: 'timeout' | 'rate-limit' | 'connection' | 'rpc-error' | 'unknown';
 }
 
 export const useLatencyTest = (networkId: string) => {
@@ -39,12 +40,28 @@ export const useLatencyTest = (networkId: string) => {
       const latency = Math.round(endTime - startTime);
       
       if (!response.ok) {
+        // Categorize HTTP errors
+        let errorType: LatencyResult['errorType'] = 'unknown';
+        let errorMessage = `HTTP error: ${response.status}`;
+        
+        if (response.status === 429) {
+          errorType = 'rate-limit';
+          errorMessage = 'Rate limit exceeded';
+        } else if (response.status >= 500) {
+          errorType = 'rpc-error';
+          errorMessage = 'Server error';
+        } else if (response.status === 403) {
+          errorType = 'connection';
+          errorMessage = 'Access denied';
+        }
+        
         return {
           provider: providerName,
           endpoint,
           latency: null,
           status: 'error',
-          errorMessage: `HTTP error: ${response.status}`
+          errorMessage,
+          errorType
         };
       }
       
@@ -56,7 +73,8 @@ export const useLatencyTest = (networkId: string) => {
           endpoint,
           latency: null,
           status: 'error',
-          errorMessage: data.error.message || 'RPC error'
+          errorMessage: data.error.message || 'RPC error',
+          errorType: 'rpc-error'
         };
       }
       
@@ -67,13 +85,25 @@ export const useLatencyTest = (networkId: string) => {
         status: 'success'
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      // Categorize JavaScript errors
+      let errorType: LatencyResult['errorType'] = 'unknown';
+      let errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
+      if (error instanceof DOMException && error.name === 'TimeoutError') {
+        errorType = 'timeout';
+        errorMessage = 'Connection timed out';
+      } else if (errorMessage.includes('Failed to fetch')) {
+        errorType = 'connection';
+        errorMessage = 'Connection failed';
+      }
+      
       return {
         provider: providerName,
         endpoint,
         latency: null,
         status: 'error',
-        errorMessage
+        errorMessage,
+        errorType
       };
     }
   }, []);

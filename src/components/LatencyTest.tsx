@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Computer, Server, RefreshCw, AlertCircle, Zap } from 'lucide-react';
+import { Computer, Server, RefreshCw, AlertCircle, Zap, Clock, Ban, ExternalLink, AlertTriangle } from 'lucide-react';
 import { useLatencyTest } from '@/hooks/blockchain/useLatencyTest';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -16,16 +16,39 @@ const LatencyTest: React.FC<LatencyTestProps> = ({ networkId, networkName }) => 
   const { results, isRunning, userLocation, runLatencyTest, hasRun } = useLatencyTest(networkId);
   
   // Format latency display
-  const formatLatency = (latency: number | null, status: string, errorMessage?: string) => {
+  const formatLatency = (latency: number | null, status: string, errorMessage?: string, errorType?: string) => {
     if (status === 'loading') return <Skeleton className="h-6 w-16" />;
     if (status === 'error' || latency === null) {
+      // Get the appropriate icon based on error type
+      const getErrorIcon = () => {
+        switch(errorType) {
+          case 'timeout':
+            return <Clock size={14} className="mr-1" />;
+          case 'rate-limit':
+            return <Ban size={14} className="mr-1" />;
+          case 'connection':
+            return <ExternalLink size={14} className="mr-1" />;
+          case 'rpc-error':
+            return <AlertTriangle size={14} className="mr-1" />;
+          default:
+            return <AlertCircle size={14} className="mr-1" />;
+        }
+      };
+      
+      const shortErrorMessage = 
+        errorType === 'timeout' ? 'Timeout' :
+        errorType === 'rate-limit' ? 'Rate Limited' :
+        errorType === 'connection' ? 'Unreachable' :
+        errorType === 'rpc-error' ? 'RPC Error' :
+        'Failed';
+      
       return (
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
               <div className="flex items-center text-red-500">
-                <AlertCircle size={14} className="mr-1" />
-                <span>Failed</span>
+                {getErrorIcon()}
+                <span>Failed: {shortErrorMessage}</span>
               </div>
             </TooltipTrigger>
             <TooltipContent>
@@ -107,7 +130,7 @@ const LatencyTest: React.FC<LatencyTestProps> = ({ networkId, networkName }) => 
               
               {/* Latency box */}
               <div className={`px-3 py-1 rounded-md text-sm ${getLatencyColorClass(result.latency, result.status)}`}>
-                {formatLatency(result.latency, result.status, result.errorMessage)}
+                {formatLatency(result.latency, result.status, result.errorMessage, result.errorType)}
               </div>
               
               <div className="flex-shrink-0 h-px w-4 bg-blue-400"></div>
