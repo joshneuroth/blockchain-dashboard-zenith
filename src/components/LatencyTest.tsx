@@ -1,9 +1,10 @@
 
 import React from 'react';
-import { Computer, Server, ArrowRight, RefreshCw } from 'lucide-react';
+import { Computer, Server, RefreshCw, AlertCircle } from 'lucide-react';
 import { useLatencyTest } from '@/hooks/blockchain/useLatencyTest';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface LatencyTestProps {
   networkId: string;
@@ -14,18 +15,35 @@ const LatencyTest: React.FC<LatencyTestProps> = ({ networkId, networkName }) => 
   const { results, isRunning, userLocation, runLatencyTest } = useLatencyTest(networkId);
   
   // Format latency display
-  const formatLatency = (latency: number | null, status: string) => {
+  const formatLatency = (latency: number | null, status: string, errorMessage?: string) => {
     if (status === 'loading') return <Skeleton className="h-6 w-16" />;
-    if (status === 'error' || latency === null) return <span className="text-red-500">Failed</span>;
+    if (status === 'error' || latency === null) {
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center text-red-500">
+                <AlertCircle size={14} className="mr-1" />
+                <span>Failed</span>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{errorMessage || 'Connection failed'}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    }
     return <span className="font-medium">{latency} ms</span>;
   };
 
   // Get color class based on latency
-  const getLatencyColorClass = (latency: number | null) => {
-    if (latency === null) return "bg-gray-200 dark:bg-gray-700";
-    if (latency < 100) return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
-    if (latency < 300) return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
-    return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
+  const getLatencyColorClass = (latency: number | null, status: string) => {
+    if (status === 'loading') return "bg-gray-200 dark:bg-gray-700";
+    if (status === 'error' || latency === null) return "bg-red-50 text-red-800 dark:bg-red-900/30 dark:text-red-300";
+    if (latency < 100) return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
+    if (latency < 300) return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300";
+    return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
   };
 
   return (
@@ -36,7 +54,7 @@ const LatencyTest: React.FC<LatencyTestProps> = ({ networkId, networkName }) => 
           variant="outline" 
           size="sm" 
           className="flex items-center gap-1"
-          onClick={runLatencyTest}
+          onClick={() => runLatencyTest()}
           disabled={isRunning}
         >
           <RefreshCw size={16} className={isRunning ? "animate-spin" : ""} />
@@ -65,8 +83,8 @@ const LatencyTest: React.FC<LatencyTestProps> = ({ networkId, networkName }) => 
               <div className="flex-shrink-0 h-px w-32 bg-blue-400"></div>
               
               {/* Latency box */}
-              <div className={`px-3 py-1 rounded-md text-sm ${getLatencyColorClass(result.latency)}`}>
-                {formatLatency(result.latency, result.status)}
+              <div className={`px-3 py-1 rounded-md text-sm ${getLatencyColorClass(result.latency, result.status)}`}>
+                {formatLatency(result.latency, result.status, result.errorMessage)}
               </div>
               
               <div className="flex-shrink-0 h-px w-4 bg-blue-400"></div>

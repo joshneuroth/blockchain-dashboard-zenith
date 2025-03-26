@@ -7,6 +7,7 @@ export interface LatencyResult {
   endpoint: string;
   latency: number | null; // in milliseconds
   status: 'loading' | 'success' | 'error';
+  errorMessage?: string;
 }
 
 export const useLatencyTest = (networkId: string) => {
@@ -30,7 +31,7 @@ export const useLatencyTest = (networkId: string) => {
           params: [],
           id: 1,
         }),
-        signal: AbortSignal.timeout(10000), // 10 second timeout
+        signal: AbortSignal.timeout(8000), // 8 second timeout
       });
       
       const endTime = performance.now();
@@ -41,7 +42,20 @@ export const useLatencyTest = (networkId: string) => {
           provider: providerName,
           endpoint,
           latency: null,
-          status: 'error'
+          status: 'error',
+          errorMessage: `HTTP error: ${response.status}`
+        };
+      }
+      
+      const data = await response.json();
+      
+      if (data.error) {
+        return {
+          provider: providerName,
+          endpoint,
+          latency: null,
+          status: 'error',
+          errorMessage: data.error.message || 'RPC error'
         };
       }
       
@@ -52,11 +66,13 @@ export const useLatencyTest = (networkId: string) => {
         status: 'success'
       };
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       return {
         provider: providerName,
         endpoint,
         latency: null,
-        status: 'error'
+        status: 'error',
+        errorMessage
       };
     }
   }, []);
@@ -83,13 +99,18 @@ export const useLatencyTest = (networkId: string) => {
     // Try to get user's location
     try {
       const locationResponse = await fetch('https://ipapi.co/json/');
-      const locationData = await locationResponse.json();
-      if (locationData.city && locationData.region && locationData.country) {
-        setUserLocation(`${locationData.city}, ${locationData.region}, ${locationData.country}`);
+      if (locationResponse.ok) {
+        const locationData = await locationResponse.json();
+        if (locationData.city && locationData.region && locationData.country) {
+          setUserLocation(`${locationData.city}, ${locationData.region}, ${locationData.country}`);
+        } else {
+          setUserLocation('Unknown Location');
+        }
       } else {
         setUserLocation('Unknown Location');
       }
     } catch (error) {
+      console.log('Failed to get location:', error);
       setUserLocation('Unknown Location');
     }
     
@@ -98,8 +119,8 @@ export const useLatencyTest = (networkId: string) => {
       measureLatency(rpc.url, rpc.name)
     );
     
-    const results = await Promise.all(testPromises);
-    setResults(results);
+    const newResults = await Promise.all(testPromises);
+    setResults(newResults);
     setIsRunning(false);
   }, [networkId, isRunning, measureLatency]);
 
