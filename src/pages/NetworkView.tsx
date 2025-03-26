@@ -4,6 +4,7 @@ import { useParams, useLocation, Link } from 'react-router-dom';
 import { NETWORKS } from '@/lib/api';
 import BlockchainCard from '@/components/BlockchainCard';
 import { Moon, Sun, Home } from 'lucide-react';
+import NewsletterForm from '@/components/NewsletterForm';
 
 const NetworkView = () => {
   const { networkId } = useParams();
@@ -92,7 +93,7 @@ const NetworkView = () => {
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex items-center">
             <h1 className="text-lg md:text-xl font-bold">
-              blockheight<span className="text-gray-500">.xyz</span>
+              blockheight<span className="text-gray-500 font-mono">.xyz</span>
             </h1>
             
             <Link 
@@ -172,6 +173,51 @@ const NetworkView = () => {
           </div>
         </div>
       </div>
+      
+      {/* Footer - Adding the same footer as on the Index page */}
+      <footer className="w-full py-8 px-6 md:px-10 mt-12 bg-gray-100 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
+        <div className="container mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="col-span-1">
+              <h2 className="text-lg font-bold mb-4">
+                blockheight<span className="text-gray-500 font-mono">.xyz</span>
+              </h2>
+              <NewsletterForm />
+            </div>
+            
+            <div className="col-span-1">
+              <h3 className="text-sm font-semibold mb-4">BLOCKHEIGHT.XYZ</h3>
+              <ul className="space-y-2 text-sm">
+                <li><a href="#" className="hover:underline">About Us</a></li>
+                <li><a href="#" className="hover:underline">Mission</a></li>
+                <li><a href="#" className="hover:underline">Blog</a></li>
+                <li><a href="#" className="hover:underline">Press & Media</a></li>
+              </ul>
+            </div>
+            
+            <div className="col-span-1">
+              <h3 className="text-sm font-semibold mb-4">FOLLOW US</h3>
+              <ul className="space-y-2 text-sm">
+                <li><a href="#" className="hover:underline">Twitter</a></li>
+                <li><a href="#" className="hover:underline">LinkedIn</a></li>
+                <li><a href="#" className="hover:underline">Instagram</a></li>
+              </ul>
+            </div>
+            
+            <div className="col-span-1">
+              <h3 className="text-sm font-semibold mb-4">SUPPORT</h3>
+              <ul className="space-y-2 text-sm">
+                <li><a href="#" className="hover:underline">Contact Us</a></li>
+                <li><a href="#" className="hover:underline">FAQ</a></li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="mt-12 pt-4 border-t border-gray-200 dark:border-gray-800 text-xs text-gray-500">
+            <p>&copy; {new Date().getFullYear()} blockheight.xyz. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
