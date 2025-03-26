@@ -122,7 +122,7 @@ const BlockchainCard: React.FC<BlockchainCardProps> = ({
         <>
           <div 
             ref={blockHeightRef}
-            className={`mt-4 ${getColorClass()} text-5xl md:text-6xl font-light tracking-wider transition-all`}
+            className={`mt-4 ${getColorClass()} text-5xl md:text-6xl font-light tracking-wider transition-all font-mono`}
           >
             {lastBlock ? formatNumber(lastBlock.height) : "0"}
           </div>

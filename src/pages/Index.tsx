@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Moon, Sun, Home } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
@@ -35,7 +36,7 @@ const Index = () => {
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex items-center">
             <h1 className="text-lg md:text-xl font-bold">
-              blockheight<span className="text-gray-500">.xyz</span>
+              blockheight<span className="text-gray-500 font-mono">.xyz</span>
             </h1>
             
             <Link 
@@ -91,13 +92,13 @@ const Index = () => {
         <div className="container mx-auto max-w-4xl">
           <div>
             <h1 className="text-4xl md:text-6xl font-bold mb-4">
-              Experience <span className="font-extralight">TRANSPARENCY</span>
+              Experience <span className="font-extralight font-mono">TRANSPARENCY</span>
               <br />With Blockheight
             </h1>
             
             <div className="flex my-8">
               <div>
-                <div className="text-xs text-gray-500 font-mono mb-1" style={{ fontFamily: 'Avenue Mono, monospace' }}>WHAT IS BLOCK HEIGHT?</div>
+                <div className="text-xs text-gray-500 font-mono mb-1">WHAT IS BLOCK HEIGHT?</div>
                 <div className="text-sm max-w-md">
                   This is a blockchain monitoring dashboard called "blockheight.xyz" that provides real-time transparency 
                   and monitoring of various blockchain networks across different RPC endpoints.
@@ -126,7 +127,7 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="col-span-1">
               <h2 className="text-lg font-bold mb-4">
-                blockheight<span className="text-gray-500">.xyz</span>
+                blockheight<span className="text-gray-500 font-mono">.xyz</span>
               </h2>
               <NewsletterForm />
             </div>
