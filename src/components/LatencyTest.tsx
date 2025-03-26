@@ -1,10 +1,11 @@
 
 import React from 'react';
-import { Computer, Server, RefreshCw, AlertCircle } from 'lucide-react';
+import { Computer, Server, RefreshCw, AlertCircle, Zap } from 'lucide-react';
 import { useLatencyTest } from '@/hooks/blockchain/useLatencyTest';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface LatencyTestProps {
   networkId: string;
@@ -12,7 +13,7 @@ interface LatencyTestProps {
 }
 
 const LatencyTest: React.FC<LatencyTestProps> = ({ networkId, networkName }) => {
-  const { results, isRunning, userLocation, runLatencyTest } = useLatencyTest(networkId);
+  const { results, isRunning, userLocation, runLatencyTest, hasRun } = useLatencyTest(networkId);
   
   // Format latency display
   const formatLatency = (latency: number | null, status: string, errorMessage?: string) => {
@@ -46,6 +47,28 @@ const LatencyTest: React.FC<LatencyTestProps> = ({ networkId, networkName }) => 
     return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
   };
 
+  if (!hasRun) {
+    return (
+      <Card className="glass-card mb-6 animate-fade-in">
+        <CardContent className="flex flex-col items-center justify-center py-10 text-center">
+          <Zap size={48} className="mb-4 opacity-70" />
+          <h3 className="text-xl font-medium mb-2">Measure RPC Latency</h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md">
+            Test the connection speed between your browser and {networkName} RPC endpoints.
+          </p>
+          <Button 
+            onClick={runLatencyTest} 
+            disabled={isRunning}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw size={16} className={isRunning ? "animate-spin" : ""} />
+            Run Latency Test
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <div className="glass-card p-6 mb-6 animate-fade-in">
       <div className="flex justify-between items-center mb-4">
@@ -58,7 +81,7 @@ const LatencyTest: React.FC<LatencyTestProps> = ({ networkId, networkName }) => 
           disabled={isRunning}
         >
           <RefreshCw size={16} className={isRunning ? "animate-spin" : ""} />
-          <span>Run Test</span>
+          <span>{isRunning ? "Running..." : "Refresh"}</span>
         </Button>
       </div>
       
