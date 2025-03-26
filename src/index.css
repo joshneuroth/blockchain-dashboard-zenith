@@ -3,6 +3,25 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Avenue Mono Font Face Declarations */
+@font-face {
+  font-family: 'Avenue Mono';
+  src: url('/src/assets/fonts/avenue-mono/AvenueMonoRegular.woff2') format('woff2'),
+       url('/src/assets/fonts/avenue-mono/AvenueMonoRegular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Avenue Mono';
+  src: url('/src/assets/fonts/avenue-mono/AvenueMonoBold.woff2') format('woff2'),
+       url('/src/assets/fonts/avenue-mono/AvenueMonoBold.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
