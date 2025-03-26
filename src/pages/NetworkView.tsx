@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useLocation, Link } from 'react-router-dom';
 import { NETWORKS } from '@/lib/api';
 import BlockchainCard from '@/components/BlockchainCard';
+import LatencyTest from '@/components/LatencyTest';
 import { Moon, Sun, Home } from 'lucide-react';
 import NewsletterForm from '@/components/NewsletterForm';
 
@@ -162,6 +163,12 @@ const NetworkView = () => {
             networkId={networkId as string}
             networkName={network.name}
             networkColor={network.color}
+          />
+          
+          {/* Add the new Latency Test component */}
+          <LatencyTest 
+            networkId={networkId as string}
+            networkName={network.name}
           />
           
           {/* Additional network metrics will be added here in the future */}
