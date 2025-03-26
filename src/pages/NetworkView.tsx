@@ -91,9 +91,22 @@ const NetworkView = () => {
       <header className="w-full py-4 px-6 md:px-10 border-b border-gray-200 dark:border-gray-800 glass-effect">
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex items-center">
-            <h1 className="text-lg md:text-xl font-bold">
-              blockheight<span className="text-gray-500">.xyz</span>
-            </h1>
+            {/* Logo - conditionally show based on dark mode */}
+            <div className="h-8">
+              {darkMode ? (
+                <img 
+                  src="/lovable-uploads/deb82502-ee68-4083-84e1-21483edee6d0.png" 
+                  alt="Blockheight.xyz" 
+                  className="h-full" 
+                />
+              ) : (
+                <img 
+                  src="/lovable-uploads/779df1f3-c1ce-4aff-8700-40e1c5e84962.png" 
+                  alt="Blockheight.xyz" 
+                  className="h-full" 
+                />
+              )}
+            </div>
             
             <Link 
               to="/" 
