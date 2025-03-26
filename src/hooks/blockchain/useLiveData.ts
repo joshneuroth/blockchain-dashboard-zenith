@@ -14,10 +14,12 @@ export const useLiveData = (
 ) => {
   const isMounted = useRef(true);
   const failureCount = useRef(0);
+  const pageLoadTime = useRef(Date.now());
   
   useEffect(() => {
     isMounted.current = true;
     failureCount.current = 0;
+    pageLoadTime.current = Date.now();
     
     const network = NETWORKS[networkId as keyof typeof NETWORKS];
     if (!network) return;
@@ -149,11 +151,29 @@ export const useLiveData = (
 
     fetchData();
     
-    // Set interval to 10 seconds
-    const intervalId = setInterval(fetchData, 10000);
+    // Determine the polling interval based on page load time
+    const determinePollingInterval = () => {
+      const pageLoadedFor = Date.now() - pageLoadTime.current;
+      // For the first minute, poll every 10 seconds
+      if (pageLoadedFor < 60000) {
+        return 10000; // 10 seconds
+      } else {
+        return 30000; // 30 seconds after the first minute
+      }
+    };
+    
+    // Set the initial interval
+    let intervalId = setInterval(fetchData, determinePollingInterval());
+    
+    // Refresh interval every minute to adjust the polling frequency
+    const refreshIntervalId = setInterval(() => {
+      clearInterval(intervalId);
+      intervalId = setInterval(fetchData, determinePollingInterval());
+    }, 60000); // Check every minute if we need to adjust the interval
     
     return () => {
       clearInterval(intervalId);
+      clearInterval(refreshIntervalId);
       isMounted.current = false;
     };
   }, [networkId, data.blockHistory, data.blockTimeMetrics, isInitialLoad, setData]);

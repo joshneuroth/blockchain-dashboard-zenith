@@ -33,7 +33,7 @@ export const useLatencyTest = (networkId: string) => {
           params: [],
           id: 1,
         }),
-        signal: AbortSignal.timeout(8000), // 8 second timeout
+        signal: AbortSignal.timeout(5000), // Reduced from 8s to 5s timeout
       });
       
       const endTime = performance.now();
@@ -145,13 +145,17 @@ export const useLatencyTest = (networkId: string) => {
       setUserLocation('Unknown Location');
     }
     
-    // Run tests in parallel
-    const testPromises = network.rpcs.map(rpc => 
-      measureLatency(rpc.url, rpc.name)
-    );
+    // Run tests in parallel but with a small delay between each to avoid rate limiting
+    const results: LatencyResult[] = [];
     
-    const newResults = await Promise.all(testPromises);
-    setResults(newResults);
+    for (const rpc of network.rpcs) {
+      const result = await measureLatency(rpc.url, rpc.name);
+      results.push(result);
+      // Add a small delay between requests to reduce chance of rate limiting
+      await new Promise(resolve => setTimeout(resolve, 300));
+    }
+    
+    setResults(results);
     setIsRunning(false);
     setHasRun(true);
   }, [networkId, isRunning, measureLatency]);

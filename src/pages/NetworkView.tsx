@@ -7,6 +7,8 @@ import MobileNetworkSelector from '@/components/network/MobileNetworkSelector';
 import NetworkContent from '@/components/network/NetworkContent';
 import NetworkFooter from '@/components/network/NetworkFooter';
 import { getNetworkGradient, getTextColorClass } from '@/utils/NetworkGradient';
+import { InfoCircle } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 const NetworkView = () => {
   const { networkId } = useParams();
@@ -42,6 +44,22 @@ const NetworkView = () => {
     <div className={`min-h-screen flex flex-col ${getNetworkGradient(networkId, darkMode)} dark:from-gray-900 dark:to-gray-800 transition-colors duration-300`}>
       <NetworkHeader darkMode={darkMode} setDarkMode={setDarkMode} />
       <MobileNetworkSelector />
+      <div className="w-full container mx-auto max-w-4xl px-6 mt-2">
+        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 justify-end">
+          <InfoCircle size={14} />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span>Data refreshes every 10s initially, then every 30s</span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="max-w-xs">
+                To reduce rate limiting issues, blockchain data is fetched every 10 seconds during the first minute, 
+                then every 30 seconds afterward.
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      </div>
       <NetworkContent 
         networkId={networkId as string} 
         networkName={network.name} 
