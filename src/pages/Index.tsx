@@ -105,7 +105,7 @@ const Index = () => {
             
             <div className="flex my-8">
               <div>
-                <div className="text-xs text-gray-500 mb-1">WHAT IS BLOCK HEIGHT?</div>
+                <div className="text-xs text-gray-500 font-mono mb-1">WHAT IS BLOCK HEIGHT?</div>
                 <div className="text-sm max-w-md">
                   This is a blockchain monitoring dashboard called "blockheight.xyz" that provides real-time transparency 
                   and monitoring of various blockchain networks across different RPC endpoints.
