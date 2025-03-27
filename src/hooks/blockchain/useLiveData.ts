@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { NetworkData } from './types';
 import { calculateBlocksPerMinute } from './useBlockMetrics';
+import { LatencyResult } from './useLatencyTest';
 
 export const useLiveData = (
   networkId: string, 
@@ -34,11 +35,52 @@ export const useLiveData = (
         const providers: { [key: string]: any } = {};
         let successfulFetches = 0;
         
+        // Store latency results for each provider
+        const latencyResults: LatencyResult[] = [];
+        
         results.forEach((result, index) => {
           if (result.status === 'fulfilled') {
             const blockData = result.value;
             providers[blockData.provider] = blockData;
             successfulFetches++;
+            
+            // Add latency result
+            latencyResults.push({
+              provider: blockData.provider,
+              endpoint: blockData.endpoint,
+              latency: blockData.latency || null,
+              status: 'success'
+            });
+          } else {
+            // Add failed result
+            const rpc = network.rpcs[index];
+            
+            // Determine error type
+            let errorType: LatencyResult['errorType'] = 'unknown';
+            let errorMessage = result.reason?.message || 'Unknown error';
+            
+            if (errorMessage.includes('timeout') || result.reason instanceof DOMException && result.reason.name === 'TimeoutError') {
+              errorType = 'timeout';
+              errorMessage = 'Connection timed out';
+            } else if (errorMessage.includes('rate') || errorMessage.includes('429')) {
+              errorType = 'rate-limit';
+              errorMessage = 'Rate limit exceeded';
+            } else if (errorMessage.includes('fetch') || errorMessage.includes('network') || errorMessage.includes('connection')) {
+              errorType = 'connection';
+              errorMessage = 'Connection failed';
+            } else if (errorMessage.includes('RPC error') || errorMessage.includes('error code')) {
+              errorType = 'rpc-error';
+              errorMessage = 'RPC error';
+            }
+            
+            latencyResults.push({
+              provider: rpc.name,
+              endpoint: rpc.url,
+              latency: null,
+              status: 'error',
+              errorMessage,
+              errorType
+            });
           }
         });
         
@@ -57,6 +99,12 @@ export const useLiveData = (
         } else {
           failureCount.current = 0;
         }
+        
+        // Store the latency results in localStorage for the useLatencyTest hook to access
+        localStorage.setItem(`latency-results-${networkId}`, JSON.stringify({
+          results: latencyResults,
+          timestamp: Date.now()
+        }));
         
         // Determine the highest block
         const blockHeights = Object.values(providers).map(p => BigInt(p.height));

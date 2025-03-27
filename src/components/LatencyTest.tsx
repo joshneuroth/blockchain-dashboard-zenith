@@ -1,11 +1,12 @@
 
-import React from 'react';
-import { Computer, Server, RefreshCw, AlertCircle, Zap, Clock, Ban, ExternalLink, AlertTriangle, Sparkles, Globe, Wifi } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Computer, Server, RefreshCw, AlertCircle, Zap, Clock, Ban, ExternalLink, AlertTriangle, Sparkles, Globe, Wifi, History } from 'lucide-react';
 import { useLatencyTest } from '@/hooks/blockchain/useLatencyTest';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Card, CardContent } from '@/components/ui/card';
+import { formatTimeDiff } from '@/lib/api';
 
 interface LatencyTestProps {
   networkId: string;
@@ -14,6 +15,24 @@ interface LatencyTestProps {
 
 const LatencyTest: React.FC<LatencyTestProps> = ({ networkId, networkName }) => {
   const { results, isRunning, geoInfo, runLatencyTest, hasRun } = useLatencyTest(networkId);
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  
+  // Check when the latency data was last updated
+  useEffect(() => {
+    const storedData = localStorage.getItem(`latency-results-${networkId}`);
+    if (storedData && hasRun) {
+      try {
+        const parsedData = JSON.parse(storedData);
+        const timestamp = parsedData.timestamp;
+        if (timestamp) {
+          const secondsAgo = Math.floor((Date.now() - timestamp) / 1000);
+          setLastUpdated(formatTimeDiff(secondsAgo));
+        }
+      } catch (e) {
+        console.error('Error parsing timestamp:', e);
+      }
+    }
+  }, [networkId, hasRun, results]);
   
   // Format latency display
   const formatLatency = (latency: number | null, status: string, errorMessage?: string, errorType?: string) => {
@@ -108,8 +127,14 @@ const LatencyTest: React.FC<LatencyTestProps> = ({ networkId, networkName }) => 
         </Button>
       </div>
       
-      <div className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-        This test measures the latency between your browser and the RPC endpoints. Lower values are better.
+      <div className="text-sm text-gray-600 dark:text-gray-400 mb-4 flex items-center">
+        <div>This test measures the latency between your browser and the RPC endpoints. Lower values are better.</div>
+        {lastUpdated && (
+          <div className="ml-auto flex items-center text-gray-500 text-xs">
+            <History size={14} className="mr-1" />
+            <span>Last updated: {lastUpdated}</span>
+          </div>
+        )}
       </div>
       
       <div className="relative my-8">

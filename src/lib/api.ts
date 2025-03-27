@@ -53,6 +53,7 @@ export interface BlockData {
   timestamp: number;
   provider: string;
   endpoint: string;
+  latency?: number; // Added latency field
 }
 
 export interface NetworkData {
@@ -95,6 +96,8 @@ export const fetchBlockchainData = async (network: string, rpcUrl: string): Prom
                       rpcUrl.includes("onfinality") ? "OnFinality" : "Unknown";
   
   try {
+    const startTime = performance.now(); // Start time measurement
+    
     const response = await fetch(rpcUrl, {
       method: 'POST',
       headers: {
@@ -109,6 +112,9 @@ export const fetchBlockchainData = async (network: string, rpcUrl: string): Prom
       // Add a timeout to prevent hanging requests
       signal: AbortSignal.timeout(5000),
     });
+
+    const endTime = performance.now(); // End time measurement
+    const latency = Math.round(endTime - startTime); // Calculate latency
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -129,7 +135,8 @@ export const fetchBlockchainData = async (network: string, rpcUrl: string): Prom
       height: blockHeight,
       timestamp: Date.now(),
       provider: providerName,
-      endpoint: rpcUrl
+      endpoint: rpcUrl,
+      latency: latency // Store the latency
     };
   } catch (error) {
     console.error(`Error fetching block data from ${rpcUrl}:`, error);
