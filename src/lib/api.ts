@@ -130,6 +130,34 @@ export const fetchBlockchainData = async (network: string, rpcUrl: string): Prom
     const blockHeight = data.result ? 
       BigInt(data.result).toString() : 
       "0";
+      
+    // Store latency in local storage for use by the latency test
+    const blockHeightLatencyKey = `blockheight-latency-${network}`;
+    try {
+      let latencyData: Record<string, any> = {};
+      const existingData = localStorage.getItem(blockHeightLatencyKey);
+      
+      if (existingData) {
+        latencyData = JSON.parse(existingData);
+      }
+      
+      // Update with the latest latency reading
+      latencyData[providerName] = {
+        latency,
+        endpoint: rpcUrl,
+        timestamp: Date.now()
+      };
+      
+      localStorage.setItem(blockHeightLatencyKey, JSON.stringify(latencyData));
+      
+      // Dispatch a storage event for the latency test to pick up
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: blockHeightLatencyKey,
+        newValue: JSON.stringify(latencyData)
+      }));
+    } catch (e) {
+      console.error('Error storing latency data:', e);
+    }
 
     return {
       height: blockHeight,

@@ -6,6 +6,8 @@ export interface LatencyResult {
   provider: string;
   endpoint: string;
   latency: number | null; // in milliseconds
+  medianLatency: number | null; // P50 latency value
+  samples: number[]; // track multiple latency samples
   status: 'loading' | 'success' | 'error';
   errorMessage?: string;
   errorType?: 'timeout' | 'rate-limit' | 'connection' | 'rpc-error' | 'unknown';
@@ -24,6 +26,20 @@ interface StoredLatencyData {
 
 // How long to consider stored latency data valid (5 minutes)
 const LATENCY_DATA_TTL = 5 * 60 * 1000;
+
+// Calculate median (P50) value from an array of numbers
+const calculateMedian = (values: number[]): number | null => {
+  if (!values || values.length === 0) return null;
+  
+  const sorted = [...values].sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+  
+  if (sorted.length % 2 === 0) {
+    return (sorted[middle - 1] + sorted[middle]) / 2;
+  } else {
+    return sorted[middle];
+  }
+};
 
 export const useLatencyTest = (networkId: string) => {
   const [results, setResults] = useState<LatencyResult[]>([]);
@@ -55,7 +71,94 @@ export const useLatencyTest = (networkId: string) => {
         // Invalid data, will run test normally when requested
       }
     }
+    
+    // Check for block height latency data and incorporate it
+    const blockHeightLatencyKey = `blockheight-latency-${networkId}`;
+    const blockHeightLatencyData = localStorage.getItem(blockHeightLatencyKey);
+    
+    if (blockHeightLatencyData) {
+      try {
+        const latencyData = JSON.parse(blockHeightLatencyData);
+        if (latencyData && Object.keys(latencyData).length > 0) {
+          updateFromBlockHeightLatency(latencyData);
+        }
+      } catch (e) {
+        console.error('Error parsing block height latency data:', e);
+      }
+    }
   }, [networkId]);
+  
+  // Process and update latency data from block height monitoring
+  const updateFromBlockHeightLatency = useCallback((blockHeightLatency: Record<string, { latency: number, endpoint: string, timestamp: number }>) => {
+    setResults(prevResults => {
+      const updatedResults = [...prevResults];
+      
+      // For each entry in the block height latency data
+      Object.entries(blockHeightLatency).forEach(([provider, data]) => {
+        const { latency, endpoint } = data;
+        if (latency <= 0) return; // Skip invalid latency values
+        
+        // Find matching provider in existing results
+        const existingIndex = updatedResults.findIndex(r => r.provider === provider);
+        
+        if (existingIndex >= 0) {
+          // Update existing provider data
+          const existing = updatedResults[existingIndex];
+          const samples = [...(existing.samples || []), latency].slice(-10); // Keep last 10 samples
+          
+          updatedResults[existingIndex] = {
+            ...existing,
+            latency: latency, // Most recent latency
+            samples: samples,
+            medianLatency: calculateMedian(samples),
+            status: 'success'
+          };
+        } else {
+          // Add new provider data
+          updatedResults.push({
+            provider,
+            endpoint,
+            latency,
+            samples: [latency],
+            medianLatency: latency, // With only one sample, median = the value
+            status: 'success'
+          });
+        }
+      });
+      
+      // Store updated results
+      if (updatedResults.length > 0) {
+        localStorage.setItem(`latency-results-${networkId}`, JSON.stringify({
+          results: updatedResults,
+          timestamp: Date.now()
+        }));
+        setHasRun(true);
+      }
+      
+      return updatedResults;
+    });
+  }, [networkId]);
+  
+  // Listen for block height latency updates
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === `blockheight-latency-${networkId}` && e.newValue) {
+        try {
+          const latencyData = JSON.parse(e.newValue);
+          if (latencyData && Object.keys(latencyData).length > 0) {
+            updateFromBlockHeightLatency(latencyData);
+          }
+        } catch (error) {
+          console.error('Error processing block height latency update:', error);
+        }
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [networkId, updateFromBlockHeightLatency]);
 
   // Function to fetch user's geo information
   const fetchGeoInfo = useCallback(async () => {
@@ -138,6 +241,8 @@ export const useLatencyTest = (networkId: string) => {
           provider: providerName,
           endpoint,
           latency: null,
+          samples: [],
+          medianLatency: null,
           status: 'error',
           errorMessage,
           errorType
@@ -151,6 +256,8 @@ export const useLatencyTest = (networkId: string) => {
           provider: providerName,
           endpoint,
           latency: null,
+          samples: [],
+          medianLatency: null,
           status: 'error',
           errorMessage: data.error.message || 'RPC error',
           errorType: 'rpc-error'
@@ -161,6 +268,8 @@ export const useLatencyTest = (networkId: string) => {
         provider: providerName,
         endpoint,
         latency,
+        samples: [latency],
+        medianLatency: latency, // With only one sample, median = the value
         status: 'success'
       };
     } catch (error) {
@@ -180,6 +289,8 @@ export const useLatencyTest = (networkId: string) => {
         provider: providerName,
         endpoint,
         latency: null,
+        samples: [],
+        medianLatency: null,
         status: 'error',
         errorMessage,
         errorType
@@ -220,6 +331,8 @@ export const useLatencyTest = (networkId: string) => {
       provider: rpc.name,
       endpoint: rpc.url,
       latency: null,
+      samples: [],
+      medianLatency: null,
       status: 'loading' as const
     }));
     

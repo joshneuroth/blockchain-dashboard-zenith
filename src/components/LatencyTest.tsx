@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { Computer, Server, RefreshCw, AlertCircle, Zap, Clock, Ban, ExternalLink, AlertTriangle, Sparkles, Globe, Wifi, History } from 'lucide-react';
+import { Computer, Server, RefreshCw, AlertCircle, Zap, Clock, Ban, ExternalLink, AlertTriangle, Sparkles, Globe, Wifi, History, BarChart } from 'lucide-react';
 import { useLatencyTest } from '@/hooks/blockchain/useLatencyTest';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -35,9 +35,12 @@ const LatencyTest: React.FC<LatencyTestProps> = ({ networkId, networkName }) => 
   }, [networkId, hasRun, results]);
   
   // Format latency display
-  const formatLatency = (latency: number | null, status: string, errorMessage?: string, errorType?: string) => {
+  const formatLatency = (result: any) => {
+    const { latency, medianLatency, samples, status, errorMessage, errorType } = result;
+    
     if (status === 'loading') return <Skeleton className="h-6 w-16" />;
-    if (status === 'error' || latency === null) {
+    
+    if (status === 'error' || (latency === null && medianLatency === null)) {
       // Get the appropriate icon based on error type
       const getErrorIcon = () => {
         switch(errorType) {
@@ -77,15 +80,46 @@ const LatencyTest: React.FC<LatencyTestProps> = ({ networkId, networkName }) => 
         </TooltipProvider>
       );
     }
+    
+    // If we have multiple samples, show median value prominently
+    const sampleCount = samples?.length || 0;
+    
+    if (sampleCount > 1 && medianLatency !== null) {
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center gap-1">
+                <span className="font-medium">{medianLatency} ms</span>
+                <BarChart size={14} className="text-gray-500" />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <div className="text-xs">
+                <p className="font-medium mb-1">P50 (median) latency: {medianLatency} ms</p>
+                <p>Latest reading: {latency} ms</p>
+                <p>Based on {sampleCount} samples</p>
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    }
+    
+    // Simple display for single reading
     return <span className="font-medium">{latency} ms</span>;
   };
 
   // Get color class based on latency
-  const getLatencyColorClass = (latency: number | null, status: string) => {
+  const getLatencyColorClass = (result: any) => {
+    const { latency, medianLatency, status } = result;
+    // Use median for color if available, otherwise fall back to latest reading
+    const value = (medianLatency !== null) ? medianLatency : latency;
+    
     if (status === 'loading') return "bg-gray-200 dark:bg-gray-700";
-    if (status === 'error' || latency === null) return "bg-red-50 text-red-800 dark:bg-red-900/30 dark:text-red-300";
-    if (latency < 100) return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
-    if (latency < 300) return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300";
+    if (status === 'error' || value === null) return "bg-red-50 text-red-800 dark:bg-red-900/30 dark:text-red-300";
+    if (value < 100) return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
+    if (value < 300) return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300";
     return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
   };
 
@@ -128,7 +162,9 @@ const LatencyTest: React.FC<LatencyTestProps> = ({ networkId, networkName }) => 
       </div>
       
       <div className="text-sm text-gray-600 dark:text-gray-400 mb-4 flex items-center">
-        <div>This test measures the latency between your browser and the RPC endpoints. Lower values are better.</div>
+        <div>
+          <p>This test measures the latency between your browser and the RPC endpoints. P50 (median) values are shown when available.</p>
+        </div>
         {lastUpdated && (
           <div className="ml-auto flex items-center text-gray-500 text-xs">
             <History size={14} className="mr-1" />
@@ -162,8 +198,8 @@ const LatencyTest: React.FC<LatencyTestProps> = ({ networkId, networkName }) => 
               <div className="flex-shrink-0 h-px w-32 bg-blue-400"></div>
               
               {/* Latency box */}
-              <div className={`px-3 py-1 rounded-md text-sm ${getLatencyColorClass(result.latency, result.status)}`}>
-                {formatLatency(result.latency, result.status, result.errorMessage, result.errorType)}
+              <div className={`px-3 py-1 rounded-md text-sm ${getLatencyColorClass(result)}`}>
+                {formatLatency(result)}
               </div>
               
               <div className="flex-shrink-0 h-px w-4 bg-blue-400"></div>
