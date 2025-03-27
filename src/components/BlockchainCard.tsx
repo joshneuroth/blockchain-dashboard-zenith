@@ -152,12 +152,8 @@ const BlockchainCard: React.FC<BlockchainCardProps> = ({
           </div>
           
           <div className="mt-2 flex flex-col text-sm text-gray-500">
-            <div className="flex items-center">
+            <div>
               <div>LAST BLOCK: {getTimeSinceLastBlock()}</div>
-              <div className="ml-2 flex items-center text-xs bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded" title="Time until next data refresh">
-                <RefreshCw size={12} className="mr-1" />
-                <span>REFRESH: {timeUntilRefresh}s</span>
-              </div>
             </div>
             <div className="font-medium mt-1 flex flex-wrap items-center gap-x-3">
               <span>BLOCK TIME:</span>
