@@ -1,3 +1,4 @@
+
 import { useEffect, useRef } from 'react';
 import { NETWORKS, fetchBlockchainData } from '@/lib/api';
 import { supabase } from '@/integrations/supabase/client';
@@ -44,15 +45,17 @@ export const useLiveData = (
             providers[blockData.provider] = blockData;
             successfulFetches++;
             
-            // Add latency result
+            // Add latency result with required properties
             latencyResults.push({
               provider: blockData.provider,
               endpoint: blockData.endpoint,
               latency: blockData.latency || null,
+              samples: blockData.latency ? [blockData.latency] : [],
+              medianLatency: blockData.latency || null,
               status: 'success'
             });
           } else {
-            // Add failed result
+            // Add failed result with required properties
             const rpc = network.rpcs[index];
             
             // Determine error type
@@ -77,6 +80,8 @@ export const useLiveData = (
               provider: rpc.name,
               endpoint: rpc.url,
               latency: null,
+              samples: [], // Add empty samples array
+              medianLatency: null, // Add null medianLatency
               status: 'error',
               errorMessage,
               errorType
