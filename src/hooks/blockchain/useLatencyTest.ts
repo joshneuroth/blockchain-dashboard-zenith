@@ -11,10 +11,20 @@ export interface LatencyResult {
   errorType?: 'timeout' | 'rate-limit' | 'connection' | 'rpc-error' | 'unknown';
 }
 
+export interface GeoLocationInfo {
+  location: string | null;
+  asn: string | null;
+  isp: string | null;
+}
+
 export const useLatencyTest = (networkId: string) => {
   const [results, setResults] = useState<LatencyResult[]>([]);
   const [isRunning, setIsRunning] = useState(false);
-  const [userLocation, setUserLocation] = useState<string | null>(null);
+  const [geoInfo, setGeoInfo] = useState<GeoLocationInfo>({
+    location: null,
+    asn: null,
+    isp: null
+  });
   const [hasRun, setHasRun] = useState(false);
 
   // Function to measure latency to an RPC endpoint
@@ -132,17 +142,36 @@ export const useLatencyTest = (networkId: string) => {
       const locationResponse = await fetch('https://ipapi.co/json/');
       if (locationResponse.ok) {
         const locationData = await locationResponse.json();
+        
+        // Format location string
+        let locationString = 'Unknown Location';
         if (locationData.city && locationData.region && locationData.country) {
-          setUserLocation(`${locationData.city}, ${locationData.region}, ${locationData.country}`);
-        } else {
-          setUserLocation('Unknown Location');
+          locationString = `${locationData.city}, ${locationData.region}, ${locationData.country}`;
         }
+        
+        // Get ASN and ISP information if available
+        const asnInfo = locationData.asn ? `AS${locationData.asn}` : null;
+        const ispInfo = locationData.org || null;
+        
+        setGeoInfo({
+          location: locationString,
+          asn: asnInfo,
+          isp: ispInfo
+        });
       } else {
-        setUserLocation('Unknown Location');
+        setGeoInfo({
+          location: 'Unknown Location',
+          asn: null,
+          isp: null
+        });
       }
     } catch (error) {
       console.log('Failed to get location:', error);
-      setUserLocation('Unknown Location');
+      setGeoInfo({
+        location: 'Unknown Location',
+        asn: null,
+        isp: null
+      });
     }
     
     // Run tests in parallel but with a small delay between each to avoid rate limiting
@@ -163,7 +192,7 @@ export const useLatencyTest = (networkId: string) => {
   return {
     results,
     isRunning,
-    userLocation,
+    geoInfo,
     runLatencyTest,
     hasRun
   };

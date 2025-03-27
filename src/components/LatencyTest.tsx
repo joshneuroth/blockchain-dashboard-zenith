@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Computer, Server, RefreshCw, AlertCircle, Zap, Clock, Ban, ExternalLink, AlertTriangle, Sparkles } from 'lucide-react';
+import { Computer, Server, RefreshCw, AlertCircle, Zap, Clock, Ban, ExternalLink, AlertTriangle, Sparkles, Globe, Wifi } from 'lucide-react';
 import { useLatencyTest } from '@/hooks/blockchain/useLatencyTest';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -13,7 +13,7 @@ interface LatencyTestProps {
 }
 
 const LatencyTest: React.FC<LatencyTestProps> = ({ networkId, networkName }) => {
-  const { results, isRunning, userLocation, runLatencyTest, hasRun } = useLatencyTest(networkId);
+  const { results, isRunning, geoInfo, runLatencyTest, hasRun } = useLatencyTest(networkId);
   
   // Format latency display
   const formatLatency = (latency: number | null, status: string, errorMessage?: string, errorType?: string) => {
@@ -114,16 +114,24 @@ const LatencyTest: React.FC<LatencyTestProps> = ({ networkId, networkName }) => 
       
       <div className="relative my-8">
         {/* User location box */}
-        <div className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 shadow-sm z-10">
-          <div className="text-xs text-gray-500 mb-1">Your Location</div>
-          <div className="flex items-center gap-2">
-            <Computer size={16} />
-            <span className="text-sm font-medium">{userLocation || 'Detecting...'}</span>
+        <div className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 shadow-sm z-10 w-56">
+          <div className="text-xs text-gray-500 mb-1">Your Connection</div>
+          <div className="flex items-center gap-2 mb-2">
+            <Globe size={16} />
+            <span className="text-sm font-medium">{geoInfo.location || 'Detecting...'}</span>
           </div>
+          
+          {geoInfo.asn && (
+            <div className="flex items-center gap-2 mt-2 text-xs text-gray-600 dark:text-gray-400">
+              <Wifi size={14} />
+              <span>{geoInfo.asn}</span>
+              {geoInfo.isp && <span>· {geoInfo.isp}</span>}
+            </div>
+          )}
         </div>
         
         {/* Connection lines and results */}
-        <div className="ml-[180px] space-y-6">
+        <div className="ml-[220px] space-y-6">
           {results.map((result, index) => (
             <div key={index} className="flex items-center">
               <div className="flex-shrink-0 h-px w-32 bg-blue-400"></div>
@@ -163,4 +171,3 @@ const LatencyTest: React.FC<LatencyTestProps> = ({ networkId, networkName }) => 
 };
 
 export default LatencyTest;
-
