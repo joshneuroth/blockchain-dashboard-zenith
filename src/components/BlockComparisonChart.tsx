@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { formatNumber } from '@/lib/api';
 import { RefreshCw } from 'lucide-react';
@@ -222,10 +221,6 @@ const BlockComparisonChart: React.FC<BlockComparisonChartProps> = ({
             <div className="w-3 h-3 bg-red-500 mr-1 rounded-sm"></div>
             <span>&gt;1 block behind</span>
           </div>
-        </div>
-        <div className="flex items-center">
-          <RefreshCw size={12} className="mr-1" />
-          <span>REFRESH: {30}s</span>
         </div>
       </div>
       
