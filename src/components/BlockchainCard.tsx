@@ -1,6 +1,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
-import { BarChart } from 'lucide-react';
+import { BarChart, RefreshCw } from 'lucide-react';
 import BlockComparisonChart, { TimeFilterOption } from './BlockComparisonChart';
 import { formatNumber, formatTimeDiff } from '@/lib/api';
 import { useBlockchainData } from '@/hooks/useBlockchainData';
@@ -27,6 +27,7 @@ const BlockchainCard: React.FC<BlockchainCardProps> = ({
   const [reliabilityDialogOpen, setReliabilityDialogOpen] = useState(false);
   const [reliabilityTimePeriod, setReliabilityTimePeriod] = useState<TimePeriod>('all-time');
   const [monitorModalOpen, setMonitorModalOpen] = useState(false);
+  const [timeUntilRefresh, setTimeUntilRefresh] = useState(30);
   
   const reliabilityData = useReliabilityData({ 
     lastBlock, 
@@ -49,6 +50,29 @@ const BlockchainCard: React.FC<BlockchainCardProps> = ({
       return () => clearTimeout(timer);
     }
   }, [lastBlock?.height]);
+  
+  // Update countdown timer for refresh
+  useEffect(() => {
+    const refreshInterval = 30; // seconds
+    setTimeUntilRefresh(refreshInterval);
+    
+    // Reset timer whenever new data comes in
+    if (lastBlock) {
+      setTimeUntilRefresh(refreshInterval);
+    }
+    
+    // Create countdown
+    const countdownInterval = setInterval(() => {
+      setTimeUntilRefresh(prev => {
+        if (prev <= 1) {
+          return refreshInterval;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    
+    return () => clearInterval(countdownInterval);
+  }, [lastBlock]);
   
   const getColorClass = () => {
     switch (networkId) {
@@ -128,8 +152,12 @@ const BlockchainCard: React.FC<BlockchainCardProps> = ({
           </div>
           
           <div className="mt-2 flex flex-col text-sm text-gray-500">
-            <div>
-              LAST BLOCK: {getTimeSinceLastBlock()}
+            <div className="flex items-center">
+              <div>LAST BLOCK: {getTimeSinceLastBlock()}</div>
+              <div className="ml-2 flex items-center text-xs bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded" title="Time until next data refresh">
+                <RefreshCw size={12} className="mr-1" />
+                <span>REFRESH: {timeUntilRefresh}s</span>
+              </div>
             </div>
             <div className="font-medium mt-1 flex flex-wrap items-center gap-x-3">
               <span>BLOCK TIME:</span>
