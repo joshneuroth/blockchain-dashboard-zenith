@@ -28,9 +28,12 @@ export const useCloudLatency = (networkId: string) => {
         
         console.log("Fetching cloud latency data...");
         
-        // Add a timestamp to bust cache
-        const timestamp = new Date().getTime();
-        const url = `https://edgeprobe.fly.dev/simple-latency?t=${timestamp}`;
+        // Build proper URL with parameters
+        const baseUrl = "https://edgeprobe.fly.dev/simple-latency";
+        // Default to 7 days of data
+        const days = 7;
+        // Use network ID if needed (currently not filtering by network in the API)
+        const url = `${baseUrl}?days=${days}`;
         
         // Fetch data from the API with better error handling and timeout
         const controller = new AbortController();
