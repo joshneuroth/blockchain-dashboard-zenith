@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useCloudLatency } from '@/hooks/blockchain/useCloudLatency';
 import { formatTimeDiff } from '@/lib/api';
 import { RefreshCw } from 'lucide-react';
@@ -22,6 +22,17 @@ const CloudLatencyTest: React.FC<CloudLatencyTestProps> = ({ networkId, networkN
     window.location.reload();
   };
   
+  // Move the useEffect outside of the conditional rendering
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Error Loading Data",
+        description: "Failed to fetch cloud latency data. Please try again later.",
+        variant: "destructive"
+      });
+    }
+  }, [error, toast]);
+  
   const formattedLastUpdated = lastUpdated ? 
     formatTimeDiff(Math.floor((Date.now() - lastUpdated.getTime()) / 1000)) : 
     null;
@@ -31,17 +42,6 @@ const CloudLatencyTest: React.FC<CloudLatencyTestProps> = ({ networkId, networkN
   }
   
   if (error) {
-    // Add toast notification for error
-    React.useEffect(() => {
-      if (error) {
-        toast({
-          title: "Error Loading Data",
-          description: "Failed to fetch cloud latency data. Please try again later.",
-          variant: "destructive"
-        });
-      }
-    }, [error, toast]);
-    
     return (
       <div className="glass-card p-6 mb-6 animate-fade-in">
         <h2 className="text-xl font-medium mb-4">Cloud Region to {networkName} RPCs</h2>
