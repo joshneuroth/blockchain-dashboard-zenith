@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { CloudLatencyData } from '@/hooks/useCloudLatency';
 import { Button } from '@/components/ui/button';
@@ -46,7 +45,7 @@ const CloudRawDataDisplay: React.FC<CloudRawDataDisplayProps> = ({
         </div>
       ) : error ? (
         <div className="p-4 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 rounded-md">
-          <p><strong>Error:</strong> {lastError || error.message}</p>
+          <p><strong>Error:</strong> {lastError || "Failed to load data"}</p>
           <p className="mt-2 text-sm">Check the console for more details.</p>
         </div>
       ) : data.length === 0 ? (

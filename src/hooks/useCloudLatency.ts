@@ -17,18 +17,21 @@ export const useCloudLatency = (networkId: string) => {
   const [lastError, setLastError] = useState<string | null>(null);
   
   const fetchCloudLatencyData = async (): Promise<CloudLatencyData[]> => {
-    console.log('Fetching cloud latency data with URL:', 'https://edgeprobe.fly.dev/simple-latency?days=7');
+    const apiUrl = 'https://edgeprobe.fly.dev/simple-latency';
+    const queryParams = new URLSearchParams({ days: '7' }).toString();
+    const fullUrl = `${apiUrl}?${queryParams}`;
+    
+    console.log('Fetching cloud latency data with URL:', fullUrl);
     
     try {
-      const response = await fetch('https://edgeprobe.fly.dev/simple-latency?days=7', {
+      const response = await fetch(fullUrl, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
-          'Cache-Control': 'no-cache',
         },
         mode: 'cors',
         credentials: 'omit',
-        signal: AbortSignal.timeout(30000) // Increased timeout to 30 seconds
+        signal: AbortSignal.timeout(15000) // 15 seconds timeout
       });
       
       console.log('API response status:', response.status);
@@ -40,7 +43,7 @@ export const useCloudLatency = (networkId: string) => {
       }
       
       const data = await response.json();
-      console.log('Cloud latency data received:', data.length, 'records, first record:', data[0]);
+      console.log('Cloud latency data received:', data.length, 'records');
       
       if (!Array.isArray(data) || data.length === 0) {
         throw new Error('No data available or invalid data format');
@@ -57,10 +60,11 @@ export const useCloudLatency = (networkId: string) => {
   const result = useQuery({
     queryKey: ['cloudLatency', networkId],
     queryFn: fetchCloudLatencyData,
-    retry: 2,
+    retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
+    gcTime: 10 * 60 * 1000, // 10 minutes
   });
 
   // Extract data and hook callbacks
@@ -71,7 +75,7 @@ export const useCloudLatency = (networkId: string) => {
     console.error('Error fetching cloud latency data:', error, 'Last error:', lastError);
     toast({
       title: "Connection Issue",
-      description: `Could not load cloud latency data: ${lastError || 'Unknown error'}. Click 'Retry' to try again.`,
+      description: `Could not load cloud latency data. Click 'Retry' to try again.`,
       variant: "destructive",
     });
     hasShownErrorToast.current = true;
