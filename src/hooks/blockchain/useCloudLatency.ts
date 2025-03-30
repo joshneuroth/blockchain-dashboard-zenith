@@ -28,25 +28,47 @@ export const useCloudLatency = (networkId: string) => {
         
         console.log("Fetching cloud latency data...");
         
-        // Build proper URL with parameters
-        const baseUrl = "https://edgeprobe.fly.dev/simple-latency";
+        // Base URL for the API
+        const baseUrl = "https://edgeprobe.fly.dev";
+        
+        // Step 1: First fetch available methods
+        console.log("Fetching available methods...");
+        const methodsResponse = await fetch(`${baseUrl}/methods`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+          },
+          mode: 'cors',
+          credentials: 'omit',
+          signal: AbortSignal.timeout(10000) // 10 second timeout
+        });
+        
+        if (!methodsResponse.ok) {
+          const errorText = await methodsResponse.text();
+          throw new Error(`Failed to fetch methods. Status: ${methodsResponse.status}, Details: ${errorText}`);
+        }
+        
+        // Parse methods response
+        const methodsData = await methodsResponse.json();
+        console.log("Available methods:", methodsData);
+        
+        // Step 2: Now fetch the latency data with the correct endpoint
         // Default to 7 days of data
         const days = 7;
-        // Use network ID if needed (currently not filtering by network in the API)
-        const url = `${baseUrl}?days=${days}`;
+        const url = `${baseUrl}/simple-latency?days=${days}`;
         
-        // Fetch data from the API with better error handling and timeout
+        console.log("Fetching latency data from:", url);
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
         
         const response = await fetch(url, {
-          method: 'GET', // Explicitly use GET method
+          method: 'GET',
           headers: {
             'Accept': 'application/json',
             'Cache-Control': 'no-cache, no-store'
           },
-          mode: 'cors', // Explicitly set CORS mode
-          credentials: 'omit', // Don't send cookies
+          mode: 'cors',
+          credentials: 'omit',
           signal: controller.signal
         });
         
@@ -58,14 +80,11 @@ export const useCloudLatency = (networkId: string) => {
         }
         
         const data: CloudLatencyResult[] = await response.json();
-        
-        // Filter results for the current network if needed
-        // For now, we're using all the results since the API doesn't provide network-specific filtering
+        console.log("Cloud latency data loaded successfully:", data);
         
         setResults(data);
         setLastUpdated(new Date());
         setRetryCount(0); // Reset retry count on success
-        console.log("Cloud latency data loaded successfully:", data);
       } catch (err) {
         console.error("Error fetching cloud latency data:", err);
         
