@@ -19,29 +19,42 @@ const CloudProviderConnection: React.FC<CloudProviderConnectionProps> = ({ provi
     return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
   };
 
+  // Count successful and failed requests
+  const successCount = allData.filter(item => item.status >= 200 && item.status < 300).length;
+  const reliability = (successCount / allData.length) * 100;
+
   return (
-    <div className="flex items-center">
-      {/* Server box - Provider */}
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 shadow-sm w-40 mr-4">
-        <div className="text-xs text-gray-500 mb-1">Provider</div>
-        <div className="flex items-center gap-2">
-          <Server size={16} />
-          <span className="text-sm font-medium">{provider.provider_name}</span>
+    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/30 rounded-lg">
+      {/* Provider info */}
+      <div className="flex items-center">
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 shadow-sm">
+          <div className="text-xs text-gray-500 mb-1">Provider</div>
+          <div className="flex items-center gap-2">
+            <Server size={16} />
+            <span className="text-sm font-medium">{provider.provider_name}</span>
+          </div>
         </div>
       </div>
       
-      <div className="flex-shrink-0 h-px w-10 bg-blue-400"></div>
-      
-      {/* Response time indicator */}
-      <div className={`px-4 py-2 rounded-md ${getResponseTimeColor(provider.response_time)}`}>
-        <div className="text-xs opacity-80 mb-1">Latest Response Time</div>
-        <div className="font-medium">{provider.response_time.toFixed(2)} ms</div>
-      </div>
-      
-      {/* Average response time */}
-      <div className="ml-4 px-4 py-2 rounded-md bg-gray-100 dark:bg-gray-800">
-        <div className="text-xs opacity-80 mb-1">Average (7 days)</div>
-        <div className="font-medium">{avgResponseTime.toFixed(2)} ms</div>
+      {/* Response time data */}
+      <div className="flex items-center gap-4">
+        {/* Latest response time */}
+        <div className={`px-4 py-2 rounded-md ${getResponseTimeColor(provider.response_time)}`}>
+          <div className="text-xs opacity-80 mb-1">Latest</div>
+          <div className="font-medium">{provider.response_time.toFixed(1)} ms</div>
+        </div>
+        
+        {/* Average response time */}
+        <div className="px-4 py-2 rounded-md bg-gray-100 dark:bg-gray-800">
+          <div className="text-xs opacity-80 mb-1">Average</div>
+          <div className="font-medium">{avgResponseTime.toFixed(1)} ms</div>
+        </div>
+        
+        {/* Reliability percentage */}
+        <div className="px-4 py-2 rounded-md bg-blue-50 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+          <div className="text-xs opacity-80 mb-1">Reliability</div>
+          <div className="font-medium">{reliability.toFixed(1)}%</div>
+        </div>
       </div>
     </div>
   );
