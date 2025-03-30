@@ -44,8 +44,8 @@ export const useCloudLatency = (networkId: string) => {
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff with max 30s
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
-    onSettled: (data, error) => {
-      if (error) {
+    meta: {
+      onError: (error) => {
         console.error('Error fetching cloud latency data:', error);
         toast({
           title: "Connection Issue",
