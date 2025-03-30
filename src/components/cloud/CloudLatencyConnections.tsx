@@ -48,10 +48,10 @@ const CloudLatencyConnections: React.FC<CloudLatencyConnectionsProps> = ({ data,
   // Sort providers by response time (faster first)
   const sortedProviders = latestByProvider.sort((a, b) => a.response_time - b.response_time);
   
-  // Prepare chart data
+  // Prepare chart data with safety check for each property
   const chartData = sortedProviders.map(provider => ({
-    name: provider.provider_name,
-    responseTime: Math.round(provider.response_time),
+    name: provider.provider_name || 'Unknown',
+    responseTime: typeof provider.response_time === 'number' ? Math.round(provider.response_time) : 0,
     fill: provider.response_time < 100 ? "#22c55e" : 
           provider.response_time < 300 ? "#eab308" : "#ef4444"
   }));
@@ -97,13 +97,18 @@ const CloudLatencyConnections: React.FC<CloudLatencyConnectionsProps> = ({ data,
       
       {/* Detailed provider connections */}
       <div className="space-y-3 mt-4">
-        {sortedProviders.map((providerInfo, index) => (
-          <CloudProviderConnection 
-            key={`${providerInfo.provider_name}-${index}`}
-            provider={providerInfo}
-            allData={providerData[providerInfo.provider_name]}
-          />
-        ))}
+        {sortedProviders.map((providerInfo, index) => {
+          // Make sure we have non-empty arrays of data for each provider 
+          const providerDataArray = providerData[providerInfo.provider_name] || [];
+          
+          return (
+            <CloudProviderConnection 
+              key={`${providerInfo.provider_name}-${index}`}
+              provider={providerInfo}
+              allData={providerDataArray}
+            />
+          );
+        })}
       </div>
     </div>
   );

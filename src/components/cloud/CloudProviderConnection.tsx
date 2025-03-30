@@ -9,8 +9,10 @@ interface CloudProviderConnectionProps {
 }
 
 const CloudProviderConnection: React.FC<CloudProviderConnectionProps> = ({ provider, allData }) => {
-  // Calculate average response time for this provider
-  const avgResponseTime = allData.reduce((sum, item) => sum + item.response_time, 0) / allData.length;
+  // Only calculate average if we actually have data
+  const avgResponseTime = allData.length > 0 
+    ? allData.reduce((sum, item) => sum + item.response_time, 0) / allData.length 
+    : 0;
   
   // Get color based on response time
   const getResponseTimeColor = (time: number) => {
@@ -19,9 +21,13 @@ const CloudProviderConnection: React.FC<CloudProviderConnectionProps> = ({ provi
     return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
   };
 
-  // Count successful and failed requests
-  const successCount = allData.filter(item => item.status >= 200 && item.status < 300).length;
-  const reliability = (successCount / allData.length) * 100;
+  // Count successful and failed requests with null check
+  const successCount = allData.filter(item => 
+    item.status >= 200 && item.status < 300
+  ).length;
+  
+  // Calculate reliability with a safety check
+  const reliability = allData.length > 0 ? (successCount / allData.length) * 100 : 0;
 
   return (
     <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/30 rounded-lg">
