@@ -15,10 +15,11 @@ interface CloudLatencyCardProps {
 }
 
 const CloudLatencyCard: React.FC<CloudLatencyCardProps> = ({ networkId, networkName }) => {
-  const { data, isLoading, error, refetch } = useCloudLatency(networkId);
+  const { data, isLoading, error, refetch, lastError } = useCloudLatency(networkId);
   const [activeTab, setActiveTab] = useState("visual");
   
   const handleRetry = () => {
+    console.log("Retrying cloud latency data fetch...");
     refetch();
   };
 
@@ -65,7 +66,7 @@ const CloudLatencyCard: React.FC<CloudLatencyCardProps> = ({ networkId, networkN
                 <Alert variant="destructive" className="mb-4">
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
-                    Error loading cloud latency data: {error instanceof Error ? error.message : String(error)}
+                    Error loading cloud latency data: {lastError || (error instanceof Error ? error.message : String(error))}
                   </AlertDescription>
                 </Alert>
                 
@@ -92,6 +93,7 @@ const CloudLatencyCard: React.FC<CloudLatencyCardProps> = ({ networkId, networkN
               isLoading={isLoading} 
               error={error instanceof Error ? error : null}
               onRefresh={handleRetry} 
+              lastError={lastError}
             />
           </TabsContent>
         </Tabs>
