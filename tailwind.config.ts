@@ -95,6 +95,11 @@ export default {
           "50%": { transform: "scale(1.02)" },
           "100%": { transform: "scale(1)" },
         },
+        "connection-pulse": {
+          "0%": { opacity: "0.6", boxShadow: "0 0 0px rgba(96, 165, 250, 0)" },
+          "50%": { opacity: "1", boxShadow: "0 0 3px rgba(96, 165, 250, 0.6)" },
+          "100%": { opacity: "0.6", boxShadow: "0 0 0px rgba(96, 165, 250, 0)" }
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -104,6 +109,7 @@ export default {
         "slide-in": "slide-in 0.4s ease-out",
         "pulse-opacity": "pulse-opacity 2s ease-in-out infinite",
         "data-update": "data-update 0.5s ease-in-out",
+        "connection-pulse": "connection-pulse 2.5s ease-in-out infinite",
       },
       fontFamily: {
         sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],

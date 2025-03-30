@@ -23,14 +23,14 @@ const ProviderConnection: React.FC<ProviderConnectionProps> = ({ result }) => {
   
   return (
     <div className="flex items-center">
-      <div className="flex-shrink-0 h-px w-32 bg-blue-400"></div>
+      <div className="flex-shrink-0 h-px w-32 bg-blue-400 animate-connection-pulse"></div>
       
       {/* Latency box */}
       <div className={`px-3 py-1 rounded-md text-sm ${getLatencyColorClass(result)}`}>
         <LatencyDisplay result={result} />
       </div>
       
-      <div className="flex-shrink-0 h-px w-4 bg-blue-400"></div>
+      <div className="flex-shrink-0 h-px w-4 bg-blue-400 animate-connection-pulse"></div>
       
       {/* Server box */}
       <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 shadow-sm">
