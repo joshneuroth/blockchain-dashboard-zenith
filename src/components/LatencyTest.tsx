@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Computer, Server, RefreshCw, AlertCircle, Clock, Ban, ExternalLink, AlertTriangle, BarChart, Globe, Wifi, History, Sparkles } from 'lucide-react';
 import { useLatencyTest } from '@/hooks/blockchain/useLatencyTest';
@@ -209,17 +210,6 @@ const LatencyTest: React.FC<LatencyTestProps> = ({ networkId, networkName }) => 
             </div>
           ))}
         </div>
-      </div>
-      
-      {/* Premium RPC feature coming soon announcement */}
-      <div className="mt-10 border border-dashed border-blue-200 dark:border-blue-800 rounded-lg p-4 bg-blue-50 dark:bg-blue-900/20">
-        <div className="flex items-center gap-2 mb-2">
-          <Sparkles size={18} className="text-blue-500" />
-          <h3 className="font-medium text-blue-700 dark:text-blue-300">Coming Soon: Premium RPC Latency Testing</h3>
-        </div>
-        <p className="text-sm text-blue-600 dark:text-blue-400">
-          Soon you'll be able to test latency to your own premium/paid RPC endpoints. Compare the performance of your private endpoints with public ones for optimal {networkName} connectivity.
-        </p>
       </div>
     </div>
   );
