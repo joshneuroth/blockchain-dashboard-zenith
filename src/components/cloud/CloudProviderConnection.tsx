@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Server, Clock } from 'lucide-react';
+import { Server } from 'lucide-react';
 import { CloudLatencyData } from '@/hooks/useCloudLatency';
 
 interface CloudProviderConnectionProps {
@@ -23,7 +23,6 @@ const CloudProviderConnection: React.FC<CloudProviderConnectionProps> = ({ provi
   
   // Get the latency value to display (prioritize p50_latency)
   const latencyValue = provider.p50_latency !== undefined ? provider.p50_latency : provider.response_time;
-  const p90LatencyValue = provider.p90_latency;
   
   // Get color based on response time
   const getLatencyColor = (latency: number | undefined) => {
@@ -31,16 +30,6 @@ const CloudProviderConnection: React.FC<CloudProviderConnectionProps> = ({ provi
     if (latency < 100) return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
     if (latency < 300) return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300";
     return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
-  };
-
-  // Format timestamp
-  const formatTimestamp = (timestamp: string | undefined) => {
-    if (!timestamp) return "";
-    try {
-      return new Date(timestamp).toLocaleString();
-    } catch (e) {
-      return timestamp;
-    }
   };
 
   // Format origin information in a readable way
@@ -63,7 +52,6 @@ const CloudProviderConnection: React.FC<CloudProviderConnectionProps> = ({ provi
   };
 
   const originInfo = formatOrigin(provider.origin);
-  const timestamp = provider.date || provider.timestamp;
 
   return (
     <div className="flex items-center">
@@ -75,12 +63,6 @@ const CloudProviderConnection: React.FC<CloudProviderConnectionProps> = ({ provi
           <span className="text-sm font-medium">{provider.provider_name}</span>
           {originInfo && <span className="text-xs text-gray-500">({originInfo})</span>}
         </div>
-        {timestamp && (
-          <div className="mt-2 text-xs text-gray-500 flex items-center gap-1">
-            <Clock size={12} />
-            <span>{formatTimestamp(timestamp)}</span>
-          </div>
-        )}
       </div>
       
       <div className="flex-shrink-0 h-px w-10 bg-blue-400"></div>
@@ -89,12 +71,6 @@ const CloudProviderConnection: React.FC<CloudProviderConnectionProps> = ({ provi
       <div className={`px-4 py-2 rounded-md ${getLatencyColor(latencyValue)}`}>
         <div className="text-xs opacity-80 mb-1">P50 Latency</div>
         <div className="font-medium">{safeFormat(latencyValue)} ms</div>
-      </div>
-      
-      {/* P90 response time */}
-      <div className="ml-4 px-4 py-2 rounded-md bg-gray-100 dark:bg-gray-800">
-        <div className="text-xs opacity-80 mb-1">P90 Latency</div>
-        <div className="font-medium">{safeFormat(p90LatencyValue)} ms</div>
       </div>
       
       {/* Average response time */}

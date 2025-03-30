@@ -2,7 +2,7 @@
 import React, { useMemo } from 'react';
 import { CloudLatencyData } from '@/hooks/useCloudLatency';
 import { Table, TableHeader, TableHead, TableBody, TableRow, TableCell } from '@/components/ui/table';
-import { Server, Globe, Clock } from 'lucide-react';
+import { Server, Globe } from 'lucide-react';
 
 interface CloudLatencyTableProps {
   data: CloudLatencyData[];
@@ -46,7 +46,7 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
 
   // Calculate statistics for each origin and provider
   const statistics = useMemo(() => {
-    const stats: Record<string, Record<string, { latest: number; average: number; p90: number | undefined; timestamp: string | undefined }>> = {};
+    const stats: Record<string, Record<string, { latest: number; average: number }>> = {};
     
     // For each origin
     Object.entries(organizedData).forEach(([origin, providers]) => {
@@ -71,24 +71,15 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
           new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
         );
         
-        // Get the latest latency value and timestamp (prioritize p50_latency)
-        const latestMeasurement = sortedMeasurements[0];
-        const latestLatency = latestMeasurement.p50_latency !== undefined 
-          ? latestMeasurement.p50_latency 
-          : latestMeasurement.response_time;
-        
-        // Get the p90 latency if available
-        const p90Latency = latestMeasurement.p90_latency;
-        
-        // Get the timestamp
-        const timestamp = latestMeasurement.date || latestMeasurement.timestamp;
+        // Get the latest latency value (prioritize p50_latency)
+        const latestLatency = sortedMeasurements[0].p50_latency !== undefined 
+          ? sortedMeasurements[0].p50_latency 
+          : sortedMeasurements[0].response_time;
         
         // Calculate latest and average response time
         stats[origin][provider] = {
           latest: latestLatency,
-          average: validTimes.reduce((sum, time) => sum + time, 0) / validTimes.length,
-          p90: p90Latency,
-          timestamp: timestamp
+          average: validTimes.reduce((sum, time) => sum + time, 0) / validTimes.length
         };
       });
     });
@@ -108,16 +99,6 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
   const formatLatency = (time: number | undefined) => {
     if (time === undefined || isNaN(time)) return "N/A";
     return `${time.toFixed(2)} ms`;
-  };
-
-  // Format timestamp
-  const formatTimestamp = (timestamp: string | undefined) => {
-    if (!timestamp) return "N/A";
-    try {
-      return new Date(timestamp).toLocaleString();
-    } catch (e) {
-      return timestamp;
-    }
   };
 
   // Get display name for origin
@@ -178,9 +159,7 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
                   <TableRow>
                     <TableHead>Provider</TableHead>
                     <TableHead>Latest Response</TableHead>
-                    <TableHead>P90 Latency</TableHead>
                     <TableHead>7-Day Average</TableHead>
-                    <TableHead>Timestamp</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -198,17 +177,8 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
                         <TableCell className={getLatencyColor(stats.latest)}>
                           {formatLatency(stats.latest)}
                         </TableCell>
-                        <TableCell className={getLatencyColor(stats.p90)}>
-                          {formatLatency(stats.p90)}
-                        </TableCell>
                         <TableCell>
                           {formatLatency(stats.average)}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Clock size={14} />
-                            <span>{formatTimestamp(stats.timestamp)}</span>
-                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
