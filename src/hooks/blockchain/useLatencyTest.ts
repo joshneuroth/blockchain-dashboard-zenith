@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { NETWORKS } from '@/lib/api';
 
@@ -32,8 +31,8 @@ interface CachedGeoInfo {
 // How long to consider stored latency data valid (5 minutes)
 const LATENCY_DATA_TTL = 5 * 60 * 1000;
 
-// How long to consider geo location data valid (24 hours)
-const GEO_DATA_TTL = 24 * 60 * 60 * 1000;
+// How long to consider geo location data valid (4 hours)
+const GEO_DATA_TTL = 4 * 60 * 60 * 1000;
 
 // Calculate median (P50) value from an array of numbers
 const calculateMedian = (values: number[]): number | null => {
