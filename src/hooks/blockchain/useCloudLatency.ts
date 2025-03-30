@@ -25,20 +25,28 @@ export const useCloudLatency = (networkId: string) => {
         setIsLoading(true);
         setError(null);
         
-        // Fetch data from the API
-        const response = await fetch('https://edgeprobe.fly.dev/simple-latency');
+        // Fetch data from the API with proper error handling
+        const response = await fetch('https://edgeprobe.fly.dev/simple-latency', {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+          },
+          mode: 'cors', // Explicitly set CORS mode
+        });
         
         if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
+          const errorText = await response.text();
+          throw new Error(`HTTP error! Status: ${response.status}, Details: ${errorText}`);
         }
         
         const data: CloudLatencyResult[] = await response.json();
         
         // Filter results for the current network if needed
-        // In the future, we can add network filtering based on the API response
+        // For now, we're using all the results since the API doesn't provide network-specific filtering
         
         setResults(data);
         setLastUpdated(new Date());
+        console.log("Cloud latency data loaded successfully:", data);
       } catch (err) {
         console.error("Error fetching cloud latency data:", err);
         setError(err instanceof Error ? err.message : "Failed to fetch cloud latency data");

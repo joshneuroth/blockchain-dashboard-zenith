@@ -6,6 +6,7 @@ import { RefreshCw } from 'lucide-react';
 import CloudLatencyHeader from './cloud-latency/CloudLatencyHeader';
 import CloudLatencyConnections from './cloud-latency/CloudLatencyConnections';
 import CloudLatencyLoading from './cloud-latency/CloudLatencyLoading';
+import { useToast } from '@/hooks/use-toast';
 
 interface CloudLatencyTestProps {
   networkId: string;
@@ -14,6 +15,7 @@ interface CloudLatencyTestProps {
 
 const CloudLatencyTest: React.FC<CloudLatencyTestProps> = ({ networkId, networkName }) => {
   const { results, isLoading, error, lastUpdated } = useCloudLatency(networkId);
+  const { toast } = useToast();
   
   const handleRefresh = () => {
     // In the future, add functionality to refresh the data
@@ -29,6 +31,17 @@ const CloudLatencyTest: React.FC<CloudLatencyTestProps> = ({ networkId, networkN
   }
   
   if (error) {
+    // Add toast notification for error
+    React.useEffect(() => {
+      if (error) {
+        toast({
+          title: "Error Loading Data",
+          description: "Failed to fetch cloud latency data. Please try again later.",
+          variant: "destructive"
+        });
+      }
+    }, [error, toast]);
+    
     return (
       <div className="glass-card p-6 mb-6 animate-fade-in">
         <h2 className="text-xl font-medium mb-4">Cloud Region to {networkName} RPCs</h2>
