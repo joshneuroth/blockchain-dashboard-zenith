@@ -25,25 +25,34 @@ const CloudLatencyCard: React.FC<CloudLatencyCardProps> = ({ networkName }) => {
     }
   };
 
-  // Get color based on response time
-  const getResponseTimeColor = (time: number | undefined) => {
-    if (time === undefined || isNaN(time)) return "text-gray-500";
-    if (time < 100) return "text-green-600 dark:text-green-400";
-    if (time < 300) return "text-amber-600 dark:text-amber-400";
+  // Get color based on latency
+  const getLatencyColor = (latency: number | undefined) => {
+    if (latency === undefined || isNaN(latency)) return "text-gray-500";
+    if (latency < 100) return "text-green-600 dark:text-green-400";
+    if (latency < 300) return "text-amber-600 dark:text-amber-400";
     return "text-red-600 dark:text-red-400";
   };
 
-  // Format response time with safety check
-  const formatResponseTime = (time: number | undefined) => {
-    if (time === undefined || isNaN(time)) return "N/A";
-    return `${time.toFixed(2)} ms`;
+  // Format latency with safety check
+  const formatLatency = (latency: number | undefined) => {
+    if (latency === undefined || isNaN(latency)) return "N/A";
+    return `${latency.toFixed(2)} ms`;
   };
 
-  // Format any value safely for display
-  const formatValue = (value: any): string => {
-    if (value === null || value === undefined) return "N/A";
-    if (typeof value === 'object') return JSON.stringify(value);
-    return String(value);
+  // Format origin information in a readable way
+  const formatOrigin = (origin: any): string => {
+    if (!origin) return "Unknown";
+    
+    if (typeof origin === 'string') return origin;
+    
+    const parts = [];
+    if (origin.host) parts.push(origin.host);
+    if (origin.region) parts.push(origin.region);
+    if (origin.country) parts.push(origin.country);
+    if (origin.city) parts.push(origin.city);
+    if (origin.asn) parts.push(`ASN: ${origin.asn}`);
+    
+    return parts.length > 0 ? parts.join(' | ') : "Unknown";
   };
 
   return (
@@ -80,9 +89,7 @@ const CloudLatencyCard: React.FC<CloudLatencyCardProps> = ({ networkName }) => {
               <TableHeader>
                 <TableRow>
                   <TableHead>Provider</TableHead>
-                  <TableHead>Response Time</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Method</TableHead>
+                  <TableHead>P50 Latency</TableHead>
                   <TableHead>Origin</TableHead>
                   <TableHead>Timestamp</TableHead>
                 </TableRow>
@@ -91,12 +98,10 @@ const CloudLatencyCard: React.FC<CloudLatencyCardProps> = ({ networkName }) => {
                 {data.map((item, index) => (
                   <TableRow key={index}>
                     <TableCell className="font-medium">{item.provider_name}</TableCell>
-                    <TableCell className={getResponseTimeColor(item.response_time)}>
-                      {formatResponseTime(item.response_time)}
+                    <TableCell className={getLatencyColor(item.p50_latency)}>
+                      {formatLatency(item.p50_latency)}
                     </TableCell>
-                    <TableCell>{formatValue(item.status)}</TableCell>
-                    <TableCell>{formatValue(item.method)}</TableCell>
-                    <TableCell>{formatValue(item.origin)}</TableCell>
+                    <TableCell>{formatOrigin(item.origin)}</TableCell>
                     <TableCell>{formatDate(item.timestamp)}</TableCell>
                   </TableRow>
                 ))}

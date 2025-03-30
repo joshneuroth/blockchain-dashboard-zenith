@@ -56,10 +56,13 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
       Object.entries(providers).forEach(([provider, measurements]) => {
         if (measurements.length === 0) return;
         
-        // Get valid response times
+        // Get valid response times (prioritizing p50_latency)
         const validTimes = measurements
-          .filter(item => typeof item.response_time === 'number' && !isNaN(item.response_time))
-          .map(item => item.response_time);
+          .filter(item => {
+            const latency = item.p50_latency !== undefined ? item.p50_latency : item.response_time;
+            return typeof latency === 'number' && !isNaN(latency);
+          })
+          .map(item => item.p50_latency !== undefined ? item.p50_latency : item.response_time);
         
         if (validTimes.length === 0) return;
         
@@ -68,9 +71,14 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
           new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
         );
         
+        // Get the latest latency value (prioritize p50_latency)
+        const latestLatency = sortedMeasurements[0].p50_latency !== undefined 
+          ? sortedMeasurements[0].p50_latency 
+          : sortedMeasurements[0].response_time;
+        
         // Calculate latest and average response time
         stats[origin][provider] = {
-          latest: sortedMeasurements[0].response_time,
+          latest: latestLatency,
           average: validTimes.reduce((sum, time) => sum + time, 0) / validTimes.length
         };
       });
@@ -80,7 +88,7 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
   }, [organizedData]);
 
   // Get color class based on response time
-  const getResponseTimeColor = (time: number | undefined) => {
+  const getLatencyColor = (time: number | undefined) => {
     if (time === undefined || isNaN(time)) return "text-gray-500";
     if (time < 100) return "text-green-600 dark:text-green-400";
     if (time < 300) return "text-amber-600 dark:text-amber-400";
@@ -88,7 +96,7 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
   };
 
   // Format number with ms suffix
-  const formatResponseTime = (time: number | undefined) => {
+  const formatLatency = (time: number | undefined) => {
     if (time === undefined || isNaN(time)) return "N/A";
     return `${time.toFixed(2)} ms`;
   };
@@ -100,9 +108,16 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
       const parts = originKey.split('-');
       const host = parts[0];
       const region = parts[1];
-      return host ? (region ? `${host} (${region})` : host) : (region || originKey);
+      
+      if (host && region) {
+        return `${host} (${region})`;
+      } else if (host) {
+        return host;
+      } else if (region) {
+        return region;
+      }
     }
-    return originKey;
+    return originKey !== 'Unknown' ? originKey : 'Unknown Origin';
   };
 
   // Sort origins for consistent display
@@ -159,11 +174,11 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
                             <span>{provider}</span>
                           </div>
                         </TableCell>
-                        <TableCell className={getResponseTimeColor(stats.latest)}>
-                          {formatResponseTime(stats.latest)}
+                        <TableCell className={getLatencyColor(stats.latest)}>
+                          {formatLatency(stats.latest)}
                         </TableCell>
                         <TableCell>
-                          {formatResponseTime(stats.average)}
+                          {formatLatency(stats.average)}
                         </TableCell>
                       </TableRow>
                     ))}

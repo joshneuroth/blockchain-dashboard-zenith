@@ -4,12 +4,15 @@ import { useState, useEffect } from 'react';
 export interface CloudLatencyData {
   provider_name: string;
   response_time: number;
+  p50_latency?: number;
   status: number | string;
   method: string;
   timestamp: string;
   origin?: string | {
     host?: string;
     region?: string;
+    country?: string;
+    city?: string;
     asn?: number | string;
   };
 }

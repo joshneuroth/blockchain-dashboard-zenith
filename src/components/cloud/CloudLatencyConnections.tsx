@@ -38,14 +38,17 @@ const CloudLatencyConnections: React.FC<CloudLatencyConnectionsProps> = ({ data,
     )[0];
   });
 
-  // Sort providers by response time (faster first)
+  // Sort providers by p50_latency (faster first), falling back to response_time
   const sortedProviders = latestByProvider
-    .filter(provider => provider && provider.response_time !== undefined)
+    .filter(provider => provider)
     .sort((a, b) => {
+      const aLatency = a.p50_latency !== undefined ? a.p50_latency : a.response_time;
+      const bLatency = b.p50_latency !== undefined ? b.p50_latency : b.response_time;
+      
       // Handle undefined values in sorting
-      if (a.response_time === undefined) return 1;
-      if (b.response_time === undefined) return -1;
-      return a.response_time - b.response_time;
+      if (aLatency === undefined) return 1;
+      if (bLatency === undefined) return -1;
+      return aLatency - bLatency;
     });
 
   return (
