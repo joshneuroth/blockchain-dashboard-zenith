@@ -31,6 +31,12 @@ const CloudLatencyCard: React.FC<CloudLatencyCardProps> = ({ networkId, networkN
           <div className="py-6 text-center">
             <AlertCircle className="h-8 w-8 mx-auto text-destructive mb-2" />
             <p className="text-destructive">Error loading cloud latency data: {error}</p>
+            <p className="text-sm mt-2 text-muted-foreground">This may be due to network connectivity issues or CORS restrictions.</p>
+          </div>
+        ) : data.length === 0 ? (
+          <div className="py-6 text-center">
+            <AlertCircle className="h-8 w-8 mx-auto text-amber-500 mb-2" />
+            <p>No cloud latency data available for {networkName}.</p>
           </div>
         ) : (
           <CloudLatencyConnections data={data} networkName={networkName} />

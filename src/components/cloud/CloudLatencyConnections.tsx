@@ -2,6 +2,7 @@
 import React from 'react';
 import { CloudLatencyData } from '@/hooks/useCloudLatency';
 import CloudProviderConnection from './CloudProviderConnection';
+import { AlertCircle } from 'lucide-react';
 
 interface CloudLatencyConnectionsProps {
   data: CloudLatencyData[];
@@ -9,6 +10,16 @@ interface CloudLatencyConnectionsProps {
 }
 
 const CloudLatencyConnections: React.FC<CloudLatencyConnectionsProps> = ({ data, networkName }) => {
+  // Check if we have valid data
+  if (!data || data.length === 0) {
+    return (
+      <div className="text-center py-6">
+        <AlertCircle className="mx-auto h-8 w-8 text-amber-500 mb-2" />
+        <p>No cloud latency data available for {networkName}.</p>
+      </div>
+    );
+  }
+
   // Organize data by provider
   const providerData: Record<string, CloudLatencyData[]> = data.reduce((acc, item) => {
     if (!acc[item.provider_name]) {
@@ -28,7 +39,14 @@ const CloudLatencyConnections: React.FC<CloudLatencyConnectionsProps> = ({ data,
   });
 
   // Sort providers by response time (faster first)
-  const sortedProviders = latestByProvider.sort((a, b) => a.response_time - b.response_time);
+  const sortedProviders = latestByProvider
+    .filter(provider => provider && provider.response_time !== undefined)
+    .sort((a, b) => {
+      // Handle undefined values in sorting
+      if (a.response_time === undefined) return 1;
+      if (b.response_time === undefined) return -1;
+      return a.response_time - b.response_time;
+    });
 
   return (
     <div className="space-y-4">
