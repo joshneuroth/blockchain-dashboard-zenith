@@ -40,7 +40,7 @@ export const useCloudLatency = (networkId: string) => {
         const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
         
         const response = await fetch(url, {
-          method: 'GET',
+          method: 'GET', // Explicitly use GET method
           headers: {
             'Accept': 'application/json',
             'Cache-Control': 'no-cache, no-store'
