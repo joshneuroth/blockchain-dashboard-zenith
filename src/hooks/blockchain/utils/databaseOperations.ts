@@ -25,37 +25,60 @@ export const saveBlockchainData = async (
 
 // Clean up old records, keeping only the newest 100
 export const cleanupOldRecords = async (networkId: string) => {
-  const { count } = await supabase
-    .from('blockchain_readings')
-    .select('*', { count: 'exact', head: true })
-    .eq('network_id', networkId);
-
-  if (count && count > 100) {
-    const { data: oldestKeepData } = await supabase
+  try {
+    // Count how many records we have for this network
+    const { count, error: countError } = await supabase
       .from('blockchain_readings')
-      .select('created_at')
-      .eq('network_id', networkId)
-      .order('created_at', { ascending: false })
-      .range(99, 99);
+      .select('*', { count: 'exact' })
+      .eq('network_id', networkId);
     
-    if (oldestKeepData && oldestKeepData.length > 0) {
-      const cutoffTimestamp = oldestKeepData[0].created_at;
-      
-      const { error: deleteError } = await supabase
-        .from('blockchain_readings')
-        .delete()
-        .eq('network_id', networkId)
-        .lt('created_at', cutoffTimestamp);
-      
-      if (deleteError) {
-        console.error("Error cleaning up old blockchain data:", deleteError);
-        return false;
-      } else {
-        console.log(`Cleaned up blockchain_readings table, keeping only the latest 100 records for ${networkId}`);
-        return true;
-      }
+    if (countError) {
+      console.error("Error counting blockchain records:", countError);
+      return false;
     }
+    
+    // Only proceed with cleanup if we have more than 100 records
+    if (count && count > 100) {
+      console.log(`Found ${count} records for ${networkId}, performing cleanup to keep only 100`);
+      
+      // Get all the IDs sorted by timestamp, oldest first
+      const { data: allRecords, error: fetchError } = await supabase
+        .from('blockchain_readings')
+        .select('id, created_at')
+        .eq('network_id', networkId)
+        .order('created_at', { ascending: false });
+      
+      if (fetchError || !allRecords) {
+        console.error("Error fetching records for cleanup:", fetchError);
+        return false;
+      }
+      
+      // Get the IDs of records we want to delete (all except newest 100)
+      const recordsToDelete = allRecords.slice(100).map(record => record.id);
+      
+      if (recordsToDelete.length > 0) {
+        // Delete the old records
+        const { error: deleteError } = await supabase
+          .from('blockchain_readings')
+          .delete()
+          .in('id', recordsToDelete);
+        
+        if (deleteError) {
+          console.error("Error cleaning up old blockchain data:", deleteError);
+          return false;
+        } else {
+          console.log(`Successfully deleted ${recordsToDelete.length} old records for ${networkId}`);
+          return true;
+        }
+      }
+    } else {
+      // Less than 100 records, no cleanup needed
+      return true;
+    }
+    
+    return false;
+  } catch (error) {
+    console.error("Unexpected error during blockchain data cleanup:", error);
+    return false;
   }
-  
-  return false;
 };
