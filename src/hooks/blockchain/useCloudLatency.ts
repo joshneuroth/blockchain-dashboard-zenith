@@ -41,8 +41,8 @@ export const useCloudLatency = (networkId: string) => {
             'Accept': 'application/json',
           },
           mode: 'cors',
+          cache: 'no-store',
           credentials: 'omit',
-          signal: AbortSignal.timeout(10000) // 10 second timeout
         });
         
         if (!methodsResponse.ok) {
@@ -66,21 +66,16 @@ export const useCloudLatency = (networkId: string) => {
         const url = `${baseUrl}/simple-latency?days=${days}`;
         
         console.log("Fetching latency data from:", url);
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
         
         const response = await fetch(url, {
           method: 'GET',
           headers: {
             'Accept': 'application/json',
-            'Cache-Control': 'no-cache, no-store'
           },
           mode: 'cors',
+          cache: 'no-store',
           credentials: 'omit',
-          signal: controller.signal
         });
-        
-        clearTimeout(timeoutId);
         
         if (!response.ok) {
           const errorText = await response.text();
@@ -100,11 +95,7 @@ export const useCloudLatency = (networkId: string) => {
         let errorMsg = "Failed to fetch cloud latency data";
         
         if (err instanceof Error) {
-          if (err.name === 'AbortError') {
-            errorMsg = "Request timed out after 10 seconds";
-          } else {
-            errorMsg = err.message;
-          }
+          errorMsg = err.message;
         }
         
         setError(errorMsg);
