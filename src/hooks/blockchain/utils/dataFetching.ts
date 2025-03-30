@@ -1,6 +1,8 @@
 
 import { fetchBlockchainData } from '@/lib/api';
-import { LatencyResult } from '../useLatencyTest';
+import type { LatencyResult } from './latencyUtils';
+import { saveProviderLatency } from './latencyTracking';
+import { categorizeLatencyError } from './latencyUtils';
 
 export const fetchBlockchainProviderData = async (network: any, networkId: string) => {
   const results = await Promise.allSettled(
@@ -35,39 +37,11 @@ export const fetchBlockchainProviderData = async (network: any, networkId: strin
       // Add failed result with required properties
       const rpc = network.rpcs[index];
       
-      // Determine error type
-      let errorType: LatencyResult['errorType'] = 'unknown';
-      let errorMessage = result.reason?.message || 'Unknown error';
-      
-      if (errorMessage.includes('timeout') || result.reason instanceof DOMException && result.reason.name === 'TimeoutError') {
-        errorType = 'timeout';
-        errorMessage = 'Connection timed out';
-      } else if (errorMessage.includes('rate') || errorMessage.includes('429')) {
-        errorType = 'rate-limit';
-        errorMessage = 'Rate limit exceeded';
-      } else if (errorMessage.includes('fetch') || errorMessage.includes('network') || errorMessage.includes('connection')) {
-        errorType = 'connection';
-        errorMessage = 'Connection failed';
-      } else if (errorMessage.includes('RPC error') || errorMessage.includes('error code')) {
-        errorType = 'rpc-error';
-        errorMessage = 'RPC error';
-      }
-      
-      latencyResults.push({
-        provider: rpc.name,
-        endpoint: rpc.url,
-        latency: null,
-        samples: [],
-        medianLatency: null,
-        status: 'error',
-        errorMessage,
-        errorType
-      });
+      // Use the utility function to categorize error
+      const errorResult = categorizeLatencyError(result.reason, rpc.name, rpc.url);
+      latencyResults.push(errorResult);
     }
   });
 
   return { providers, latencyResults, successfulFetches };
 };
-
-// Import from another new utility file
-import { saveProviderLatency } from './latencyTracking';
