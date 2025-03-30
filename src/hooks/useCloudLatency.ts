@@ -8,10 +8,9 @@ export interface CloudLatencyData {
   method: string;
   timestamp: string;
   origin?: string;
-  network?: string; // Add network field to identify which network this data belongs to
 }
 
-export const useCloudLatency = (networkId: string) => {
+export const useCloudLatency = () => {
   const [data, setData] = useState<CloudLatencyData[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,6 +21,7 @@ export const useCloudLatency = (networkId: string) => {
         setIsLoading(true);
         setError(null);
         
+        console.log('Fetching cloud latency data...');
         const response = await fetch('https://edgeprobe.fly.dev/simple-latency?days=7', {
           headers: {
             'Accept': 'application/json',
@@ -39,7 +39,7 @@ export const useCloudLatency = (networkId: string) => {
           throw new Error('Invalid data format received');
         }
         
-        console.log(`Raw cloud data for ${networkId}:`, cloudData.slice(0, 3)); // Log sample of raw data
+        console.log('Raw cloud data:', cloudData.slice(0, 3)); // Log sample of raw data
         
         // Process the data to ensure all required fields are present and valid
         const processedData = cloudData
@@ -50,16 +50,13 @@ export const useCloudLatency = (networkId: string) => {
             typeof item.response_time === 'number' && 
             !isNaN(item.response_time)
           )
-          // Since the API doesn't filter by network, we'll add the networkId to each item
-          // This will let us simulate network-specific data until the API supports filtering
           .map(item => ({
             ...item,
-            network: networkId.toLowerCase(),
             // If origin is missing, infer it from provider_name or set to "Unknown"
             origin: item.origin || inferOriginFromProvider(item.provider_name) || "Unknown"
           }));
         
-        console.log(`Processed ${processedData.length} cloud latency data points for ${networkId}`);
+        console.log(`Processed ${processedData.length} cloud latency data points`);
         setData(processedData);
         setIsLoading(false);
       } catch (err) {
@@ -70,14 +67,12 @@ export const useCloudLatency = (networkId: string) => {
       }
     };
 
-    if (networkId) {
-      fetchData();
-    }
+    fetchData();
     
     return () => {
       // AbortController cleanup happens automatically with AbortSignal.timeout
     };
-  }, [networkId]);
+  }, []);
 
   // Helper function to infer origin from provider name if not provided by API
   const inferOriginFromProvider = (providerName: string): string | null => {

@@ -5,13 +5,8 @@ import { useCloudLatency } from '@/hooks/useCloudLatency';
 import CloudLatencyTable from './CloudLatencyTable';
 import { Cloud, AlertCircle, Loader2 } from 'lucide-react';
 
-interface CloudLatencyCardProps {
-  networkId: string;
-  networkName: string;
-}
-
-const CloudLatencyCard: React.FC<CloudLatencyCardProps> = ({ networkId, networkName }) => {
-  const { data, isLoading, error } = useCloudLatency(networkId);
+const CloudLatencyCard: React.FC = () => {
+  const { data, isLoading, error } = useCloudLatency();
 
   return (
     <Card className="glass-card mt-8">
@@ -36,13 +31,13 @@ const CloudLatencyCard: React.FC<CloudLatencyCardProps> = ({ networkId, networkN
         ) : !data || data.length === 0 ? (
           <div className="py-6 text-center">
             <AlertCircle className="h-8 w-8 mx-auto text-amber-500 mb-2" />
-            <p>No cloud latency data available for {networkName}.</p>
+            <p>No cloud latency data available.</p>
             <p className="text-sm mt-2 text-muted-foreground">
-              The API might not have data for this network yet.
+              The API might not have data available at the moment.
             </p>
           </div>
         ) : (
-          <CloudLatencyTable data={data} networkName={networkName} />
+          <CloudLatencyTable data={data} />
         )}
       </CardContent>
     </Card>

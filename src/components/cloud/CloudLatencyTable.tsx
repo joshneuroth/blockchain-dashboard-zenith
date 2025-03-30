@@ -6,12 +6,11 @@ import { Server, Globe } from 'lucide-react';
 
 interface CloudLatencyTableProps {
   data: CloudLatencyData[];
-  networkName: string;
 }
 
-const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data, networkName }) => {
+const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
   // Log data received to help with debugging
-  console.log(`CloudLatencyTable received ${data.length} items for ${networkName}`);
+  console.log(`CloudLatencyTable received ${data.length} items`);
   
   // Group data by origin and provider
   const organizedData = useMemo(() => {
@@ -99,7 +98,7 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data, networkName
     console.log('No data available after organization');
     return (
       <div className="text-center py-4">
-        <p>No cloud latency data available for {networkName}.</p>
+        <p>No cloud latency data available after processing.</p>
       </div>
     );
   }
@@ -107,7 +106,7 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data, networkName
   return (
     <div>
       <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-        Response times from cloud services to {networkName} RPCs. Data collected over the last 7 days.
+        Response times from cloud services to blockchain RPCs. Data collected over the last 7 days.
       </p>
       
       <div className="space-y-6">
