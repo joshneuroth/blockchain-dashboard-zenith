@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { Computer, Server, RefreshCw, AlertCircle, Clock, Ban, ExternalLink, AlertTriangle, BarChart, Globe, Wifi, History, Sparkles, HardDrive } from 'lucide-react';
+import { Computer, Server, RefreshCw, AlertCircle, Clock, Ban, ExternalLink, AlertTriangle, BarChart, Globe, Wifi, History, Sparkles } from 'lucide-react';
 import { useLatencyTest } from '@/hooks/blockchain/useLatencyTest';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -156,25 +156,16 @@ const LatencyTest: React.FC<LatencyTestProps> = ({ networkId, networkName }) => 
         </Button>
       </div>
       
-      <div className="text-sm text-gray-600 dark:text-gray-400 mb-4 flex items-center flex-wrap gap-2">
-        <div className="flex-grow">
+      <div className="text-sm text-gray-600 dark:text-gray-400 mb-4 flex items-center">
+        <div>
           <p>This test measures the latency between your browser and the RPC endpoints. P50 (median) values are shown when available.</p>
         </div>
         {lastUpdated && (
-          <div className="flex items-center text-gray-500 text-xs whitespace-nowrap">
+          <div className="ml-auto flex items-center text-gray-500 text-xs">
             <History size={14} className="mr-1" />
             <span>Last updated: {lastUpdated}</span>
           </div>
         )}
-      </div>
-
-      {/* Storage info */}
-      <div className="bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 p-3 rounded-md mb-4 flex items-start gap-2">
-        <HardDrive size={16} className="mt-0.5 flex-shrink-0" />
-        <div className="text-xs">
-          <p><strong>Data Storage:</strong> Latency test results are cached in your browser for 5 minutes. Geo-location data is stored for 4 hours.</p>
-          <p className="mt-1">This data stays on your device and automatically refreshes when it expires.</p>
-        </div>
       </div>
       
       <div className="relative my-8">
