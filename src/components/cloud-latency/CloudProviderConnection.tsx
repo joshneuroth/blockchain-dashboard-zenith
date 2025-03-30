@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Server, BarChart } from 'lucide-react';
+import { BarChart, ExternalLink } from 'lucide-react';
 import { CloudLatencyResult } from '@/hooks/blockchain/useCloudLatency';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -17,6 +17,16 @@ const CloudProviderConnection: React.FC<CloudProviderConnectionProps> = ({ resul
   };
   
   const successRatePercentage = (result.success_rate * 100).toFixed(1);
+  
+  // Shorten endpoint for display
+  const shortenEndpoint = (endpoint: string) => {
+    try {
+      const url = new URL(endpoint);
+      return url.hostname;
+    } catch (e) {
+      return endpoint.length > 30 ? endpoint.substring(0, 30) + '...' : endpoint;
+    }
+  };
   
   return (
     <div className="flex items-center animate-fade-in">
@@ -49,12 +59,23 @@ const CloudProviderConnection: React.FC<CloudProviderConnectionProps> = ({ resul
       
       <div className="flex-shrink-0 h-px w-4 bg-blue-400"></div>
       
-      {/* Server box */}
+      {/* Endpoint box */}
       <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 shadow-sm">
-        <div className="text-xs text-gray-500 mb-1">Provider</div>
+        <div className="text-xs text-gray-500 mb-1">Endpoint</div>
         <div className="flex items-center gap-2">
-          <Server size={16} />
-          <span className="text-sm font-medium">{result.provider_name}</span>
+          <ExternalLink size={16} />
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="text-sm font-medium truncate max-w-[180px]">
+                  {shortenEndpoint(result.endpoint)}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="text-xs break-all">{result.endpoint}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </div>
     </div>
