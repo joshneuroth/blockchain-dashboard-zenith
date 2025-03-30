@@ -1,10 +1,12 @@
+
 import { useEffect, useRef } from 'react';
-import { NETWORKS, fetchBlockchainData } from '@/lib/api';
-import { supabase } from '@/integrations/supabase/client';
+import { NETWORKS } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
 import { NetworkData } from './types';
-import { calculateBlocksPerMinute } from './useBlockMetrics';
-import { LatencyResult } from './useLatencyTest';
+import { fetchBlockchainProviderData } from './utils/dataFetching';
+import { saveProviderLatency } from './utils/latencyTracking';
+import { saveBlockchainData, cleanupOldRecords } from './utils/databaseOperations';
+import { processProviderStatusMap } from './utils/dataProcessing';
 
 export const useLiveData = (
   networkId: string, 
@@ -28,65 +30,7 @@ export const useLiveData = (
           setData(prev => ({ ...prev, isLoading: true, error: null }));
         }
         
-        const results = await Promise.allSettled(
-          network.rpcs.map(rpc => fetchBlockchainData(networkId, rpc.url))
-        );
-        
-        const providers: { [key: string]: any } = {};
-        let successfulFetches = 0;
-        
-        // Store latency results for each provider
-        const latencyResults: LatencyResult[] = [];
-        
-        results.forEach((result, index) => {
-          if (result.status === 'fulfilled') {
-            const blockData = result.value;
-            providers[blockData.provider] = blockData;
-            successfulFetches++;
-            
-            // Add latency result with required properties
-            latencyResults.push({
-              provider: blockData.provider,
-              endpoint: blockData.endpoint,
-              latency: blockData.latency || null,
-              samples: blockData.latency ? [blockData.latency] : [],
-              medianLatency: blockData.latency || null,
-              status: 'success'
-            });
-          } else {
-            // Add failed result with required properties
-            const rpc = network.rpcs[index];
-            
-            // Determine error type
-            let errorType: LatencyResult['errorType'] = 'unknown';
-            let errorMessage = result.reason?.message || 'Unknown error';
-            
-            if (errorMessage.includes('timeout') || result.reason instanceof DOMException && result.reason.name === 'TimeoutError') {
-              errorType = 'timeout';
-              errorMessage = 'Connection timed out';
-            } else if (errorMessage.includes('rate') || errorMessage.includes('429')) {
-              errorType = 'rate-limit';
-              errorMessage = 'Rate limit exceeded';
-            } else if (errorMessage.includes('fetch') || errorMessage.includes('network') || errorMessage.includes('connection')) {
-              errorType = 'connection';
-              errorMessage = 'Connection failed';
-            } else if (errorMessage.includes('RPC error') || errorMessage.includes('error code')) {
-              errorType = 'rpc-error';
-              errorMessage = 'RPC error';
-            }
-            
-            latencyResults.push({
-              provider: rpc.name,
-              endpoint: rpc.url,
-              latency: null,
-              samples: [], // Add empty samples array
-              medianLatency: null, // Add null medianLatency
-              status: 'error',
-              errorMessage,
-              errorType
-            });
-          }
-        });
+        const { providers, latencyResults, successfulFetches } = await fetchBlockchainProviderData(network, networkId);
         
         if (successfulFetches === 0) {
           failureCount.current++;
@@ -110,105 +54,31 @@ export const useLiveData = (
           timestamp: Date.now()
         }));
         
-        // Determine the highest block
-        const blockHeights = Object.values(providers).map(p => BigInt(p.height));
-        const highestBlockHeight = blockHeights.length > 0 
-          ? blockHeights.reduce((max, h) => h > max ? h : max).toString()
-          : "0";
+        // Process the provider data and update the state
+        const timestamp = Date.now();
+        const providerStatusMap = processProviderStatusMap(providers);
         
-        // Find the provider with the highest block
-        const highestProvider = Object.values(providers).find(p => p.height === highestBlockHeight);
-        
-        if (highestProvider && isMounted.current) {
-          const timestamp = Date.now();
-          const providerStatusMap: {
-            [key: string]: {
-              height: string;
-              endpoint: string;
-              status: 'synced' | 'behind' | 'far-behind';
-              blocksBehind: number;
-            }
-          } = {};
-          
-          // Process each provider and determine its status relative to the highest block
-          Object.entries(providers).forEach(([name, providerData]) => {
-            const currentHeight = BigInt(providerData.height);
-            const highestHeight = BigInt(highestBlockHeight);
-            const blocksBehind = Number(highestHeight - currentHeight);
-            
-            let status: 'synced' | 'behind' | 'far-behind' = 'synced';
-            if (blocksBehind > 0) {
-              status = blocksBehind === 1 ? 'behind' : 'far-behind';
-            }
-            
-            providerStatusMap[name] = {
-              height: providerData.height,
-              endpoint: providerData.endpoint,
-              status,
-              blocksBehind
-            };
-          });
-          
-          // Create the measurement record
-          const newMeasurement = {
+        // Save to database and limit to 100 records
+        await saveBlockchainData(networkId, providerStatusMap, timestamp);
+        await cleanupOldRecords(networkId);
+
+        // Update the history with the new measurement and limit to 10 minutes
+        const tenMinutesAgo = timestamp - 10 * 60 * 1000;
+        const updatedHistory = [
+          ...data.blockHistory.filter(item => item.timestamp > tenMinutesAgo), 
+          {
             timestamp,
             providers: providerStatusMap
-          };
-          
-          // Save to database and limit to 100 records
-          const { error: insertError } = await supabase
-            .from('blockchain_readings')
-            .insert({
-              network_id: networkId,
-              providers_data: JSON.stringify(providerStatusMap),
-              created_at: new Date(timestamp).toISOString()
-            });
-            
-          if (insertError) {
-            console.error("Error saving blockchain data:", insertError);
-          } else {
-            // After inserting, clean up old records by keeping only the newest 100
-            const { count } = await supabase
-              .from('blockchain_readings')
-              .select('*', { count: 'exact', head: true })
-              .eq('network_id', networkId);
-
-            if (count && count > 100) {
-              const { data: oldestKeepData } = await supabase
-                .from('blockchain_readings')
-                .select('created_at')
-                .eq('network_id', networkId)
-                .order('created_at', { ascending: false })
-                .range(99, 99);
-              
-              if (oldestKeepData && oldestKeepData.length > 0) {
-                const cutoffTimestamp = oldestKeepData[0].created_at;
-                
-                const { error: deleteError } = await supabase
-                  .from('blockchain_readings')
-                  .delete()
-                  .eq('network_id', networkId)
-                  .lt('created_at', cutoffTimestamp);
-                
-                if (deleteError) {
-                  console.error("Error cleaning up old blockchain data:", deleteError);
-                } else {
-                  console.log(`Cleaned up blockchain_readings table, keeping only the latest 100 records for ${networkId}`);
-                }
-              }
-            }
           }
-
-          // Update the history with the new measurement and limit to 10 minutes
-          const tenMinutesAgo = timestamp - 10 * 60 * 1000;
-          const updatedHistory = [
-            ...data.blockHistory.filter(item => item.timestamp > tenMinutesAgo), 
-            newMeasurement
-          ];
-          
-          // Calculate blocks per minute metrics
-          const blockTimeMetrics = calculateBlocksPerMinute(updatedHistory, data.blockTimeMetrics);
-          
+        ];
+        
+        // Calculate blocks per minute metrics
+        const blockTimeMetrics = calculateBlocksPerMinute(updatedHistory, data.blockTimeMetrics);
+        
+        // Find the provider with the highest block
+        const { highestProvider } = findHighestBlockProvider(providers);
+        
+        if (highestProvider && isMounted.current) {
           setData({
             lastBlock: highestProvider,
             blockHistory: updatedHistory,
@@ -240,3 +110,19 @@ export const useLiveData = (
     };
   }, [networkId, data.blockHistory, data.blockTimeMetrics, isInitialLoad, setData]);
 };
+
+// Helper functions
+const findHighestBlockProvider = (providers: { [key: string]: any }) => {
+  // Determine the highest block
+  const blockHeights = Object.values(providers).map(p => BigInt(p.height));
+  const highestBlockHeight = blockHeights.length > 0 
+    ? blockHeights.reduce((max, h) => h > max ? h : max).toString()
+    : "0";
+  
+  // Find the provider with the highest block
+  const highestProvider = Object.values(providers).find(p => p.height === highestBlockHeight);
+  
+  return { highestProvider, highestBlockHeight };
+};
+
+import { calculateBlocksPerMinute } from './useBlockMetrics';
