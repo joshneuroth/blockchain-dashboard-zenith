@@ -28,7 +28,7 @@ export const saveResultsToSupabase = async (
         .insert({
           network: networkName,
           origin_asn: geoInfo.asn,
-          origin_host: geoInfo.isp, // Use ISP info instead of null
+          origin_host: null, // We don't collect the hostname for privacy
           origin_country: geoInfo.location ? geoInfo.location.split(', ')[2] : null,
           origin_city: geoInfo.location ? geoInfo.location.split(', ')[0] : null,
           origin_region: geoInfo.location ? geoInfo.location.split(', ')[1] : null,

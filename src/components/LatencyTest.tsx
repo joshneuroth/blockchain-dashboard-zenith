@@ -72,7 +72,7 @@ const LatencyTest: React.FC<LatencyTestProps> = ({ networkId, networkName }) => 
         <div>
           <p>This test measures the latency between your browser and the RPC endpoints. P50 (median) values are shown when available.</p>
         </div>
-        <LastUpdatedInfo lastUpdated={lastUpdated} isp={geoInfo.isp} />
+        <LastUpdatedInfo lastUpdated={lastUpdated} />
       </div>
       
       <LatencyConnections results={results} geoInfo={geoInfo} />
