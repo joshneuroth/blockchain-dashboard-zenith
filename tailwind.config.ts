@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -95,6 +94,10 @@ export default {
           "50%": { transform: "scale(1.02)" },
           "100%": { transform: "scale(1)" },
         },
+        "connection-pulse": {
+          "0%, 100%": { backgroundPosition: "0% 50%" },
+          "50%": { backgroundPosition: "100% 50%" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -104,6 +107,7 @@ export default {
         "slide-in": "slide-in 0.4s ease-out",
         "pulse-opacity": "pulse-opacity 2s ease-in-out infinite",
         "data-update": "data-update 0.5s ease-in-out",
+        "connection-pulse": "connection-pulse 3s ease infinite",
       },
       fontFamily: {
         sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
