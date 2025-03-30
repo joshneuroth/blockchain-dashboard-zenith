@@ -26,10 +26,17 @@ const CloudLatencyCard: React.FC<CloudLatencyCardProps> = ({ networkName }) => {
   };
 
   // Get color based on response time
-  const getResponseTimeColor = (time: number) => {
+  const getResponseTimeColor = (time: number | undefined) => {
+    if (time === undefined || isNaN(time)) return "text-gray-500";
     if (time < 100) return "text-green-600 dark:text-green-400";
     if (time < 300) return "text-amber-600 dark:text-amber-400";
     return "text-red-600 dark:text-red-400";
+  };
+
+  // Format response time with safety check
+  const formatResponseTime = (time: number | undefined) => {
+    if (time === undefined || isNaN(time)) return "N/A";
+    return `${time.toFixed(2)} ms`;
   };
 
   return (
@@ -78,7 +85,7 @@ const CloudLatencyCard: React.FC<CloudLatencyCardProps> = ({ networkName }) => {
                   <TableRow key={index}>
                     <TableCell className="font-medium">{item.provider_name}</TableCell>
                     <TableCell className={getResponseTimeColor(item.response_time)}>
-                      {item.response_time.toFixed(2)} ms
+                      {formatResponseTime(item.response_time)}
                     </TableCell>
                     <TableCell>{item.status}</TableCell>
                     <TableCell>{item.method}</TableCell>
