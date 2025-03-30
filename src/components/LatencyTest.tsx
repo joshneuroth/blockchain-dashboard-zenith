@@ -1,6 +1,5 @@
-
 import React, { useEffect, useState } from 'react';
-import { Computer, Server, RefreshCw, AlertCircle, Zap, Clock, Ban, ExternalLink, AlertTriangle, Sparkles, Globe, Wifi, History, BarChart } from 'lucide-react';
+import { Computer, Server, RefreshCw, AlertCircle, Clock, Ban, ExternalLink, AlertTriangle, BarChart, Globe, Wifi, History, Sparkles } from 'lucide-react';
 import { useLatencyTest } from '@/hooks/blockchain/useLatencyTest';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -16,6 +15,13 @@ interface LatencyTestProps {
 const LatencyTest: React.FC<LatencyTestProps> = ({ networkId, networkName }) => {
   const { results, isRunning, geoInfo, runLatencyTest, hasRun } = useLatencyTest(networkId);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  
+  // Auto-run the latency test when the component mounts if we don't have results
+  useEffect(() => {
+    if (!hasRun && !isRunning) {
+      runLatencyTest();
+    }
+  }, [hasRun, isRunning, runLatencyTest]);
   
   // Check when the latency data was last updated
   useEffect(() => {
@@ -41,7 +47,6 @@ const LatencyTest: React.FC<LatencyTestProps> = ({ networkId, networkName }) => 
     if (status === 'loading') return <Skeleton className="h-6 w-16" />;
     
     if (status === 'error' || (latency === null && medianLatency === null)) {
-      // Get the appropriate icon based on error type
       const getErrorIcon = () => {
         switch(errorType) {
           case 'timeout':
@@ -81,7 +86,6 @@ const LatencyTest: React.FC<LatencyTestProps> = ({ networkId, networkName }) => 
       );
     }
     
-    // If we have multiple samples, show median value prominently
     const sampleCount = samples?.length || 0;
     
     if (sampleCount > 1 && medianLatency !== null) {
@@ -106,14 +110,12 @@ const LatencyTest: React.FC<LatencyTestProps> = ({ networkId, networkName }) => 
       );
     }
     
-    // Simple display for single reading
     return <span className="font-medium">{latency} ms</span>;
   };
 
   // Get color class based on latency
   const getLatencyColorClass = (result: any) => {
     const { latency, medianLatency, status } = result;
-    // Use median for color if available, otherwise fall back to latest reading
     const value = (medianLatency !== null) ? medianLatency : latency;
     
     if (status === 'loading') return "bg-gray-200 dark:bg-gray-700";
@@ -123,23 +125,15 @@ const LatencyTest: React.FC<LatencyTestProps> = ({ networkId, networkName }) => 
     return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
   };
 
-  if (!hasRun) {
+  if (isRunning && !hasRun) {
     return (
       <Card className="glass-card mb-6 animate-fade-in">
         <CardContent className="flex flex-col items-center justify-center py-10 text-center">
-          <Zap size={48} className="mb-4 opacity-70" />
-          <h3 className="text-xl font-medium mb-2">Measure RPC Latency</h3>
+          <RefreshCw size={48} className="mb-4 opacity-70 animate-spin" />
+          <h3 className="text-xl font-medium mb-2">Measuring RPC Latency...</h3>
           <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md">
-            Test the connection speed between your browser and {networkName} RPC endpoints.
+            Testing connection speed between your browser and {networkName} RPC endpoints.
           </p>
-          <Button 
-            onClick={runLatencyTest} 
-            disabled={isRunning}
-            className="flex items-center gap-2"
-          >
-            <RefreshCw size={16} className={isRunning ? "animate-spin" : ""} />
-            Run Latency Test
-          </Button>
         </CardContent>
       </Card>
     );
