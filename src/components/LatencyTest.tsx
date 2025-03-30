@@ -1,12 +1,13 @@
 
 import React, { useEffect, useState } from 'react';
-import { Computer, Server, RefreshCw, AlertCircle, Clock, Ban, ExternalLink, AlertTriangle, BarChart, Globe, Wifi, History, Sparkles } from 'lucide-react';
+import { Computer, Server, RefreshCw, AlertCircle, Clock, Ban, ExternalLink, AlertTriangle, BarChart, Globe, Wifi, History, CheckCircle, CloudOff } from 'lucide-react';
 import { useLatencyTest } from '@/hooks/blockchain/useLatencyTest';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Card, CardContent } from '@/components/ui/card';
 import { formatTimeDiff } from '@/lib/api';
+import { useToast } from "@/hooks/use-toast";
 
 interface LatencyTestProps {
   networkId: string;
@@ -14,8 +15,9 @@ interface LatencyTestProps {
 }
 
 const LatencyTest: React.FC<LatencyTestProps> = ({ networkId, networkName }) => {
-  const { results, isRunning, geoInfo, runLatencyTest, hasRun } = useLatencyTest(networkId);
+  const { results, isRunning, geoInfo, runLatencyTest, hasRun, saveError } = useLatencyTest(networkId);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const { toast } = useToast();
   
   // Auto-run the latency test when the component mounts if we don't have results
   useEffect(() => {
@@ -40,6 +42,17 @@ const LatencyTest: React.FC<LatencyTestProps> = ({ networkId, networkName }) => 
       }
     }
   }, [networkId, hasRun, results]);
+  
+  // Show toast when there's a save error
+  useEffect(() => {
+    if (saveError) {
+      toast({
+        title: "Database Save Error",
+        description: saveError,
+        variant: "destructive",
+      });
+    }
+  }, [saveError, toast]);
   
   // Format latency display
   const formatLatency = (result: any) => {
@@ -143,7 +156,36 @@ const LatencyTest: React.FC<LatencyTestProps> = ({ networkId, networkName }) => 
   return (
     <div className="glass-card p-6 mb-6 animate-fade-in">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-medium">Your Browser To {networkName} RPCs</h2>
+        <h2 className="text-xl font-medium flex items-center gap-2">
+          Your Browser To {networkName} RPCs
+          {!saveError ? (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <div className="text-xs text-green-600 dark:text-green-400 flex items-center">
+                    <CheckCircle size={16} />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="text-xs">Results are being saved to our database anonymously</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ) : (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <div className="text-xs text-amber-500 flex items-center">
+                    <CloudOff size={16} />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="text-xs">Results are only saved locally</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+        </h2>
         <Button 
           variant="outline" 
           size="sm" 

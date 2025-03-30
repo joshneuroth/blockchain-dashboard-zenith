@@ -1,5 +1,7 @@
+
 import { useState, useCallback, useEffect } from 'react';
 import { NETWORKS } from '@/lib/api';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface LatencyResult {
   provider: string;
@@ -57,6 +59,7 @@ export const useLatencyTest = (networkId: string) => {
     isp: null
   });
   const [hasRun, setHasRun] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   // Check for stored latency data on component mount
   useEffect(() => {
@@ -180,7 +183,7 @@ export const useLatencyTest = (networkId: string) => {
         if (dataAge < GEO_DATA_TTL) {
           console.log('Using cached geo location data');
           setGeoInfo(parsedCache.data);
-          return;
+          return parsedCache.data;
         } else {
           console.log('Cached geo location data expired, fetching fresh data');
         }
@@ -218,12 +221,18 @@ export const useLatencyTest = (networkId: string) => {
         }));
         
         setGeoInfo(geoInformation);
+        return geoInformation;
       } else {
         setGeoInfo({
           location: 'Unknown Location',
           asn: null,
           isp: null
         });
+        return {
+          location: 'Unknown Location',
+          asn: null,
+          isp: null
+        };
       }
     } catch (error) {
       console.log('Failed to get location:', error);
@@ -232,6 +241,11 @@ export const useLatencyTest = (networkId: string) => {
         asn: null,
         isp: null
       });
+      return {
+        location: 'Unknown Location',
+        asn: null,
+        isp: null
+      };
     }
   }, []);
 
@@ -334,9 +348,65 @@ export const useLatencyTest = (networkId: string) => {
     }
   }, []);
 
+  // Save latency results to Supabase
+  const saveResultsToSupabase = useCallback(async (results: LatencyResult[], geoInfo: GeoLocationInfo) => {
+    setSaveError(null);
+    const networkName = NETWORKS[networkId as keyof typeof NETWORKS]?.name || networkId;
+    
+    try {
+      // Only insert results that have valid latency
+      const successfulResults = results.filter(r => r.status === 'success' && r.medianLatency !== null);
+      
+      if (successfulResults.length === 0) {
+        console.log('No valid latency results to save to Supabase');
+        return;
+      }
+      
+      // Process each result - use batch insert since we might have multiple results
+      const insertPromises = successfulResults.map(result => {
+        return supabase
+          .from('public_latency_test')
+          .insert({
+            network: networkName,
+            origin_asn: geoInfo.asn,
+            origin_host: null, // We don't collect the hostname for privacy
+            origin_country: geoInfo.location ? geoInfo.location.split(', ')[2] : null,
+            origin_city: geoInfo.location ? geoInfo.location.split(', ')[0] : null,
+            origin_region: geoInfo.location ? geoInfo.location.split(', ')[1] : null,
+            p50_latency: result.medianLatency,
+            provider_name: result.provider,
+            provider_endpoint: result.endpoint,
+            minute_bucket: '' // Will be set by database trigger
+          })
+          .select();
+      });
+      
+      const results = await Promise.allSettled(insertPromises);
+      
+      // Check for any errors
+      const errors = results
+        .filter((r): r is PromiseRejectedResult => r.status === 'rejected')
+        .map(r => r.reason);
+      
+      if (errors.length) {
+        console.warn('Some latency results could not be saved:', errors);
+        // Only set an error if all inserts failed
+        if (errors.length === successfulResults.length) {
+          setSaveError('Failed to save latency data to database');
+        }
+      } else {
+        console.log('Successfully saved latency data to Supabase');
+      }
+    } catch (error) {
+      console.error('Error saving latency data to Supabase:', error);
+      setSaveError('Failed to save latency data to database');
+    }
+  }, [networkId]);
+
   // Function to run a full latency test for all endpoints of a network
   const runLatencyTest = useCallback(async () => {
     if (!networkId || isRunning) return;
+    setSaveError(null);
     
     // Check for recent stored results first
     const storedData = localStorage.getItem(`latency-results-${networkId}`);
@@ -348,7 +418,11 @@ export const useLatencyTest = (networkId: string) => {
         if (dataAge < LATENCY_DATA_TTL && parsedData.results.length > 0) {
           setResults(parsedData.results);
           setHasRun(true);
-          await fetchGeoInfo();
+          const geoData = await fetchGeoInfo();
+          
+          // Try to save these results to Supabase as well
+          await saveResultsToSupabase(parsedData.results, geoData);
+          
           return; // Use stored results, don't run a new test
         }
       } catch (e) {
@@ -375,7 +449,7 @@ export const useLatencyTest = (networkId: string) => {
     setResults(initialResults);
     
     // Try to get user's location
-    await fetchGeoInfo();
+    const geoData = await fetchGeoInfo();
     
     // Run tests in parallel but with a small delay between each to avoid rate limiting
     const results: LatencyResult[] = [];
@@ -387,7 +461,7 @@ export const useLatencyTest = (networkId: string) => {
       await new Promise(resolve => setTimeout(resolve, 300));
     }
     
-    // Store the results
+    // Store the results locally
     localStorage.setItem(`latency-results-${networkId}`, JSON.stringify({
       results,
       timestamp: Date.now()
@@ -396,13 +470,18 @@ export const useLatencyTest = (networkId: string) => {
     setResults(results);
     setIsRunning(false);
     setHasRun(true);
-  }, [networkId, isRunning, measureLatency, fetchGeoInfo]);
+    
+    // Also save to Supabase if we have successful results
+    await saveResultsToSupabase(results, geoData);
+    
+  }, [networkId, isRunning, measureLatency, fetchGeoInfo, saveResultsToSupabase]);
 
   return {
     results,
     isRunning,
     geoInfo,
     runLatencyTest,
-    hasRun
+    hasRun,
+    saveError
   };
 };

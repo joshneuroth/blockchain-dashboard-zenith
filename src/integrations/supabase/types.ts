@@ -9,7 +9,7 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      blockchain_readings: {
+      blockchain_readings_temp: {
         Row: {
           created_at: string
           id: string
@@ -30,24 +30,48 @@ export type Database = {
         }
         Relationships: []
       }
-      blockchain_readings_temp: {
+      public_latency_test: {
         Row: {
-          created_at: string
           id: string
-          network_id: string
-          providers_data: Json
+          minute_bucket: string
+          network: string
+          origin_asn: string | null
+          origin_city: string | null
+          origin_country: string | null
+          origin_host: string | null
+          origin_region: string | null
+          p50_latency: number | null
+          provider_endpoint: string
+          provider_name: string
+          timestamp: string
         }
         Insert: {
-          created_at?: string
           id?: string
-          network_id: string
-          providers_data: Json
+          minute_bucket: string
+          network: string
+          origin_asn?: string | null
+          origin_city?: string | null
+          origin_country?: string | null
+          origin_host?: string | null
+          origin_region?: string | null
+          p50_latency?: number | null
+          provider_endpoint: string
+          provider_name: string
+          timestamp?: string
         }
         Update: {
-          created_at?: string
           id?: string
-          network_id?: string
-          providers_data?: Json
+          minute_bucket?: string
+          network?: string
+          origin_asn?: string | null
+          origin_city?: string | null
+          origin_country?: string | null
+          origin_host?: string | null
+          origin_region?: string | null
+          p50_latency?: number | null
+          provider_endpoint?: string
+          provider_name?: string
+          timestamp?: string
         }
         Relationships: []
       }
