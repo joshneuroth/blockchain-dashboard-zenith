@@ -39,6 +39,13 @@ const CloudLatencyCard: React.FC<CloudLatencyCardProps> = ({ networkName }) => {
     return `${time.toFixed(2)} ms`;
   };
 
+  // Format any value safely for display
+  const formatValue = (value: any): string => {
+    if (value === null || value === undefined) return "N/A";
+    if (typeof value === 'object') return JSON.stringify(value);
+    return String(value);
+  };
+
   return (
     <Card className="glass-card mt-8">
       <CardHeader>
@@ -87,9 +94,9 @@ const CloudLatencyCard: React.FC<CloudLatencyCardProps> = ({ networkName }) => {
                     <TableCell className={getResponseTimeColor(item.response_time)}>
                       {formatResponseTime(item.response_time)}
                     </TableCell>
-                    <TableCell>{item.status}</TableCell>
-                    <TableCell>{item.method}</TableCell>
-                    <TableCell>{item.origin || 'Unknown'}</TableCell>
+                    <TableCell>{formatValue(item.status)}</TableCell>
+                    <TableCell>{formatValue(item.method)}</TableCell>
+                    <TableCell>{formatValue(item.origin)}</TableCell>
                     <TableCell>{formatDate(item.timestamp)}</TableCell>
                   </TableRow>
                 ))}

@@ -4,14 +4,18 @@ import { useState, useEffect } from 'react';
 export interface CloudLatencyData {
   provider_name: string;
   response_time: number;
-  status: number;
+  status: number | string;
   method: string;
   timestamp: string;
-  origin?: string;
+  origin?: string | {
+    host?: string;
+    region?: string;
+    asn?: number | string;
+  };
 }
 
 export const useCloudLatency = () => {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<CloudLatencyData[] | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
