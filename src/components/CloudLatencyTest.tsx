@@ -14,12 +14,16 @@ interface CloudLatencyTestProps {
 }
 
 const CloudLatencyTest: React.FC<CloudLatencyTestProps> = ({ networkId, networkName }) => {
-  const { results, isLoading, error, lastUpdated } = useCloudLatency(networkId);
+  const { results, isLoading, error, lastUpdated, retry } = useCloudLatency(networkId);
   const { toast } = useToast();
   
   const handleRefresh = () => {
-    // In the future, add functionality to refresh the data
-    window.location.reload();
+    // Use the retry function instead of reloading the page
+    retry();
+    toast({
+      title: "Refreshing Data",
+      description: "Fetching latest cloud latency information...",
+    });
   };
   
   // Move the useEffect outside of the conditional rendering
