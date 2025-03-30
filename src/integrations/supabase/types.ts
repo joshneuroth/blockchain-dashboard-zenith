@@ -30,6 +30,27 @@ export type Database = {
         }
         Relationships: []
       }
+      blockchain_readings_temp: {
+        Row: {
+          created_at: string
+          id: string
+          network_id: string
+          providers_data: Json
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          network_id: string
+          providers_data: Json
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          network_id?: string
+          providers_data?: Json
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

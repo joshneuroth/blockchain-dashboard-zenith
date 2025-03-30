@@ -1,4 +1,3 @@
-
 import { useEffect, useRef } from 'react';
 import { NETWORKS, fetchBlockchainData } from '@/lib/api';
 import { supabase } from '@/integrations/supabase/client';
@@ -156,8 +155,8 @@ export const useLiveData = (
             providers: providerStatusMap
           };
           
-          // Save to database
-          const { error } = await supabase
+          // Save to database and limit to 100 records
+          const { error: insertError } = await supabase
             .from('blockchain_readings')
             .insert({
               network_id: networkId,
@@ -165,8 +164,44 @@ export const useLiveData = (
               created_at: new Date(timestamp).toISOString()
             });
             
-          if (error) {
-            console.error("Error saving blockchain data:", error);
+          if (insertError) {
+            console.error("Error saving blockchain data:", insertError);
+          } else {
+            // After inserting, clean up old records by keeping only the newest 100
+            const { data: countData } = await supabase
+              .from('blockchain_readings')
+              .select('id', { count: 'exact', head: true })
+              .eq('network_id', networkId);
+
+            const count = countData?.count;
+
+            if (count && count > 100) {
+              // Get the cutoff point (the 100th newest record's timestamp)
+              const { data: oldestKeepData } = await supabase
+                .from('blockchain_readings')
+                .select('created_at')
+                .eq('network_id', networkId)
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .offset(99); // 0-indexed, so 99 is the 100th record
+              
+              if (oldestKeepData && oldestKeepData.length > 0) {
+                const cutoffTimestamp = oldestKeepData[0].created_at;
+                
+                // Delete everything older than the cutoff
+                const { error: deleteError } = await supabase
+                  .from('blockchain_readings')
+                  .delete()
+                  .eq('network_id', networkId)
+                  .lt('created_at', cutoffTimestamp);
+                
+                if (deleteError) {
+                  console.error("Error cleaning up old blockchain data:", deleteError);
+                } else {
+                  console.log(`Cleaned up blockchain_readings table, keeping only the latest 100 records for ${networkId}`);
+                }
+              }
+            }
           }
 
           // Update the history with the new measurement and limit to 10 minutes
