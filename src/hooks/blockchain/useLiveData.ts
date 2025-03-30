@@ -1,10 +1,10 @@
 
+
 import { useEffect, useRef } from 'react';
 import { NETWORKS } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
 import { NetworkData } from './types';
 import { fetchBlockchainProviderData } from './utils/dataFetching';
-import { saveProviderLatency } from './utils/latencyTracking';
 import { saveBlockchainData, cleanupOldRecords } from './utils/databaseOperations';
 import { processProviderStatusMap } from './utils/dataProcessing';
 import { calculateBlocksPerMinute } from './useBlockMetrics';
@@ -59,9 +59,8 @@ export const useLiveData = (
         const timestamp = Date.now();
         const providerStatusMap = processProviderStatusMap(providers);
         
-        // Save to localStorage instead of database
+        // Save to localStorage
         await saveBlockchainData(networkId, providerStatusMap, timestamp);
-        await cleanupOldRecords(networkId);
 
         // Update the history with the new measurement and limit to 10 minutes
         const tenMinutesAgo = timestamp - 10 * 60 * 1000;

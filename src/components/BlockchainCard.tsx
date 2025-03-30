@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { formatTimeDiff } from '@/lib/api';
 import { useBlockchainData } from '@/hooks/useBlockchainData';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";

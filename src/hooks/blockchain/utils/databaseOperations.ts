@@ -1,13 +1,13 @@
 import { supabase } from '@/integrations/supabase/client';
 
-// Save blockchain data to localStorage instead of database
+// Save blockchain data to localStorage
 export const saveBlockchainData = async (
   networkId: string,
   providerStatusMap: any,
   timestamp: number
 ) => {
   try {
-    // Also save locally
+    // Define localStorage key
     const localStorageKey = `blockchain-readings-${networkId}`;
     
     // Get existing data
@@ -28,6 +28,9 @@ export const saveBlockchainData = async (
     
     // Store back to localStorage
     localStorage.setItem(localStorageKey, JSON.stringify(readings));
+    
+    // Ensure we clean up old records after adding new ones
+    cleanupOldRecords(networkId);
     
     return true;
   } catch (error) {
