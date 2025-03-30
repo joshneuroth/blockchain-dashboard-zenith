@@ -452,27 +452,27 @@ export const useLatencyTest = (networkId: string) => {
     const geoData = await fetchGeoInfo();
     
     // Run tests in parallel but with a small delay between each to avoid rate limiting
-    const results: LatencyResult[] = [];
+    const testResults: LatencyResult[] = []; // Renamed from 'results' to 'testResults' to avoid conflict
     
     for (const rpc of network.rpcs) {
       const result = await measureLatency(rpc.url, rpc.name);
-      results.push(result);
+      testResults.push(result);
       // Add a small delay between requests to reduce chance of rate limiting
       await new Promise(resolve => setTimeout(resolve, 300));
     }
     
     // Store the results locally
     localStorage.setItem(`latency-results-${networkId}`, JSON.stringify({
-      results,
+      results: testResults,
       timestamp: Date.now()
     }));
     
-    setResults(results);
+    setResults(testResults);
     setIsRunning(false);
     setHasRun(true);
     
     // Also save to Supabase if we have successful results
-    await saveResultsToSupabase(results, geoData);
+    await saveResultsToSupabase(testResults, geoData);
     
   }, [networkId, isRunning, measureLatency, fetchGeoInfo, saveResultsToSupabase]);
 
