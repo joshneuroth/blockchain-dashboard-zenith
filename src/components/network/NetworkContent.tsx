@@ -2,7 +2,6 @@
 import React from 'react';
 import BlockchainCard from '@/components/BlockchainCard';
 import LatencyTest from '@/components/LatencyTest';
-import CloudLatencyTest from '@/components/CloudLatencyTest';
 
 interface NetworkContentProps {
   networkId: string;
@@ -41,10 +40,12 @@ const NetworkContent: React.FC<NetworkContentProps> = ({
           networkName={networkName}
         />
         
-        <CloudLatencyTest
-          networkId={networkId}
-          networkName={networkName}
-        />
+        <div className="glass-card p-6 mt-8">
+          <h2 className="text-xl font-medium mb-4">Coming Soon</h2>
+          <p className="text-gray-600 dark:text-gray-400">
+            Advanced metrics and analytics for {networkName} will be available here soon.
+          </p>
+        </div>
       </div>
     </div>
   );
