@@ -24,8 +24,16 @@ interface StoredLatencyData {
   timestamp: number;
 }
 
+interface CachedGeoInfo {
+  data: GeoLocationInfo;
+  timestamp: number;
+}
+
 // How long to consider stored latency data valid (5 minutes)
 const LATENCY_DATA_TTL = 5 * 60 * 1000;
+
+// How long to consider geo location data valid (24 hours)
+const GEO_DATA_TTL = 24 * 60 * 60 * 1000;
 
 // Calculate median (P50) value from an array of numbers
 const calculateMedian = (values: number[]): number | null => {
@@ -160,8 +168,29 @@ export const useLatencyTest = (networkId: string) => {
     };
   }, [networkId, updateFromBlockHeightLatency]);
 
-  // Function to fetch user's geo information
+  // Function to fetch user's geo information with caching
   const fetchGeoInfo = useCallback(async () => {
+    // Check for cached geo location data first
+    const cachedGeoData = localStorage.getItem('cached-geo-location');
+    if (cachedGeoData) {
+      try {
+        const parsedCache: CachedGeoInfo = JSON.parse(cachedGeoData);
+        const dataAge = Date.now() - parsedCache.timestamp;
+        
+        // If cached data is still valid (less than 24 hours old), use it
+        if (dataAge < GEO_DATA_TTL) {
+          console.log('Using cached geo location data');
+          setGeoInfo(parsedCache.data);
+          return;
+        } else {
+          console.log('Cached geo location data expired, fetching fresh data');
+        }
+      } catch (e) {
+        console.error('Error parsing cached geo location data:', e);
+      }
+    }
+    
+    // If no valid cached data, fetch from API
     try {
       const locationResponse = await fetch('https://ipapi.co/json/');
       if (locationResponse.ok) {
@@ -177,11 +206,19 @@ export const useLatencyTest = (networkId: string) => {
         const asnInfo = locationData.asn ? `AS${locationData.asn}` : null;
         const ispInfo = locationData.org || null;
         
-        setGeoInfo({
+        const geoInformation = {
           location: locationString,
           asn: asnInfo,
           isp: ispInfo
-        });
+        };
+        
+        // Cache the geo information
+        localStorage.setItem('cached-geo-location', JSON.stringify({
+          data: geoInformation,
+          timestamp: Date.now()
+        }));
+        
+        setGeoInfo(geoInformation);
       } else {
         setGeoInfo({
           location: 'Unknown Location',
