@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { NETWORKS } from '@/lib/api';
 import { supabase } from '@/integrations/supabase/client';
@@ -349,13 +348,13 @@ export const useLatencyTest = (networkId: string) => {
   }, []);
 
   // Save latency results to Supabase
-  const saveResultsToSupabase = useCallback(async (results: LatencyResult[], geoInfo: GeoLocationInfo) => {
+  const saveResultsToSupabase = useCallback(async (latencyResults: LatencyResult[], geoInfo: GeoLocationInfo) => {
     setSaveError(null);
     const networkName = NETWORKS[networkId as keyof typeof NETWORKS]?.name || networkId;
     
     try {
       // Only insert results that have valid latency
-      const successfulResults = results.filter(r => r.status === 'success' && r.medianLatency !== null);
+      const successfulResults = latencyResults.filter(r => r.status === 'success' && r.medianLatency !== null);
       
       if (successfulResults.length === 0) {
         console.log('No valid latency results to save to Supabase');
@@ -381,10 +380,10 @@ export const useLatencyTest = (networkId: string) => {
           .select();
       });
       
-      const results = await Promise.allSettled(insertPromises);
+      const responseResults = await Promise.allSettled(insertPromises);
       
       // Check for any errors
-      const errors = results
+      const errors = responseResults
         .filter((r): r is PromiseRejectedResult => r.status === 'rejected')
         .map(r => r.reason);
       
