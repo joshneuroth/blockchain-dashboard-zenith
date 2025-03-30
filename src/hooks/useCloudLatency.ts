@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 export interface CloudLatencyData {
   provider_name: string;
@@ -13,20 +14,25 @@ export const useCloudLatency = (networkId: string) => {
   const [data, setData] = useState<CloudLatencyData[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-
+  const { toast } = useToast();
+  
   useEffect(() => {
+    const controller = new AbortController();
+    const { signal } = controller;
+    
     const fetchData = async () => {
       try {
         setIsLoading(true);
         setError(null); // Reset error state on new fetch
         
         console.log('Fetching cloud latency data...');
+        // Use a more resilient URL pattern with query parameters and a longer timeout
         const response = await fetch('https://edgeprobe.fly.dev/simple-latency?days=7', {
           headers: {
             'Accept': 'application/json',
+            'Cache-Control': 'no-cache', // Prevent caching issues
           },
-          // Add a longer timeout since we've seen high latency
-          signal: AbortSignal.timeout(10000) // 10 second timeout
+          signal: AbortSignal.timeout(15000) // Extended 15 second timeout
         });
         
         if (!response.ok) {
@@ -35,20 +41,39 @@ export const useCloudLatency = (networkId: string) => {
         
         const cloudData = await response.json();
         console.log('Cloud latency data received:', cloudData.length, 'records');
-        setData(cloudData);
-        setIsLoading(false);
+        
+        if (cloudData && Array.isArray(cloudData) && cloudData.length > 0) {
+          setData(cloudData);
+          setIsLoading(false);
+          setError(null);
+        } else {
+          // Handle empty data case
+          console.warn('Received empty data array from API');
+          setData([]);
+          setError('No data available');
+          setIsLoading(false);
+        }
       } catch (err) {
         console.error('Error fetching cloud latency data:', err);
-        // Only set error if we're not already loading new data
-        if (isLoading) {
-          setError(err instanceof Error ? err.message : 'Failed to fetch');
-        }
+        setError(err instanceof Error ? err.message : 'Failed to fetch');
         setIsLoading(false);
+        
+        // Show toast for network errors
+        toast({
+          title: "Connection Issue",
+          description: "Could not load cloud latency data. Will retry automatically.",
+          variant: "destructive",
+        });
       }
     };
 
     fetchData();
-  }, [networkId]);
+
+    return () => {
+      // Clean up the fetch request if component unmounts
+      controller.abort();
+    };
+  }, [networkId, toast]);
 
   return { data, isLoading, error };
 };

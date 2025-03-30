@@ -9,8 +9,20 @@ interface CloudLatencyConnectionsProps {
 }
 
 const CloudLatencyConnections: React.FC<CloudLatencyConnectionsProps> = ({ data, networkName }) => {
+  // Safety check for data
+  const validData = Array.isArray(data) ? data : [];
+  
+  // Exit early with a message if no data
+  if (validData.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-muted-foreground">No cloud latency data available at this time.</p>
+      </div>
+    );
+  }
+  
   // Organize data by provider
-  const providerData: Record<string, CloudLatencyData[]> = data.reduce((acc, item) => {
+  const providerData: Record<string, CloudLatencyData[]> = validData.reduce((acc, item) => {
     if (!acc[item.provider_name]) {
       acc[item.provider_name] = [];
     }
