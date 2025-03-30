@@ -1,84 +1,77 @@
 import { supabase } from '@/integrations/supabase/client';
 
-// Save blockchain data to the database
+// Save blockchain data to localStorage instead of database
 export const saveBlockchainData = async (
   networkId: string,
   providerStatusMap: any,
   timestamp: number
 ) => {
-  // Create the measurement record
-  const { error: insertError } = await supabase
-    .from('blockchain_readings')
-    .insert({
+  try {
+    // Also save locally
+    const localStorageKey = `blockchain-readings-${networkId}`;
+    
+    // Get existing data
+    let readings = [];
+    const existingData = localStorage.getItem(localStorageKey);
+    
+    if (existingData) {
+      readings = JSON.parse(existingData);
+    }
+    
+    // Add new reading
+    readings.push({
       network_id: networkId,
-      providers_data: JSON.stringify(providerStatusMap),
-      created_at: new Date(timestamp).toISOString()
+      providers_data: providerStatusMap,
+      created_at: new Date(timestamp).toISOString(),
+      timestamp: timestamp
     });
     
-  if (insertError) {
-    console.error("Error saving blockchain data:", insertError);
+    // Store back to localStorage
+    localStorage.setItem(localStorageKey, JSON.stringify(readings));
+    
+    return true;
+  } catch (error) {
+    console.error("Error saving blockchain data to local storage:", error);
     return false;
   }
-  
-  return true;
 };
 
-// Clean up old records, keeping only the newest 100
+// Clean up old records from localStorage, keeping only the newest 100
 export const cleanupOldRecords = async (networkId: string) => {
   try {
-    console.log(`Starting cleanup for network ${networkId}`);
+    console.log(`Starting local storage cleanup for network ${networkId}`);
     
-    // Count how many records we have for this network
-    const { count, error: countError } = await supabase
-      .from('blockchain_readings')
-      .select('*', { count: 'exact' })
-      .eq('network_id', networkId);
+    // Get existing data
+    const localStorageKey = `blockchain-readings-${networkId}`;
+    const existingData = localStorage.getItem(localStorageKey);
     
-    if (countError) {
-      console.error("Error counting blockchain records:", countError);
-      return false;
+    if (!existingData) {
+      console.log(`No data found for ${networkId} in local storage`);
+      return true;
     }
     
-    console.log(`Found ${count} records for network ${networkId}`);
+    // Parse data
+    const readings = JSON.parse(existingData);
+    console.log(`Found ${readings.length} records for network ${networkId} in local storage`);
     
-    // Only proceed with cleanup if we have more than 100 records
-    if (count && count > 100) {
-      // First, get the IDs of records we want to keep (the newest 100)
-      const { data: recordsToKeep, error: fetchKeepError } = await supabase
-        .from('blockchain_readings')
-        .select('id')
-        .eq('network_id', networkId)
-        .order('created_at', { ascending: false })
-        .limit(100);
+    // Only keep 100 most recent entries
+    if (readings.length > 100) {
+      // Sort by timestamp (newest first)
+      readings.sort((a: any, b: any) => b.timestamp - a.timestamp);
       
-      if (fetchKeepError || !recordsToKeep) {
-        console.error("Error fetching records to keep:", fetchKeepError);
-        return false;
-      }
+      // Slice to keep only the newest 100
+      const trimmedReadings = readings.slice(0, 100);
       
-      // Extract the IDs to keep
-      const idsToKeep = recordsToKeep.map(record => record.id);
-      
-      // Now delete all records for this network that aren't in the keep list
-      const { data: deleteResult, error: deleteError } = await supabase
-        .from('blockchain_readings')
-        .delete()
-        .eq('network_id', networkId)
-        .not('id', 'in', `(${idsToKeep.join(',')})`);
-      
-      if (deleteError) {
-        console.error("Error cleaning up old blockchain data:", deleteError);
-        return false;
-      }
-      
-      console.log(`Successfully cleaned up records for ${networkId}, keeping newest 100 records`);
-      return true;
+      // Store back to localStorage
+      localStorage.setItem(localStorageKey, JSON.stringify(trimmedReadings));
+      console.log(`Cleaned up local storage for ${networkId}, keeping newest 100 records`);
     } else {
-      console.log(`No cleanup needed for ${networkId}, only ${count} records found (below 100 threshold)`);
-      return true;
+      console.log(`No cleanup needed for ${networkId}, only ${readings.length} records found (below 100 threshold)`);
     }
+    
+    return true;
   } catch (error) {
-    console.error("Unexpected error during blockchain data cleanup:", error);
+    console.error("Unexpected error during local storage cleanup:", error);
     return false;
   }
 };

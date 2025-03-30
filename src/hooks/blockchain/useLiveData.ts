@@ -7,6 +7,7 @@ import { fetchBlockchainProviderData } from './utils/dataFetching';
 import { saveProviderLatency } from './utils/latencyTracking';
 import { saveBlockchainData, cleanupOldRecords } from './utils/databaseOperations';
 import { processProviderStatusMap } from './utils/dataProcessing';
+import { calculateBlocksPerMinute } from './useBlockMetrics';
 
 export const useLiveData = (
   networkId: string, 
@@ -58,7 +59,7 @@ export const useLiveData = (
         const timestamp = Date.now();
         const providerStatusMap = processProviderStatusMap(providers);
         
-        // Save to database and limit to 100 records
+        // Save to localStorage instead of database
         await saveBlockchainData(networkId, providerStatusMap, timestamp);
         await cleanupOldRecords(networkId);
 
@@ -71,6 +72,13 @@ export const useLiveData = (
             providers: providerStatusMap
           }
         ];
+        
+        // Save the updated history to localStorage
+        const localStorageKey = `blockchain-history-${networkId}`;
+        localStorage.setItem(localStorageKey, JSON.stringify({ 
+          blockHistory: updatedHistory,
+          lastUpdated: timestamp
+        }));
         
         // Calculate blocks per minute metrics
         const blockTimeMetrics = calculateBlocksPerMinute(updatedHistory, data.blockTimeMetrics);
@@ -124,5 +132,3 @@ const findHighestBlockProvider = (providers: { [key: string]: any }) => {
   
   return { highestProvider, highestBlockHeight };
 };
-
-import { calculateBlocksPerMinute } from './useBlockMetrics';
