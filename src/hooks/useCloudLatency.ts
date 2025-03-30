@@ -1,6 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
+import { useRef } from 'react';
 
 export interface CloudLatencyData {
   provider_name: string;
@@ -12,6 +13,7 @@ export interface CloudLatencyData {
 
 export const useCloudLatency = (networkId: string) => {
   const { toast } = useToast();
+  const hasShownErrorToast = useRef(false);
   
   const fetchCloudLatencyData = async (): Promise<CloudLatencyData[]> => {
     console.log('Fetching cloud latency data...');
@@ -49,14 +51,15 @@ export const useCloudLatency = (networkId: string) => {
   // Extract data and hook callbacks
   const { data = [], isLoading, error, refetch } = result;
 
-  // Handle errors outside the query configuration
-  if (error) {
+  // Handle errors outside the query configuration, but only show the toast once
+  if (error && !hasShownErrorToast.current) {
     console.error('Error fetching cloud latency data:', error);
     toast({
       title: "Connection Issue",
       description: "Could not load cloud latency data. Click 'Retry' to try again.",
       variant: "destructive",
     });
+    hasShownErrorToast.current = true;
   }
 
   return { data, isLoading, error, refetch };
