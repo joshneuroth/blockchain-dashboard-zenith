@@ -168,27 +168,22 @@ export const useLiveData = (
             console.error("Error saving blockchain data:", insertError);
           } else {
             // After inserting, clean up old records by keeping only the newest 100
-            const { data: countData } = await supabase
+            const { count } = await supabase
               .from('blockchain_readings')
-              .select('id', { count: 'exact', head: true })
+              .select('*', { count: 'exact', head: true })
               .eq('network_id', networkId);
 
-            const count = countData?.count;
-
             if (count && count > 100) {
-              // Get the cutoff point (the 100th newest record's timestamp)
               const { data: oldestKeepData } = await supabase
                 .from('blockchain_readings')
                 .select('created_at')
                 .eq('network_id', networkId)
                 .order('created_at', { ascending: false })
-                .limit(1)
-                .offset(99); // 0-indexed, so 99 is the 100th record
+                .range(99, 99);
               
               if (oldestKeepData && oldestKeepData.length > 0) {
                 const cutoffTimestamp = oldestKeepData[0].created_at;
                 
-                // Delete everything older than the cutoff
                 const { error: deleteError } = await supabase
                   .from('blockchain_readings')
                   .delete()
