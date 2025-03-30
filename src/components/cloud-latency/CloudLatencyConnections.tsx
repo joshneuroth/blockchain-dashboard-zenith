@@ -3,6 +3,7 @@ import React from 'react';
 import { CloudLatencyResult } from '@/hooks/blockchain/useCloudLatency';
 import CloudRegionBox from './CloudRegionBox';
 import CloudProviderConnection from './CloudProviderConnection';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface CloudLatencyConnectionsProps {
   results: CloudLatencyResult[];
@@ -26,28 +27,36 @@ const CloudLatencyConnections: React.FC<CloudLatencyConnectionsProps> = ({ resul
   const groupedResults = groupResultsByProvider(results);
   const providers = Object.keys(groupedResults);
   
+  if (providers.length === 0) {
+    return (
+      <div className="p-6 text-center">
+        <div className="text-gray-500 italic">No latency data available for the selected method</div>
+      </div>
+    );
+  }
+  
   return (
-    <div className="relative my-8 min-h-[200px]">
-      {/* Cloud region box */}
-      <CloudRegionBox />
-      
-      {/* Connection lines and results, grouped by provider */}
-      <div className="ml-[220px] space-y-8">
-        {providers.length > 0 ? (
-          providers.map((providerName) => (
-            <div key={providerName} className="mb-6">
-              <h3 className="font-medium text-sm mb-2">{providerName}</h3>
-              <div className="space-y-4 pl-4 border-l-2 border-gray-200 dark:border-gray-700">
+    <div className="space-y-6">
+      {providers.map((providerName) => (
+        <Card key={providerName} className="overflow-hidden bg-card/50 backdrop-blur-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg font-medium">{providerName}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="relative">
+              {/* Cloud region box */}
+              <CloudRegionBox />
+              
+              {/* Connection lines and results for this provider */}
+              <div className="ml-[220px] space-y-4">
                 {groupedResults[providerName].map((result, index) => (
                   <CloudProviderConnection key={index} result={result} />
                 ))}
               </div>
             </div>
-          ))
-        ) : (
-          <div className="text-gray-500 italic">No latency data available</div>
-        )}
-      </div>
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 };

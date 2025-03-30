@@ -6,6 +6,7 @@ import { RefreshCw } from 'lucide-react';
 import CloudLatencyHeader from './cloud-latency/CloudLatencyHeader';
 import CloudLatencyConnections from './cloud-latency/CloudLatencyConnections';
 import CloudLatencyLoading from './cloud-latency/CloudLatencyLoading';
+import CloudMethodSelector from './cloud-latency/CloudMethodSelector';
 import { useToast } from '@/hooks/use-toast';
 
 interface CloudLatencyTestProps {
@@ -14,7 +15,16 @@ interface CloudLatencyTestProps {
 }
 
 const CloudLatencyTest: React.FC<CloudLatencyTestProps> = ({ networkId, networkName }) => {
-  const { results, isLoading, error, lastUpdated, retry } = useCloudLatency(networkId);
+  const { 
+    results, 
+    availableMethods,
+    selectedMethod,
+    setSelectedMethod,
+    isLoading, 
+    error, 
+    lastUpdated, 
+    retry 
+  } = useCloudLatency(networkId);
   const { toast } = useToast();
   
   const handleRefresh = () => {
@@ -23,6 +33,14 @@ const CloudLatencyTest: React.FC<CloudLatencyTestProps> = ({ networkId, networkN
     toast({
       title: "Refreshing Data",
       description: "Fetching latest cloud latency information...",
+    });
+  };
+
+  const handleMethodChange = (method: string) => {
+    setSelectedMethod(method);
+    toast({
+      title: "Method Changed",
+      description: `Now showing data for ${method} method.`,
     });
   };
   
@@ -71,8 +89,18 @@ const CloudLatencyTest: React.FC<CloudLatencyTestProps> = ({ networkId, networkN
         lastUpdated={formattedLastUpdated}
       />
       
-      <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-        <p>This test measures the latency between a cloud region and the {networkName} RPC endpoints.</p>
+      <div className="flex items-center justify-between mb-6">
+        <div className="text-sm text-gray-600 dark:text-gray-400">
+          <p>This test measures the latency between a cloud region and the {networkName} RPC endpoints.</p>
+        </div>
+        
+        {availableMethods.length > 0 && (
+          <CloudMethodSelector
+            methods={availableMethods}
+            selectedMethod={selectedMethod}
+            onSelectMethod={handleMethodChange}
+          />
+        )}
       </div>
       
       <CloudLatencyConnections results={results} />

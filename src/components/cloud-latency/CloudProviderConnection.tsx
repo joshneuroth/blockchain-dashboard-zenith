@@ -1,8 +1,9 @@
 
 import React from 'react';
-import { BarChart, ExternalLink } from 'lucide-react';
+import { BarChart, ExternalLink, Code } from 'lucide-react';
 import { CloudLatencyResult } from '@/hooks/blockchain/useCloudLatency';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Badge } from '@/components/ui/badge';
 
 interface CloudProviderConnectionProps {
   result: CloudLatencyResult;
@@ -17,6 +18,10 @@ const CloudProviderConnection: React.FC<CloudProviderConnectionProps> = ({ resul
   };
   
   const successRatePercentage = (result.success_rate * 100).toFixed(1);
+  const successRateColor = 
+    result.success_rate >= 0.98 ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300" :
+    result.success_rate >= 0.9 ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300" :
+    "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
   
   // Shorten endpoint for display
   const shortenEndpoint = (endpoint: string) => {
@@ -36,11 +41,10 @@ const CloudProviderConnection: React.FC<CloudProviderConnectionProps> = ({ resul
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <div className={`px-3 py-1 rounded-md text-sm ${getLatencyColorClass(result.p50_latency)}`}>
-              <div className="flex items-center gap-1">
-                <span className="font-medium">{result.p50_latency.toFixed(1)} ms</span>
-                <BarChart size={14} className="text-gray-500" />
-              </div>
+            <div className={`px-3 py-1 rounded-md text-sm flex items-center gap-2 ${getLatencyColorClass(result.p50_latency)}`}>
+              <span className="font-medium">{result.p50_latency.toFixed(1)} ms</span>
+              <BarChart size={14} className="text-gray-500" />
+              <Badge variant="outline" className={successRateColor}>{successRatePercentage}%</Badge>
             </div>
           </TooltipTrigger>
           <TooltipContent>
@@ -50,7 +54,10 @@ const CloudProviderConnection: React.FC<CloudProviderConnectionProps> = ({ resul
               <p>Success rate: {successRatePercentage}%</p>
               <p>Total pings: {result.total_pings}</p>
               <p>Test type: {result.test_type}</p>
-              <p>Method: {result.method}</p>
+              <div className="flex items-center gap-1 mt-1">
+                <Code size={12} />
+                <p className="font-mono">{result.method}</p>
+              </div>
               <p>Date: {result.date}</p>
             </div>
           </TooltipContent>

@@ -15,6 +15,8 @@ export interface CloudLatencyResult {
 
 export const useCloudLatency = (networkId: string) => {
   const [results, setResults] = useState<CloudLatencyResult[]>([]);
+  const [availableMethods, setAvailableMethods] = useState<string[]>([]);
+  const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -51,6 +53,12 @@ export const useCloudLatency = (networkId: string) => {
         // Parse methods response
         const methodsData = await methodsResponse.json();
         console.log("Available methods:", methodsData);
+        setAvailableMethods(methodsData);
+        
+        // Set default selected method if not already set
+        if (!selectedMethod && methodsData.length > 0) {
+          setSelectedMethod(methodsData[0]);
+        }
         
         // Step 2: Now fetch the latency data with the correct endpoint
         // Default to 7 days of data
@@ -121,10 +129,18 @@ export const useCloudLatency = (networkId: string) => {
     const intervalId = setInterval(fetchCloudLatency, 5 * 60 * 1000);
     
     return () => clearInterval(intervalId);
-  }, [networkId, retryCount]);
+  }, [networkId, retryCount, selectedMethod]);
+
+  // Filter results based on selected method
+  const filteredResults = selectedMethod 
+    ? results.filter(result => result.method === selectedMethod)
+    : results;
 
   return {
-    results,
+    results: filteredResults,
+    availableMethods,
+    selectedMethod,
+    setSelectedMethod,
     isLoading,
     error,
     lastUpdated,
