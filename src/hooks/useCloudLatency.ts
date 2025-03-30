@@ -7,6 +7,7 @@ export interface CloudLatencyData {
   status: number;
   method: string;
   timestamp: string;
+  origin?: string; // Added origin field which might be present in the API response
 }
 
 export const useCloudLatency = (networkId: string) => {
@@ -39,15 +40,22 @@ export const useCloudLatency = (networkId: string) => {
           throw new Error('Invalid data format received');
         }
         
-        // Filter out any entries with missing or invalid response_time
-        const validCloudData = cloudData.filter(item => 
-          item && 
-          item.provider_name && 
-          typeof item.response_time === 'number' && 
-          !isNaN(item.response_time)
-        );
+        // Process the data to ensure all required fields are present and valid
+        const processedData = cloudData
+          .filter(item => 
+            item && 
+            typeof item === 'object' &&
+            item.provider_name && 
+            typeof item.response_time === 'number' && 
+            !isNaN(item.response_time)
+          )
+          .map(item => ({
+            ...item,
+            // If origin is missing, infer it from provider_name or set to "Unknown"
+            origin: item.origin || inferOriginFromProvider(item.provider_name) || "Unknown"
+          }));
         
-        setData(validCloudData);
+        setData(processedData);
         setIsLoading(false);
       } catch (err) {
         console.error('Error fetching cloud latency data:', err);
@@ -61,11 +69,19 @@ export const useCloudLatency = (networkId: string) => {
       fetchData();
     }
     
-    // Add a cleanup function
     return () => {
       // AbortController cleanup happens automatically with AbortSignal.timeout
     };
   }, [networkId]);
+
+  // Helper function to infer origin from provider name if not provided by API
+  const inferOriginFromProvider = (providerName: string): string | null => {
+    const lowerProvider = providerName.toLowerCase();
+    if (lowerProvider.includes('us') || lowerProvider.includes('america')) return 'US';
+    if (lowerProvider.includes('eu') || lowerProvider.includes('europe')) return 'Europe';
+    if (lowerProvider.includes('asia') || lowerProvider.includes('ap')) return 'Asia';
+    return null;
+  };
 
   return { data, isLoading, error };
 };

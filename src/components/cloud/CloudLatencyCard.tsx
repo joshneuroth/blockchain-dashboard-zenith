@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useCloudLatency } from '@/hooks/useCloudLatency';
-import CloudLatencyConnections from './CloudLatencyConnections';
+import CloudLatencyTable from './CloudLatencyTable';
 import { Cloud, AlertCircle, Loader2 } from 'lucide-react';
 
 interface CloudLatencyCardProps {
@@ -33,13 +33,13 @@ const CloudLatencyCard: React.FC<CloudLatencyCardProps> = ({ networkId, networkN
             <p className="text-destructive">Error loading cloud latency data: {error}</p>
             <p className="text-sm mt-2 text-muted-foreground">This may be due to network connectivity issues or CORS restrictions.</p>
           </div>
-        ) : data.length === 0 ? (
+        ) : !data || data.length === 0 ? (
           <div className="py-6 text-center">
             <AlertCircle className="h-8 w-8 mx-auto text-amber-500 mb-2" />
             <p>No cloud latency data available for {networkName}.</p>
           </div>
         ) : (
-          <CloudLatencyConnections data={data} networkName={networkName} />
+          <CloudLatencyTable data={data} networkName={networkName} />
         )}
       </CardContent>
     </Card>
