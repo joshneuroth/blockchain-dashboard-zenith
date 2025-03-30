@@ -14,24 +14,30 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
   
   // Group data by origin and provider
   const organizedData = useMemo(() => {
+    // Create a map to store data by origin string and provider
     const byOriginAndProvider: Record<string, Record<string, CloudLatencyData[]>> = {};
     
     // Process each data point
     data.forEach(item => {
-      const origin = item.origin || 'Unknown';
+      // Convert origin to a consistent string representation
+      const originKey = typeof item.origin === 'string' 
+        ? item.origin 
+        : item.origin 
+          ? `${item.origin.host || ''}-${item.origin.region || ''}-${item.origin.asn || ''}`
+          : 'Unknown';
       
       // Initialize origin object if it doesn't exist
-      if (!byOriginAndProvider[origin]) {
-        byOriginAndProvider[origin] = {};
+      if (!byOriginAndProvider[originKey]) {
+        byOriginAndProvider[originKey] = {};
       }
       
       // Initialize provider array if it doesn't exist
-      if (!byOriginAndProvider[origin][item.provider_name]) {
-        byOriginAndProvider[origin][item.provider_name] = [];
+      if (!byOriginAndProvider[originKey][item.provider_name]) {
+        byOriginAndProvider[originKey][item.provider_name] = [];
       }
       
       // Add this data point to the appropriate bucket
-      byOriginAndProvider[origin][item.provider_name].push(item);
+      byOriginAndProvider[originKey][item.provider_name].push(item);
     });
     
     console.log('Organized data by origin and provider:', Object.keys(byOriginAndProvider));
@@ -87,6 +93,18 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
     return `${time.toFixed(2)} ms`;
   };
 
+  // Get display name for origin
+  const getOriginDisplayName = (originKey: string) => {
+    // If the originKey looks like a composite key we created, extract meaningful info
+    if (originKey.includes('-')) {
+      const parts = originKey.split('-');
+      const host = parts[0];
+      const region = parts[1];
+      return host ? (region ? `${host} (${region})` : host) : (region || originKey);
+    }
+    return originKey;
+  };
+
   // Sort origins for consistent display
   const sortedOrigins = Object.keys(organizedData).sort();
   
@@ -110,15 +128,15 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
       </p>
       
       <div className="space-y-6">
-        {sortedOrigins.map(origin => {
+        {sortedOrigins.map(originKey => {
           // Skip origins with no providers
-          if (Object.keys(organizedData[origin]).length === 0) return null;
+          if (Object.keys(organizedData[originKey]).length === 0) return null;
           
           return (
-            <div key={origin} className="border rounded-lg p-4">
+            <div key={originKey} className="border rounded-lg p-4">
               <div className="flex items-center gap-2 mb-3">
                 <Globe size={18} className="text-blue-500" />
-                <h3 className="font-medium">{origin}</h3>
+                <h3 className="font-medium">{getOriginDisplayName(originKey)}</h3>
               </div>
               
               <Table>
@@ -130,7 +148,7 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {Object.entries(statistics[origin] || {})
+                  {Object.entries(statistics[originKey] || {})
                     // Sort providers by latest response time (fastest first)
                     .sort((a, b) => a[1].latest - b[1].latest)
                     .map(([provider, stats]) => (
