@@ -10,6 +10,9 @@ interface CloudLatencyTableProps {
 }
 
 const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data, networkName }) => {
+  // Log data received to help with debugging
+  console.log(`CloudLatencyTable received ${data.length} items for ${networkName}`);
+  
   // Group data by origin and provider
   const organizedData = useMemo(() => {
     const byOriginAndProvider: Record<string, Record<string, CloudLatencyData[]>> = {};
@@ -32,6 +35,7 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data, networkName
       byOriginAndProvider[origin][item.provider_name].push(item);
     });
     
+    console.log('Organized data by origin and provider:', Object.keys(byOriginAndProvider));
     return byOriginAndProvider;
   }, [data]);
 
@@ -86,6 +90,19 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data, networkName
 
   // Sort origins for consistent display
   const sortedOrigins = Object.keys(organizedData).sort();
+  
+  // Check if we have any actual data after organization
+  const hasData = sortedOrigins.length > 0 && 
+                  sortedOrigins.some(origin => Object.keys(organizedData[origin]).length > 0);
+  
+  if (!hasData) {
+    console.log('No data available after organization');
+    return (
+      <div className="text-center py-4">
+        <p>No cloud latency data available for {networkName}.</p>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -94,45 +111,50 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data, networkName
       </p>
       
       <div className="space-y-6">
-        {sortedOrigins.map(origin => (
-          <div key={origin} className="border rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Globe size={18} className="text-blue-500" />
-              <h3 className="font-medium">{origin}</h3>
+        {sortedOrigins.map(origin => {
+          // Skip origins with no providers
+          if (Object.keys(organizedData[origin]).length === 0) return null;
+          
+          return (
+            <div key={origin} className="border rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Globe size={18} className="text-blue-500" />
+                <h3 className="font-medium">{origin}</h3>
+              </div>
+              
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Provider</TableHead>
+                    <TableHead>Latest Response</TableHead>
+                    <TableHead>7-Day Average</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {Object.entries(statistics[origin] || {})
+                    // Sort providers by latest response time (fastest first)
+                    .sort((a, b) => a[1].latest - b[1].latest)
+                    .map(([provider, stats]) => (
+                      <TableRow key={provider}>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Server size={16} />
+                            <span>{provider}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className={getResponseTimeColor(stats.latest)}>
+                          {formatResponseTime(stats.latest)}
+                        </TableCell>
+                        <TableCell>
+                          {formatResponseTime(stats.average)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                </TableBody>
+              </Table>
             </div>
-            
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Provider</TableHead>
-                  <TableHead>Latest Response</TableHead>
-                  <TableHead>7-Day Average</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {Object.entries(statistics[origin] || {})
-                  // Sort providers by latest response time (fastest first)
-                  .sort((a, b) => a[1].latest - b[1].latest)
-                  .map(([provider, stats]) => (
-                    <TableRow key={provider}>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Server size={16} />
-                          <span>{provider}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className={getResponseTimeColor(stats.latest)}>
-                        {formatResponseTime(stats.latest)}
-                      </TableCell>
-                      <TableCell>
-                        {formatResponseTime(stats.average)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-              </TableBody>
-            </Table>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

@@ -7,7 +7,8 @@ export interface CloudLatencyData {
   status: number;
   method: string;
   timestamp: string;
-  origin?: string; // Added origin field which might be present in the API response
+  origin?: string;
+  network?: string; // Add network field to identify which network this data belongs to
 }
 
 export const useCloudLatency = (networkId: string) => {
@@ -25,7 +26,6 @@ export const useCloudLatency = (networkId: string) => {
           headers: {
             'Accept': 'application/json',
           },
-          // Add a reasonable timeout
           signal: AbortSignal.timeout(10000)
         });
         
@@ -35,10 +35,11 @@ export const useCloudLatency = (networkId: string) => {
         
         const cloudData = await response.json();
         
-        // Validate the data is an array
         if (!Array.isArray(cloudData)) {
           throw new Error('Invalid data format received');
         }
+        
+        console.log(`Raw cloud data for ${networkId}:`, cloudData.slice(0, 3)); // Log sample of raw data
         
         // Process the data to ensure all required fields are present and valid
         const processedData = cloudData
@@ -49,12 +50,16 @@ export const useCloudLatency = (networkId: string) => {
             typeof item.response_time === 'number' && 
             !isNaN(item.response_time)
           )
+          // Since the API doesn't filter by network, we'll add the networkId to each item
+          // This will let us simulate network-specific data until the API supports filtering
           .map(item => ({
             ...item,
+            network: networkId.toLowerCase(),
             // If origin is missing, infer it from provider_name or set to "Unknown"
             origin: item.origin || inferOriginFromProvider(item.provider_name) || "Unknown"
           }));
         
+        console.log(`Processed ${processedData.length} cloud latency data points for ${networkId}`);
         setData(processedData);
         setIsLoading(false);
       } catch (err) {

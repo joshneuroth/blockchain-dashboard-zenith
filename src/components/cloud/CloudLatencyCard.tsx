@@ -37,6 +37,9 @@ const CloudLatencyCard: React.FC<CloudLatencyCardProps> = ({ networkId, networkN
           <div className="py-6 text-center">
             <AlertCircle className="h-8 w-8 mx-auto text-amber-500 mb-2" />
             <p>No cloud latency data available for {networkName}.</p>
+            <p className="text-sm mt-2 text-muted-foreground">
+              The API might not have data for this network yet.
+            </p>
           </div>
         ) : (
           <CloudLatencyTable data={data} networkName={networkName} />
