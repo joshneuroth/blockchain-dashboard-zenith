@@ -37,24 +37,27 @@ export const useCloudLatency = (networkId: string) => {
     return data;
   };
 
-  const { data = [], isLoading, error, refetch } = useQuery({
+  const result = useQuery({
     queryKey: ['cloudLatency', networkId],
     queryFn: fetchCloudLatencyData,
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff with max 30s
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
-    meta: {
-      onError: (error) => {
-        console.error('Error fetching cloud latency data:', error);
-        toast({
-          title: "Connection Issue",
-          description: "Could not load cloud latency data. Click 'Retry' to try again.",
-          variant: "destructive",
-        });
-      }
-    }
   });
+
+  // Extract data and hook callbacks
+  const { data = [], isLoading, error, refetch } = result;
+
+  // Handle errors outside the query configuration
+  if (error) {
+    console.error('Error fetching cloud latency data:', error);
+    toast({
+      title: "Connection Issue",
+      description: "Could not load cloud latency data. Click 'Retry' to try again.",
+      variant: "destructive",
+    });
+  }
 
   return { data, isLoading, error, refetch };
 };
