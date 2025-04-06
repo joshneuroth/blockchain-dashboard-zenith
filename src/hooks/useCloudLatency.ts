@@ -21,6 +21,7 @@ interface ApiResponse {
 // Our application's internal data model
 export interface CloudLatencyData {
   provider: string;
+  method?: string; // Added method field
   origin: {
     city?: string;
     region?: string;
@@ -97,6 +98,7 @@ export const useCloudLatency = (networkId: string) => {
               console.log(`Processing region: ${regionData.region} with ${regionData.metrics.length} metrics`);
               return regionData.metrics.map(item => ({
                 provider: item.provider || 'Unknown',
+                method: item.method, // Include method from API
                 origin: {
                   region: regionData.region
                 },
@@ -115,6 +117,7 @@ export const useCloudLatency = (networkId: string) => {
             console.log('Processing old format array data');
             const processedData: CloudLatencyData[] = rawData.map(item => ({
               provider: item.provider || 'Unknown',
+              method: item.method, // Include method from API
               origin: {
                 city: item.origin?.city,
                 region: item.origin?.region,
@@ -149,6 +152,7 @@ export const useCloudLatency = (networkId: string) => {
           // Process new format
           const processedData: CloudLatencyData[] = metrics.map(item => ({
             provider: item.provider || 'Unknown',
+            method: item.method, // Include method from API
             origin: {
               region: region
             },
