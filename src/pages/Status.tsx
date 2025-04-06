@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useProviderStatus } from '@/hooks/useProviderStatus';
 import NetworkHeader from '@/components/network/NetworkHeader';
 import NetworkFooter from '@/components/network/NetworkFooter';
@@ -16,12 +16,16 @@ const Status: React.FC = () => {
   const { data, isLoading, error } = useProviderStatus();
   
   // Filter providers based on search term
-  const filteredProviders = data?.filter(provider => 
-    provider.provider.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    provider.networks.some(network => 
-      network.network.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  );
+  const filteredProviders = useMemo(() => {
+    if (!data) return [];
+    
+    return data.filter(provider => 
+      provider.provider.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      provider.networks.some(network => 
+        network.network.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    );
+  }, [data, searchTerm]);
   
   const lastUpdated = data && data[0]?.networks[0]?.status.last_updated
     ? new Date(data[0].networks[0].status.last_updated).toLocaleString()
@@ -61,21 +65,21 @@ const Status: React.FC = () => {
                 />
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredProviders?.map((provider) => (
-                  <ProviderStatusCard
-                    key={provider.provider}
-                    provider={provider.provider}
-                    networks={provider.networks}
-                  />
-                ))}
+              <div className="space-y-8">
+                {filteredProviders.length > 0 ? (
+                  filteredProviders.map((provider) => (
+                    <ProviderStatusCard
+                      key={provider.provider}
+                      provider={provider.provider}
+                      networks={provider.networks}
+                    />
+                  ))
+                ) : (
+                  <div className="text-center py-12">
+                    <p className="text-muted-foreground">No providers match your search.</p>
+                  </div>
+                )}
               </div>
-              
-              {filteredProviders?.length === 0 && (
-                <div className="text-center py-12">
-                  <p className="text-muted-foreground">No providers match your search.</p>
-                </div>
-              )}
             </>
           ) : null}
         </main>
