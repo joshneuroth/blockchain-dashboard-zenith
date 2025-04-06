@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 
 export interface CloudLatencyData {
-  provider_name: string;
+  provider: string;
   origin: {
     city?: string;
     region?: string;
@@ -11,22 +11,8 @@ export interface CloudLatencyData {
   p50_latency: number;
   p90_latency: number;
   sample_size: number;
-  success_rate: number;
-  timestamp: string;
-}
-
-interface RawLatencyResponse {
-  metrics: {
-    [key: string]: {
-      [key: string]: {
-        p50: number;
-        p90: number;
-        samplesize: number;
-        success_rate: number;
-      }
-    }
-  };
-  timestamp: string;
+  success_rate?: number;
+  timestamp?: string;
 }
 
 export const useCloudLatency = (networkId: string) => {
@@ -55,7 +41,9 @@ export const useCloudLatency = (networkId: string) => {
         const chainId = getChainId(networkId);
         console.log(`Fetching cloud latency data for chain ID ${chainId}...`);
         
-        const apiUrl = `https://blockheight-api.fly.dev/metrics/latency?chain_id=${chainId}&metrics=p50,p90,samplesize,success_rate&group_by_origin=true`;
+        const apiUrl = `https://blockheight-api.fly.dev/latency?chain_id=${chainId}`;
+        
+        console.log(`Calling API: ${apiUrl}`);
         
         const response = await fetch(apiUrl, {
           headers: {
@@ -68,34 +56,20 @@ export const useCloudLatency = (networkId: string) => {
           throw new Error(`HTTP error ${response.status}`);
         }
         
-        const rawData: RawLatencyResponse = await response.json();
+        const rawData = await response.json();
         console.log('Retrieved raw cloud data', rawData);
         
-        // Process the data into our desired format
-        const processedData: CloudLatencyData[] = [];
+        // Process the data to match our interface
+        const processedData: CloudLatencyData[] = Array.isArray(rawData) ? rawData.map(item => ({
+          provider: item.provider,
+          origin: item.origin || {},
+          p50_latency: item.avg_p50_latency_ms,
+          p90_latency: item.avg_p90_latency_ms,
+          sample_size: item.sample_size,
+          success_rate: item.success_rate || 1.0
+        })) : [];
         
-        if (rawData && rawData.metrics) {
-          // For each origin
-          Object.entries(rawData.metrics).forEach(([origin, providerData]) => {
-            // For each provider in this origin
-            Object.entries(providerData).forEach(([provider, metrics]) => {
-              processedData.push({
-                provider_name: provider,
-                origin: {
-                  region: origin,
-                  city: "", // We don't have this from the API in this format
-                  country: ""
-                },
-                p50_latency: metrics.p50,
-                p90_latency: metrics.p90,
-                sample_size: metrics.samplesize,
-                success_rate: metrics.success_rate,
-                timestamp: rawData.timestamp
-              });
-            });
-          });
-        }
-        
+        console.log('Processed data:', processedData);
         setData(processedData);
         setIsLoading(false);
       } catch (err) {

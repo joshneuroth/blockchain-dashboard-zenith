@@ -66,7 +66,7 @@ const CloudLatencyConnections: React.FC<CloudLatencyConnectionsProps> = ({ data,
               .sort((a, b) => a.p50_latency - b.p50_latency)
               .map((providerInfo, index) => (
                 <CloudProviderConnection 
-                  key={`${providerInfo.provider_name}-${index}`}
+                  key={`${providerInfo.provider}-${index}`}
                   provider={providerInfo}
                 />
               ))

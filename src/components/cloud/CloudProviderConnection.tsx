@@ -29,22 +29,6 @@ const CloudProviderConnection: React.FC<CloudProviderConnectionProps> = ({ provi
     return `${(rate * 100).toFixed(1)}%`;
   };
 
-  // Format origin for display
-  const formatOrigin = (origin: any) => {
-    if (!origin) return "Unknown";
-    
-    if (typeof origin === 'object') {
-      const parts = [];
-      if (origin.city) parts.push(origin.city);
-      if (origin.region) parts.push(origin.region);
-      if (origin.country) parts.push(origin.country);
-      
-      return parts.length > 0 ? parts.join(', ') : "Unknown";
-    }
-    
-    return String(origin);
-  };
-
   return (
     <div className="flex items-center flex-wrap gap-3">
       {/* Provider box */}
@@ -52,7 +36,7 @@ const CloudProviderConnection: React.FC<CloudProviderConnectionProps> = ({ provi
         <div className="text-xs text-gray-500 mb-1">Provider</div>
         <div className="flex items-center gap-2">
           <Server size={16} />
-          <span className="text-sm font-medium">{provider.provider_name}</span>
+          <span className="text-sm font-medium">{provider.provider}</span>
         </div>
       </div>
       
