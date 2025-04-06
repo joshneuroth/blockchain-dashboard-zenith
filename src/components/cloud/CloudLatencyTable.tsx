@@ -1,8 +1,8 @@
 
-import React, { useMemo } from 'react';
+import React from 'react';
 import { CloudLatencyData } from '@/hooks/useCloudLatency';
 import { Table, TableHeader, TableHead, TableBody, TableRow, TableCell } from '@/components/ui/table';
-import { Server, Globe } from 'lucide-react';
+import { Server } from 'lucide-react';
 
 interface CloudLatencyTableProps {
   data: CloudLatencyData[];
@@ -12,79 +12,16 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
   // Log data received to help with debugging
   console.log(`CloudLatencyTable received ${data.length} items`);
   
-  // Group data by origin and provider
-  const organizedData = useMemo(() => {
-    // Create a map to store data by origin string and provider
-    const byOriginAndProvider: Record<string, Record<string, CloudLatencyData[]>> = {};
-    
-    // Process each data point
-    data.forEach(item => {
-      // Convert origin to a consistent string representation
-      const originKey = item.origin && typeof item.origin === 'object'
-        ? `${item.origin.city || ''}-${item.origin.region || ''}-${item.origin.country || ''}`
-        : typeof item.origin === 'string' 
-          ? item.origin 
-          : 'Unknown';
-      
-      // Initialize origin object if it doesn't exist
-      if (!byOriginAndProvider[originKey]) {
-        byOriginAndProvider[originKey] = {};
-      }
-      
-      // Initialize provider array if it doesn't exist
-      if (!byOriginAndProvider[originKey][item.provider]) {
-        byOriginAndProvider[originKey][item.provider] = [];
-      }
-      
-      // Add this data point to the appropriate bucket
-      byOriginAndProvider[originKey][item.provider].push(item);
-    });
-    
-    console.log('Organized data by origin and provider:', Object.keys(byOriginAndProvider));
-    return byOriginAndProvider;
-  }, [data]);
+  if (!data || data.length === 0) {
+    return (
+      <div className="text-center py-4">
+        <p>No cloud latency data available.</p>
+      </div>
+    );
+  }
 
-  // Calculate statistics for each origin and provider
-  const statistics = useMemo(() => {
-    const stats: Record<string, Record<string, { latest: number; average: number }>> = {};
-    
-    // For each origin
-    Object.entries(organizedData).forEach(([origin, providers]) => {
-      stats[origin] = {};
-      
-      // For each provider in this origin
-      Object.entries(providers).forEach(([provider, measurements]) => {
-        if (measurements.length === 0) return;
-        
-        // Get valid response times (using p50_latency)
-        const validTimes = measurements
-          .filter(item => {
-            const latency = item.p50_latency;
-            return typeof latency === 'number' && !isNaN(latency);
-          })
-          .map(item => item.p50_latency);
-        
-        if (validTimes.length === 0) return;
-        
-        // Sort by timestamp (descending) to get the latest measurement
-        const sortedMeasurements = [...measurements].sort((a, b) => {
-          if (!a.timestamp || !b.timestamp) return 0;
-          return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
-        });
-        
-        // Get the latest latency value (p50_latency)
-        const latestLatency = sortedMeasurements[0].p50_latency;
-        
-        // Calculate latest and average response time
-        stats[origin][provider] = {
-          latest: latestLatency,
-          average: validTimes.reduce((sum, time) => sum + time, 0) / validTimes.length
-        };
-      });
-    });
-    
-    return stats;
-  }, [organizedData]);
+  // Sort providers by p50 latency (fastest first)
+  const sortedData = [...data].sort((a, b) => a.p50_latency - b.p50_latency);
 
   // Get color class based on response time
   const getLatencyColor = (time: number | undefined) => {
@@ -100,99 +37,46 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
     return `${time.toFixed(2)} ms`;
   };
 
-  // Get display name for origin
-  const getOriginDisplayName = (originKey: string) => {
-    // If the originKey looks like a composite key we created, extract meaningful info
-    if (originKey.includes('-')) {
-      const parts = originKey.split('-');
-      const city = parts[0];
-      const region = parts[1];
-      const country = parts[2];
-      
-      if (city && region && country) {
-        return `${city}, ${region}, ${country}`;
-      } else if (region && country) {
-        return `${region}, ${country}`;
-      } else if (city && country) {
-        return `${city}, ${country}`;
-      } else if (region) {
-        return region;
-      } else if (country) {
-        return country;
-      } else if (city) {
-        return city;
-      }
-    }
-    return originKey !== 'Unknown' ? originKey : 'Unknown Origin';
-  };
-
-  // Sort origins for consistent display
-  const sortedOrigins = Object.keys(organizedData).sort();
-  
-  // Check if we have any actual data after organization
-  const hasData = sortedOrigins.length > 0 && 
-                  sortedOrigins.some(origin => Object.keys(organizedData[origin]).length > 0);
-  
-  if (!hasData) {
-    console.log('No data available after organization');
-    return (
-      <div className="text-center py-4">
-        <p>No cloud latency data available after processing.</p>
-      </div>
-    );
-  }
-
   return (
     <div>
       <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-        Response times from cloud services to blockchain RPCs. Data collected over the last 7 days.
+        Response times from New York to blockchain RPCs. Data collected over the last 7 days.
       </p>
       
-      <div className="space-y-6">
-        {sortedOrigins.map(originKey => {
-          // Skip origins with no providers
-          if (Object.keys(organizedData[originKey]).length === 0) return null;
-          
-          return (
-            <div key={originKey} className="border rounded-lg p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <Globe size={18} className="text-blue-500" />
-                <h3 className="font-medium">{getOriginDisplayName(originKey)}</h3>
-              </div>
-              
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Provider</TableHead>
-                    <TableHead>Latest Response</TableHead>
-                    <TableHead>7-Day Average</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {Object.entries(statistics[originKey] || {})
-                    // Sort providers by latest response time (fastest first)
-                    .sort((a, b) => a[1].latest - b[1].latest)
-                    .map(([provider, stats]) => (
-                      <TableRow key={provider}>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Server size={16} />
-                            <span>{provider}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className={getLatencyColor(stats.latest)}>
-                          {formatLatency(stats.latest)}
-                        </TableCell>
-                        <TableCell>
-                          {formatLatency(stats.average)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                </TableBody>
-              </Table>
-            </div>
-          );
-        })}
+      <div className="border rounded-lg p-4">
+        <h3 className="font-medium mb-3">New York</h3>
+        
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Provider</TableHead>
+              <TableHead>P50 Latency</TableHead>
+              <TableHead>P90 Latency</TableHead>
+              <TableHead>Sample Size</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {sortedData.map((item, index) => (
+              <TableRow key={`${item.provider}-${index}`}>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Server size={16} />
+                    <span>{item.provider}</span>
+                  </div>
+                </TableCell>
+                <TableCell className={getLatencyColor(item.p50_latency)}>
+                  {formatLatency(item.p50_latency)}
+                </TableCell>
+                <TableCell className={getLatencyColor(item.p90_latency)}>
+                  {formatLatency(item.p90_latency)}
+                </TableCell>
+                <TableCell>
+                  {item.sample_size}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
     </div>
   );

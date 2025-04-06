@@ -1,8 +1,8 @@
 
 import React from 'react';
 import { CloudLatencyData } from '@/hooks/useCloudLatency';
-import CloudProviderConnection from './CloudProviderConnection';
-import { AlertCircle, Globe } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
+import CloudLatencyTable from './CloudLatencyTable';
 
 interface CloudLatencyConnectionsProps {
   data: CloudLatencyData[];
@@ -20,60 +20,9 @@ const CloudLatencyConnections: React.FC<CloudLatencyConnectionsProps> = ({ data,
     );
   }
 
-  // Format origin for display
-  const formatOrigin = (origin: any): string => {
-    if (!origin) return "Unknown";
-    
-    if (typeof origin === 'object') {
-      const parts = [];
-      if (origin.city) parts.push(origin.city);
-      if (origin.region) parts.push(origin.region);
-      if (origin.country) parts.push(origin.country);
-      
-      return parts.length > 0 ? parts.join(', ') : "Unknown";
-    }
-    
-    return String(origin);
-  };
-
-  // Organize data by origin (testing location)
-  const originData: Record<string, CloudLatencyData[]> = data.reduce((acc, item) => {
-    const originKey = formatOrigin(item.origin);
-    
-    if (!acc[originKey]) {
-      acc[originKey] = [];
-    }
-    acc[originKey].push(item);
-    return acc;
-  }, {} as Record<string, CloudLatencyData[]>);
-
   return (
     <div>
-      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-        Response times from cloud providers to {networkName} RPCs. Data collected from global testing locations.
-      </p>
-      
-      {Object.entries(originData).map(([origin, providerData]) => (
-        <div key={origin} className="mb-6 border rounded-lg p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Globe size={18} className="text-blue-500" />
-            <h3 className="font-medium">Testing Location: {origin}</h3>
-          </div>
-          
-          <div className="space-y-3">
-            {providerData
-              // Sort by p50 latency (faster first)
-              .sort((a, b) => a.p50_latency - b.p50_latency)
-              .map((providerInfo, index) => (
-                <CloudProviderConnection 
-                  key={`${providerInfo.provider}-${index}`}
-                  provider={providerInfo}
-                />
-              ))
-            }
-          </div>
-        </div>
-      ))}
+      <CloudLatencyTable data={data} />
     </div>
   );
 };

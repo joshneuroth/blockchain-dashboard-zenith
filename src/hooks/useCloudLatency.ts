@@ -20,28 +20,16 @@ export const useCloudLatency = (networkId: string) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Map network IDs to chain IDs
-  const getChainId = (networkId: string): string => {
-    const chainIdMap: Record<string, string> = {
-      ethereum: '1',
-      polygon: '137',
-      avalanche: '43114',
-      binance: '56'
-    };
-    
-    return chainIdMap[networkId] || '1'; // Default to Ethereum if not found
-  };
-
   useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
         setError(null);
         
-        const chainId = getChainId(networkId);
-        console.log(`Fetching cloud latency data for chain ID ${chainId}...`);
+        console.log(`Fetching cloud latency data for New York...`);
         
-        const apiUrl = `https://blockheight-api.fly.dev/latency?chain_id=${chainId}`;
+        // Use the simplified API endpoint with hardcoded "new-york" region
+        const apiUrl = `https://blockheight-api.fly.dev/regions/new-york/metrics/latency`;
         
         console.log(`Calling API: ${apiUrl}`);
         
@@ -62,9 +50,13 @@ export const useCloudLatency = (networkId: string) => {
         // Process the data to match our interface
         const processedData: CloudLatencyData[] = Array.isArray(rawData) ? rawData.map(item => ({
           provider: item.provider,
-          origin: item.origin || {},
-          p50_latency: item.avg_p50_latency_ms,
-          p90_latency: item.avg_p90_latency_ms,
+          origin: {
+            city: "New York",
+            region: "New York",
+            country: "US"
+          },
+          p50_latency: item.p50_latency_ms || item.avg_p50_latency_ms,
+          p90_latency: item.p90_latency_ms || item.avg_p90_latency_ms,
           sample_size: item.sample_size,
           success_rate: item.success_rate || 1.0
         })) : [];
