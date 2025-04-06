@@ -26,10 +26,10 @@ export const useCloudLatency = (networkId: string) => {
         setIsLoading(true);
         setError(null);
         
-        console.log(`Fetching cloud latency data for New York...`);
+        console.log(`Fetching cloud latency data for network ${networkId}...`);
         
-        // Use the simplified API endpoint with hardcoded "new-york" region
-        const apiUrl = `https://blockheight-api.fly.dev/regions/new-york/metrics/latency`;
+        // Use the new API endpoint with networkId
+        const apiUrl = `https://blockheight-api.fly.dev/networks/${networkId}/metrics/latency`;
         
         console.log(`Calling API: ${apiUrl}`);
         
@@ -51,9 +51,9 @@ export const useCloudLatency = (networkId: string) => {
         const processedData: CloudLatencyData[] = Array.isArray(rawData) ? rawData.map(item => ({
           provider: item.provider,
           origin: {
-            city: "New York",
-            region: "New York",
-            country: "US"
+            city: item.origin?.city,
+            region: item.origin?.region,
+            country: item.origin?.country
           },
           p50_latency: item.p50_latency_ms || item.avg_p50_latency_ms,
           p90_latency: item.p90_latency_ms || item.avg_p90_latency_ms,

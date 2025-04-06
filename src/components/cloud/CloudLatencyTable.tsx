@@ -37,14 +37,28 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
     return `${time.toFixed(2)} ms`;
   };
 
+  // Get location name from the first item's origin 
+  const getLocationName = () => {
+    const firstItem = data[0];
+    if (!firstItem || !firstItem.origin) return "Global";
+    
+    const { city, region, country } = firstItem.origin;
+    if (city) return city;
+    if (region) return region;
+    if (country) return country;
+    return "Global";
+  };
+
+  const locationName = getLocationName();
+
   return (
     <div>
       <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-        Response times from New York to blockchain RPCs. Data collected over the last 7 days.
+        Response times from {locationName} to blockchain RPCs. Data collected over the last 7 days.
       </p>
       
       <div className="border rounded-lg p-4">
-        <h3 className="font-medium mb-3">New York</h3>
+        <h3 className="font-medium mb-3">{locationName}</h3>
         
         <Table>
           <TableHeader>
