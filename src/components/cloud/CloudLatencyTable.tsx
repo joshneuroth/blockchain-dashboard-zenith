@@ -167,12 +167,12 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
                 <div className="flex flex-col md:flex-row gap-4">
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Region</label>
-                    <Select value={regionFilter || ""} onValueChange={(value) => setRegionFilter(value || null)}>
+                    <Select value={regionFilter || "all_regions"} onValueChange={(value) => setRegionFilter(value === "all_regions" ? null : value)}>
                       <SelectTrigger className="w-[180px]">
                         <SelectValue placeholder="Select region" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">All Regions</SelectItem>
+                        <SelectItem value="all_regions">All Regions</SelectItem>
                         {uniqueRegions.map(region => (
                           <SelectItem key={region} value={region}>{region}</SelectItem>
                         ))}
@@ -182,12 +182,12 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
                   
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Method</label>
-                    <Select value={methodFilter || ""} onValueChange={(value) => setMethodFilter(value || null)}>
+                    <Select value={methodFilter || "all_methods"} onValueChange={(value) => setMethodFilter(value === "all_methods" ? null : value)}>
                       <SelectTrigger className="w-[180px]">
                         <SelectValue placeholder="Select method" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">All Methods</SelectItem>
+                        <SelectItem value="all_methods">All Methods</SelectItem>
                         {uniqueMethods.map(method => (
                           <SelectItem key={method} value={method}>{method}</SelectItem>
                         ))}
