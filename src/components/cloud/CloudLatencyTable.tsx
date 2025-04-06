@@ -90,7 +90,7 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
       
       <div className="border rounded-lg p-4">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="font-medium">{locationName}</h3>
+          {/* Removed the h3 heading that displayed locationName */}
           
           <CloudLatencyFilters 
             showFilters={showFilters}
