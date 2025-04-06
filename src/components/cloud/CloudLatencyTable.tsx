@@ -32,12 +32,12 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
       }
       
       // Initialize provider array if it doesn't exist
-      if (!byOriginAndProvider[originKey][item.provider_name]) {
-        byOriginAndProvider[originKey][item.provider_name] = [];
+      if (!byOriginAndProvider[originKey][item.provider]) {
+        byOriginAndProvider[originKey][item.provider] = [];
       }
       
       // Add this data point to the appropriate bucket
-      byOriginAndProvider[originKey][item.provider_name].push(item);
+      byOriginAndProvider[originKey][item.provider].push(item);
     });
     
     console.log('Organized data by origin and provider:', Object.keys(byOriginAndProvider));
@@ -67,9 +67,10 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
         if (validTimes.length === 0) return;
         
         // Sort by timestamp (descending) to get the latest measurement
-        const sortedMeasurements = [...measurements].sort((a, b) => 
-          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-        );
+        const sortedMeasurements = [...measurements].sort((a, b) => {
+          if (!a.timestamp || !b.timestamp) return 0;
+          return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+        });
         
         // Get the latest latency value (p50_latency)
         const latestLatency = sortedMeasurements[0].p50_latency;
