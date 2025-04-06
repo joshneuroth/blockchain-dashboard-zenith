@@ -20,10 +20,10 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
     // Process each data point
     data.forEach(item => {
       // Convert origin to a consistent string representation
-      const originKey = typeof item.origin === 'string' 
-        ? item.origin 
-        : item.origin 
-          ? `${item.origin.host || ''}-${item.origin.region || ''}-${item.origin.asn || ''}`
+      const originKey = item.origin && typeof item.origin === 'object'
+        ? `${item.origin.city || ''}-${item.origin.region || ''}-${item.origin.country || ''}`
+        : typeof item.origin === 'string' 
+          ? item.origin 
           : 'Unknown';
       
       // Initialize origin object if it doesn't exist
@@ -56,13 +56,13 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
       Object.entries(providers).forEach(([provider, measurements]) => {
         if (measurements.length === 0) return;
         
-        // Get valid response times (prioritizing p50_latency)
+        // Get valid response times (using p50_latency)
         const validTimes = measurements
           .filter(item => {
-            const latency = item.p50_latency !== undefined ? item.p50_latency : item.response_time;
+            const latency = item.p50_latency;
             return typeof latency === 'number' && !isNaN(latency);
           })
-          .map(item => item.p50_latency !== undefined ? item.p50_latency : item.response_time);
+          .map(item => item.p50_latency);
         
         if (validTimes.length === 0) return;
         
@@ -71,10 +71,8 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
           new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
         );
         
-        // Get the latest latency value (prioritize p50_latency)
-        const latestLatency = sortedMeasurements[0].p50_latency !== undefined 
-          ? sortedMeasurements[0].p50_latency 
-          : sortedMeasurements[0].response_time;
+        // Get the latest latency value (p50_latency)
+        const latestLatency = sortedMeasurements[0].p50_latency;
         
         // Calculate latest and average response time
         stats[origin][provider] = {
@@ -106,15 +104,22 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
     // If the originKey looks like a composite key we created, extract meaningful info
     if (originKey.includes('-')) {
       const parts = originKey.split('-');
-      const host = parts[0];
+      const city = parts[0];
       const region = parts[1];
+      const country = parts[2];
       
-      if (host && region) {
-        return `${host} (${region})`;
-      } else if (host) {
-        return host;
+      if (city && region && country) {
+        return `${city}, ${region}, ${country}`;
+      } else if (region && country) {
+        return `${region}, ${country}`;
+      } else if (city && country) {
+        return `${city}, ${country}`;
       } else if (region) {
         return region;
+      } else if (country) {
+        return country;
+      } else if (city) {
+        return city;
       }
     }
     return originKey !== 'Unknown' ? originKey : 'Unknown Origin';

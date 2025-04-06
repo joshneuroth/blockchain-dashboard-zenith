@@ -3,7 +3,11 @@ import { useState, useEffect } from 'react';
 
 export interface CloudLatencyData {
   provider_name: string;
-  origin: string;
+  origin: {
+    city?: string;
+    region?: string;
+    country?: string;
+  };
   p50_latency: number;
   p90_latency: number;
   sample_size: number;
@@ -77,7 +81,11 @@ export const useCloudLatency = (networkId: string) => {
             Object.entries(providerData).forEach(([provider, metrics]) => {
               processedData.push({
                 provider_name: provider,
-                origin: origin,
+                origin: {
+                  region: origin,
+                  city: "", // We don't have this from the API in this format
+                  country: ""
+                },
                 p50_latency: metrics.p50,
                 p90_latency: metrics.p90,
                 sample_size: metrics.samplesize,

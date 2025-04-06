@@ -20,12 +20,30 @@ const CloudLatencyConnections: React.FC<CloudLatencyConnectionsProps> = ({ data,
     );
   }
 
+  // Format origin for display
+  const formatOrigin = (origin: any): string => {
+    if (!origin) return "Unknown";
+    
+    if (typeof origin === 'object') {
+      const parts = [];
+      if (origin.city) parts.push(origin.city);
+      if (origin.region) parts.push(origin.region);
+      if (origin.country) parts.push(origin.country);
+      
+      return parts.length > 0 ? parts.join(', ') : "Unknown";
+    }
+    
+    return String(origin);
+  };
+
   // Organize data by origin (testing location)
   const originData: Record<string, CloudLatencyData[]> = data.reduce((acc, item) => {
-    if (!acc[item.origin]) {
-      acc[item.origin] = [];
+    const originKey = formatOrigin(item.origin);
+    
+    if (!acc[originKey]) {
+      acc[originKey] = [];
     }
-    acc[item.origin].push(item);
+    acc[originKey].push(item);
     return acc;
   }, {} as Record<string, CloudLatencyData[]>);
 
