@@ -98,8 +98,8 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Provider</TableHead>
               <TableHead>Region</TableHead>
+              <TableHead>Provider</TableHead>
               <TableHead>Method</TableHead>
               <TableHead>P50 Latency</TableHead>
               <TableHead>P90 Latency</TableHead>
@@ -110,13 +110,13 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
             {sortedData.map((item, index) => (
               <TableRow key={`${item.provider || 'unknown'}-${index}`}>
                 <TableCell>
+                  {item.origin?.region || 'Global'}
+                </TableCell>
+                <TableCell>
                   <div className="flex items-center gap-2">
                     <Server size={16} />
                     <span>{item.provider || 'Unknown provider'}</span>
                   </div>
-                </TableCell>
-                <TableCell>
-                  {item.origin?.region || 'Global'}
                 </TableCell>
                 <TableCell>
                   {item.method || 'eth_blockNumber'}
