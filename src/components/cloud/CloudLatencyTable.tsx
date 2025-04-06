@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { CloudLatencyData } from '@/hooks/useCloudLatency';
 import { Table, TableHeader, TableHead, TableBody, TableRow, TableCell } from '@/components/ui/table';
@@ -115,8 +114,6 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
       
       <div className="border rounded-lg p-4">
         <div className="flex justify-between items-center mb-4">
-          {/* Removed the h3 heading that displayed locationName */}
-          
           <CloudLatencyFilters 
             showFilters={showFilters}
             setShowFilters={setShowFilters}
@@ -135,8 +132,8 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
           <TableHeader>
             <TableRow>
               <TableHead>Region</TableHead>
+              <TableHead className="w-10"></TableHead>
               <TableHead>Provider</TableHead>
-              <TableHead>Method</TableHead>
               <TableHead>P50 Latency</TableHead>
               <TableHead>P90 Latency</TableHead>
               <TableHead>Sample Size</TableHead>
