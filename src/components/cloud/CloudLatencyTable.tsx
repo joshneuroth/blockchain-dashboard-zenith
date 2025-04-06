@@ -23,12 +23,6 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
   // Sort providers by p50 latency (fastest first)
   const sortedData = [...data].sort((a, b) => a.p50_latency - b.p50_latency);
 
-  // Get origin location information from the first item
-  const firstItem = sortedData[0];
-  const locationName = firstItem?.origin?.city || firstItem?.origin?.region || "Global";
-  const locationCountry = firstItem?.origin?.country || "";
-  const locationDisplay = locationCountry ? `${locationName}, ${locationCountry}` : locationName;
-
   // Get color class based on response time
   const getLatencyColor = (time: number | undefined) => {
     if (time === undefined || isNaN(time)) return "text-gray-500";
@@ -46,11 +40,11 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
   return (
     <div>
       <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-        Response times from {locationDisplay} to blockchain RPCs. Data collected over the last 7 days.
+        Response times from New York to blockchain RPCs. Data collected over the last 7 days.
       </p>
       
       <div className="border rounded-lg p-4">
-        <h3 className="font-medium mb-3">{locationDisplay}</h3>
+        <h3 className="font-medium mb-3">New York</h3>
         
         <Table>
           <TableHeader>
