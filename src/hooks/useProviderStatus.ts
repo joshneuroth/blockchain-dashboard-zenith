@@ -40,6 +40,5 @@ export const useProviderStatus = () => {
     queryKey: ["providerStatus"],
     queryFn: fetchProviderStatus,
     refetchInterval: 60000, // Refetch every minute
-    staleTime: 30000, // Consider data fresh for 30 seconds
   });
 };
