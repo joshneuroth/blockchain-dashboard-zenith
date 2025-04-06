@@ -22,7 +22,7 @@ const CloudLatencyConnections: React.FC<CloudLatencyConnectionsProps> = ({ data,
 
   return (
     <div>
-      <CloudLatencyTable data={data} filterMethod={null} />
+      <CloudLatencyTable data={data} />
     </div>
   );
 };

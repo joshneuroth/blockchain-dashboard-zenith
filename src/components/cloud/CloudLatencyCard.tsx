@@ -1,13 +1,11 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { useCloudLatency } from '@/hooks/useCloudLatency';
 import { Cloud, AlertCircle, Loader2, ExternalLink, Info, Bug } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import CloudLatencyConnections from './CloudLatencyConnections';
-import CloudLatencyTable from './CloudLatencyTable';
-import CloudLatencyFilter from './CloudLatencyFilter';
 
 interface CloudLatencyCardProps {
   networkId: string;
@@ -16,7 +14,6 @@ interface CloudLatencyCardProps {
 
 const CloudLatencyCard: React.FC<CloudLatencyCardProps> = ({ networkId, networkName }) => {
   const { data, isLoading, error, rawApiResponse } = useCloudLatency(networkId);
-  const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
   
   console.log(`CloudLatencyCard for network: ${networkId}, name: ${networkName}`);
   console.log(`Data state: isLoading=${isLoading}, hasError=${!!error}, dataItems=${data?.length || 0}`);
@@ -82,23 +79,10 @@ const CloudLatencyCard: React.FC<CloudLatencyCardProps> = ({ networkId, networkN
           </div>
         ) : (
           <>
-            <CloudLatencyFilter 
+            <CloudLatencyConnections 
               data={data} 
-              selectedMethod={selectedMethod}
-              onMethodChange={setSelectedMethod}
+              networkName={networkName}
             />
-            
-            <CloudLatencyTable 
-              data={data}
-              filterMethod={selectedMethod}
-            />
-            
-            <div className="mt-6">
-              <CloudLatencyConnections 
-                data={data} 
-                networkName={networkName}
-              />
-            </div>
             
             {/* Debug section */}
             <div className="mt-6 p-4 bg-gray-100 dark:bg-gray-800 rounded-md">
@@ -109,8 +93,7 @@ const CloudLatencyCard: React.FC<CloudLatencyCardProps> = ({ networkId, networkN
               <p className="text-xs">Network ID: {networkId}</p>
               <p className="text-xs">Data items: {data.length}</p>
               <p className="text-xs">First provider: {data[0]?.provider}</p>
-              <p className="text-xs">First method: {data[0]?.method || 'N/A'}</p>
-              <p className="text-xs">Selected filter: {selectedMethod || 'None'}</p>
+              <p className="text-xs">Data format: {JSON.stringify(data[0], null, 2)}</p>
             </div>
           </>
         )}
