@@ -2,7 +2,7 @@
 import React from 'react';
 import { CloudLatencyData } from '@/hooks/useCloudLatency';
 import { Table, TableHeader, TableHead, TableBody, TableRow, TableCell } from '@/components/ui/table';
-import { Server } from 'lucide-react';
+import { Server, AlertTriangle } from 'lucide-react';
 
 interface CloudLatencyTableProps {
   data: CloudLatencyData[];
@@ -10,18 +10,27 @@ interface CloudLatencyTableProps {
 
 const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
   // Log data received to help with debugging
-  console.log(`CloudLatencyTable received ${data.length} items`);
+  console.log(`CloudLatencyTable received ${data?.length || 0} items:`, data);
   
   if (!data || data.length === 0) {
     return (
-      <div className="text-center py-4">
-        <p>No cloud latency data available.</p>
+      <div className="text-center py-4 flex flex-col items-center">
+        <AlertTriangle className="h-8 w-8 text-amber-500 mb-2" />
+        <p>No cloud latency data available for this network.</p>
+        <p className="text-sm text-muted-foreground mt-2">
+          This may be because the network is not yet supported by our cloud metrics system.
+        </p>
       </div>
     );
   }
 
   // Sort providers by p50 latency (fastest first)
-  const sortedData = [...data].sort((a, b) => a.p50_latency - b.p50_latency);
+  const sortedData = [...data].sort((a, b) => {
+    // Handle undefined or NaN values
+    const aLatency = a.p50_latency !== undefined && !isNaN(a.p50_latency) ? a.p50_latency : Infinity;
+    const bLatency = b.p50_latency !== undefined && !isNaN(b.p50_latency) ? b.p50_latency : Infinity;
+    return aLatency - bLatency;
+  });
 
   // Get color class based on response time
   const getLatencyColor = (time: number | undefined) => {
@@ -37,12 +46,16 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
     return `${time.toFixed(2)} ms`;
   };
 
-  // Get location name from the first item's origin 
+  // Get location name from the origin information
   const getLocationName = () => {
-    const firstItem = data[0];
-    if (!firstItem || !firstItem.origin) return "Global";
+    // Check if any item has origin information
+    const itemWithOrigin = data.find(item => 
+      item.origin && (item.origin.city || item.origin.region || item.origin.country)
+    );
     
-    const { city, region, country } = firstItem.origin;
+    if (!itemWithOrigin || !itemWithOrigin.origin) return "Global";
+    
+    const { city, region, country } = itemWithOrigin.origin;
     if (city) return city;
     if (region) return region;
     if (country) return country;
@@ -71,11 +84,11 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
           </TableHeader>
           <TableBody>
             {sortedData.map((item, index) => (
-              <TableRow key={`${item.provider}-${index}`}>
+              <TableRow key={`${item.provider || 'unknown'}-${index}`}>
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <Server size={16} />
-                    <span>{item.provider}</span>
+                    <span>{item.provider || 'Unknown provider'}</span>
                   </div>
                 </TableCell>
                 <TableCell className={getLatencyColor(item.p50_latency)}>
@@ -85,7 +98,7 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
                   {formatLatency(item.p90_latency)}
                 </TableCell>
                 <TableCell>
-                  {item.sample_size}
+                  {item.sample_size || 'N/A'}
                 </TableCell>
               </TableRow>
             ))}

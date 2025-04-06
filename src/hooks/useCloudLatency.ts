@@ -52,19 +52,39 @@ export const useCloudLatency = (networkId: string) => {
         const rawData = await response.json();
         console.log('Retrieved raw cloud data', rawData);
         
+        // Check if rawData is an array
+        if (!Array.isArray(rawData)) {
+          console.error('API did not return an array:', rawData);
+          throw new Error('Invalid data format received from API');
+        }
+        
+        // If the array is empty
+        if (rawData.length === 0) {
+          console.log('API returned an empty array');
+          setData([]);
+          setIsLoading(false);
+          return;
+        }
+        
         // Process the data to match our interface
-        const processedData: CloudLatencyData[] = Array.isArray(rawData) ? rawData.map(item => ({
-          provider: item.provider,
-          origin: {
-            city: item.origin?.city,
-            region: item.origin?.region,
-            country: item.origin?.country
-          },
-          p50_latency: item.p50_latency_ms || item.avg_p50_latency_ms,
-          p90_latency: item.p90_latency_ms || item.avg_p90_latency_ms,
-          sample_size: item.sample_size,
-          success_rate: item.success_rate || 1.0
-        })) : [];
+        const processedData: CloudLatencyData[] = rawData.map(item => {
+          console.log('Processing item:', item);
+          return {
+            provider: item.provider || 'Unknown',
+            origin: {
+              city: item.origin?.city,
+              region: item.origin?.region,
+              country: item.origin?.country
+            },
+            p50_latency: item.p50_latency_ms !== undefined ? item.p50_latency_ms : 
+                       (item.avg_p50_latency_ms !== undefined ? item.avg_p50_latency_ms : 0),
+            p90_latency: item.p90_latency_ms !== undefined ? item.p90_latency_ms : 
+                       (item.avg_p90_latency_ms !== undefined ? item.avg_p90_latency_ms : 0),
+            sample_size: item.sample_size || 0,
+            success_rate: item.success_rate || 1.0,
+            timestamp: item.timestamp
+          };
+        });
         
         console.log('Processed data:', processedData);
         setData(processedData);

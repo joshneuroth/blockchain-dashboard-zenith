@@ -28,8 +28,12 @@ const NetworkContent: React.FC<NetworkContentProps> = ({
       "base": "8453"
     };
     
+    console.log(`Converting network ID: ${networkId} to API network ID`);
     return networkMapping[networkId] || networkId;
   };
+
+  const apiNetworkId = getApiNetworkId();
+  console.log(`Network ID: ${networkId}, API Network ID: ${apiNetworkId}`);
 
   return (
     <div className="w-full py-16 px-6 md:px-10">
@@ -56,7 +60,7 @@ const NetworkContent: React.FC<NetworkContentProps> = ({
         />
         
         <CloudLatencyCard 
-          networkId={getApiNetworkId()}
+          networkId={apiNetworkId}
           networkName={networkName}
         />
       </div>

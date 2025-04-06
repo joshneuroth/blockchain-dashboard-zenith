@@ -54,14 +54,14 @@ const CloudLatencyCard: React.FC<CloudLatencyCardProps> = ({ networkId, networkN
               <Info className="h-4 w-4" />
               <AlertTitle>No data available</AlertTitle>
               <AlertDescription>
-                No cloud latency data available for {networkName}.
+                No cloud latency data available for {networkName} (ID: {networkId}).
                 <div className="mt-2 text-xs">
-                  Network ID: {networkId}
+                  The API might not have data for this network yet.
                 </div>
               </AlertDescription>
             </Alert>
             <p className="text-sm mt-2 text-muted-foreground">
-              The API might not have data available for this network at the moment, or the network ID format may be incorrect.
+              We're constantly adding more networks and data. Check back later for updates.
             </p>
           </div>
         ) : (
