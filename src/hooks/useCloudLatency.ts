@@ -26,6 +26,7 @@ export interface CloudLatencyData {
     region?: string;
     country?: string;
   };
+  method?: string;
   p50_latency: number;
   p90_latency: number;
   sample_size: number;
@@ -100,6 +101,7 @@ export const useCloudLatency = (networkId: string) => {
                 origin: {
                   region: regionData.region
                 },
+                method: item.method || 'eth_blockNumber',
                 p50_latency: item.p50_latency_ms,
                 p90_latency: item.p90_latency_ms,
                 sample_size: item.sample_size || 0,
@@ -120,6 +122,7 @@ export const useCloudLatency = (networkId: string) => {
                 region: item.origin?.region,
                 country: item.origin?.country
               },
+              method: item.method || 'eth_blockNumber',
               p50_latency: item.p50_latency_ms !== undefined ? item.p50_latency_ms : 
                          (item.avg_p50_latency_ms !== undefined ? item.avg_p50_latency_ms : 0),
               p90_latency: item.p90_latency_ms !== undefined ? item.p90_latency_ms : 
@@ -152,6 +155,7 @@ export const useCloudLatency = (networkId: string) => {
             origin: {
               region: region
             },
+            method: item.method || 'eth_blockNumber',
             p50_latency: item.p50_latency_ms,
             p90_latency: item.p90_latency_ms,
             sample_size: item.sample_size || 0,

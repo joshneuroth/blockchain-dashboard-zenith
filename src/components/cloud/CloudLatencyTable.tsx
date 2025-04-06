@@ -99,6 +99,8 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
           <TableHeader>
             <TableRow>
               <TableHead>Provider</TableHead>
+              <TableHead>Region</TableHead>
+              <TableHead>Method</TableHead>
               <TableHead>P50 Latency</TableHead>
               <TableHead>P90 Latency</TableHead>
               <TableHead>Sample Size</TableHead>
@@ -112,6 +114,12 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
                     <Server size={16} />
                     <span>{item.provider || 'Unknown provider'}</span>
                   </div>
+                </TableCell>
+                <TableCell>
+                  {item.origin?.region || 'Global'}
+                </TableCell>
+                <TableCell>
+                  {item.method || 'eth_blockNumber'}
                 </TableCell>
                 <TableCell className={getLatencyColor(item.p50_latency)}>
                   {formatLatency(item.p50_latency)}
