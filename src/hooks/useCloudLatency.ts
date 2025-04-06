@@ -1,6 +1,24 @@
 
 import { useState, useEffect } from 'react';
 
+// Interface for the metrics in the API response
+interface MetricItem {
+  origin_asn?: string;
+  provider: string;
+  method?: string;
+  p50_latency_ms: number;
+  p90_latency_ms: number;
+  sample_size: number;
+  last_updated?: string;
+}
+
+// Interface for the API response format
+interface ApiResponse {
+  region: string;
+  metrics: MetricItem[];
+}
+
+// Our application's internal data model
 export interface CloudLatencyData {
   provider: string;
   origin: {
@@ -28,10 +46,7 @@ export const useCloudLatency = (networkId: string) => {
         
         console.log(`Fetching cloud latency data for network ${networkId}...`);
         
-        // For Ethereum, the API expects "1" not "ethereum"
-        const apiNetworkId = networkId === "ethereum" ? "1" : networkId;
-        
-        const apiUrl = `https://blockheight-api.fly.dev/networks/${apiNetworkId}/metrics/latency`;
+        const apiUrl = `https://blockheight-api.fly.dev/networks/${networkId}/metrics/latency`;
         
         console.log(`Calling API: ${apiUrl}`);
         
@@ -52,24 +67,23 @@ export const useCloudLatency = (networkId: string) => {
         const rawData = await response.json();
         console.log('Retrieved raw cloud data', rawData);
         
-        // Check if rawData is an array
-        if (!Array.isArray(rawData)) {
-          console.error('API did not return an array:', rawData);
+        // Handle the new API response format
+        if (!rawData || typeof rawData !== 'object') {
+          console.error('Unexpected API response format:', rawData);
           throw new Error('Invalid data format received from API');
         }
         
-        // If the array is empty
-        if (rawData.length === 0) {
-          console.log('API returned an empty array');
-          setData([]);
-          setIsLoading(false);
-          return;
-        }
-        
-        // Process the data to match our interface
-        const processedData: CloudLatencyData[] = rawData.map(item => {
-          console.log('Processing item:', item);
-          return {
+        // If the API returns an array directly (old format)
+        if (Array.isArray(rawData)) {
+          console.log('API returned an array (old format)');
+          if (rawData.length === 0) {
+            setData([]);
+            setIsLoading(false);
+            return;
+          }
+          
+          // Process old format
+          const processedData: CloudLatencyData[] = rawData.map(item => ({
             provider: item.provider || 'Unknown',
             origin: {
               city: item.origin?.city,
@@ -83,11 +97,66 @@ export const useCloudLatency = (networkId: string) => {
             sample_size: item.sample_size || 0,
             success_rate: item.success_rate || 1.0,
             timestamp: item.timestamp
-          };
-        });
+          }));
+          
+          console.log('Processed old format data:', processedData);
+          setData(processedData);
+        } 
+        // New format - object with region and metrics array
+        else if (rawData.region && Array.isArray(rawData.metrics)) {
+          console.log('API returned new format with region and metrics');
+          const region = rawData.region;
+          const metrics = rawData.metrics;
+          
+          if (metrics.length === 0) {
+            setData([]);
+            setIsLoading(false);
+            return;
+          }
+          
+          // Process new format
+          const processedData: CloudLatencyData[] = metrics.map(item => ({
+            provider: item.provider || 'Unknown',
+            origin: {
+              region: region
+            },
+            p50_latency: item.p50_latency_ms,
+            p90_latency: item.p90_latency_ms,
+            sample_size: item.sample_size || 0,
+            success_rate: 1.0, // Default if not provided
+            timestamp: item.last_updated
+          }));
+          
+          console.log('Processed new format data:', processedData);
+          setData(processedData);
+        }
+        // Array of objects with region and metrics (multiple regions)
+        else if (Array.isArray(rawData) && rawData.length > 0 && rawData[0].region && Array.isArray(rawData[0].metrics)) {
+          console.log('API returned array of region/metrics objects');
+          
+          // Flatten all metrics from all regions
+          const processedData: CloudLatencyData[] = rawData.flatMap((regionData: ApiResponse) => {
+            return regionData.metrics.map(item => ({
+              provider: item.provider || 'Unknown',
+              origin: {
+                region: regionData.region
+              },
+              p50_latency: item.p50_latency_ms,
+              p90_latency: item.p90_latency_ms,
+              sample_size: item.sample_size || 0,
+              success_rate: 1.0, // Default if not provided
+              timestamp: item.last_updated
+            }));
+          });
+          
+          console.log('Processed multiple regions data:', processedData);
+          setData(processedData);
+        }
+        else {
+          console.error('Unrecognized API response format:', rawData);
+          throw new Error('Unrecognized data format received from API');
+        }
         
-        console.log('Processed data:', processedData);
-        setData(processedData);
         setIsLoading(false);
       } catch (err) {
         console.error('Error fetching cloud latency data:', err);
