@@ -134,9 +134,9 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
               <TableHead>Region</TableHead>
               <TableHead className="w-10"></TableHead>
               <TableHead>Provider</TableHead>
+              <TableHead>Method</TableHead>
               <TableHead>P50 Latency</TableHead>
               <TableHead>P90 Latency</TableHead>
-              <TableHead>Sample Size</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
