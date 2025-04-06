@@ -2,7 +2,6 @@
 import React from 'react';
 import { CloudLatencyData } from '@/hooks/useCloudLatency';
 import CloudLatencyConnections from './CloudLatencyConnections';
-import CloudDebugInfo from './debug/CloudDebugInfo';
 import CloudLatencyLoading from './states/CloudLatencyLoading';
 import CloudLatencyEmpty from './states/CloudLatencyEmpty';
 import CloudLatencyError from './states/CloudLatencyError';
@@ -45,12 +44,6 @@ const CloudLatencyContent: React.FC<CloudLatencyContentProps> = ({
       <CloudLatencyConnections 
         data={data} 
         networkName={networkName}
-      />
-      
-      {/* Debug section */}
-      <CloudDebugInfo 
-        networkId={networkId} 
-        data={data} 
       />
     </>
   );
