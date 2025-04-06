@@ -2,8 +2,9 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { useCloudLatency } from '@/hooks/useCloudLatency';
-import { Cloud, AlertCircle, Loader2, ExternalLink } from 'lucide-react';
+import { Cloud, AlertCircle, Loader2, ExternalLink, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import CloudLatencyConnections from './CloudLatencyConnections';
 
 interface CloudLatencyCardProps {
@@ -13,6 +14,9 @@ interface CloudLatencyCardProps {
 
 const CloudLatencyCard: React.FC<CloudLatencyCardProps> = ({ networkId, networkName }) => {
   const { data, isLoading, error } = useCloudLatency(networkId);
+  
+  console.log(`CloudLatencyCard for network: ${networkId}, name: ${networkName}`);
+  console.log(`Data state: isLoading=${isLoading}, hasError=${!!error}, dataItems=${data?.length || 0}`);
 
   return (
     <Card className="glass-card mt-8">
@@ -29,17 +33,35 @@ const CloudLatencyCard: React.FC<CloudLatencyCardProps> = ({ networkId, networkN
             <span className="ml-2">Loading cloud latency data...</span>
           </div>
         ) : error ? (
-          <div className="py-6 text-center">
-            <AlertCircle className="h-8 w-8 mx-auto text-destructive mb-2" />
-            <p className="text-destructive">Error loading cloud latency data: {error}</p>
-            <p className="text-sm mt-2 text-muted-foreground">This may be due to network connectivity issues or API changes.</p>
+          <div className="py-6">
+            <Alert variant="destructive" className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error loading cloud latency data</AlertTitle>
+              <AlertDescription>
+                {error}
+                <div className="mt-2 text-xs">
+                  Network ID: {networkId}
+                </div>
+              </AlertDescription>
+            </Alert>
+            <p className="text-sm mt-2 text-muted-foreground">
+              This may be due to network connectivity issues or API changes. The API expects numeric IDs for networks (e.g., "1" for Ethereum).
+            </p>
           </div>
         ) : !data || data.length === 0 ? (
-          <div className="py-6 text-center">
-            <AlertCircle className="h-8 w-8 mx-auto text-amber-500 mb-2" />
-            <p>No cloud latency data available for {networkName}.</p>
+          <div className="py-6">
+            <Alert className="mb-4">
+              <Info className="h-4 w-4" />
+              <AlertTitle>No data available</AlertTitle>
+              <AlertDescription>
+                No cloud latency data available for {networkName}.
+                <div className="mt-2 text-xs">
+                  Network ID: {networkId}
+                </div>
+              </AlertDescription>
+            </Alert>
             <p className="text-sm mt-2 text-muted-foreground">
-              The API might not have data available for this network at the moment.
+              The API might not have data available for this network at the moment, or the network ID format may be incorrect.
             </p>
           </div>
         ) : (

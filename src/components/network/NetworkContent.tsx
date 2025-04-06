@@ -17,6 +17,20 @@ const NetworkContent: React.FC<NetworkContentProps> = ({
   networkColor,
   getTextColorClass
 }) => {
+  // Network ID mapping for the cloud latency API
+  const getApiNetworkId = () => {
+    // Map network identifiers to numeric IDs for the API
+    const networkMapping: Record<string, string> = {
+      "ethereum": "1",
+      "polygon": "137",
+      "optimism": "10",
+      "arbitrum": "42161",
+      "base": "8453"
+    };
+    
+    return networkMapping[networkId] || networkId;
+  };
+
   return (
     <div className="w-full py-16 px-6 md:px-10">
       <div className="container mx-auto max-w-4xl">
@@ -42,7 +56,7 @@ const NetworkContent: React.FC<NetworkContentProps> = ({
         />
         
         <CloudLatencyCard 
-          networkId={networkId}
+          networkId={getApiNetworkId()}
           networkName={networkName}
         />
       </div>

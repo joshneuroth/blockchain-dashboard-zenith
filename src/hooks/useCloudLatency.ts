@@ -28,8 +28,10 @@ export const useCloudLatency = (networkId: string) => {
         
         console.log(`Fetching cloud latency data for network ${networkId}...`);
         
-        // Use the new API endpoint with networkId
-        const apiUrl = `https://blockheight-api.fly.dev/networks/${networkId}/metrics/latency`;
+        // For Ethereum, the API expects "1" not "ethereum"
+        const apiNetworkId = networkId === "ethereum" ? "1" : networkId;
+        
+        const apiUrl = `https://blockheight-api.fly.dev/networks/${apiNetworkId}/metrics/latency`;
         
         console.log(`Calling API: ${apiUrl}`);
         
@@ -41,6 +43,9 @@ export const useCloudLatency = (networkId: string) => {
         });
         
         if (!response.ok) {
+          console.error(`API returned status: ${response.status}`);
+          const errorText = await response.text();
+          console.error(`Error response: ${errorText}`);
           throw new Error(`HTTP error ${response.status}`);
         }
         
@@ -72,7 +77,13 @@ export const useCloudLatency = (networkId: string) => {
       }
     };
 
-    fetchData();
+    if (networkId) {
+      fetchData();
+    } else {
+      console.error('Network ID is undefined or empty');
+      setError('Missing network ID');
+      setIsLoading(false);
+    }
     
     return () => {
       // AbortController cleanup happens automatically with AbortSignal.timeout
