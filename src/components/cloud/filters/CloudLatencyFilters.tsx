@@ -37,24 +37,28 @@ const CloudLatencyFilters: React.FC<CloudLatencyFiltersProps> = ({
 }) => {
   return (
     <div className="flex items-center gap-2">
-      {hasActiveFilters && (
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={resetFilters}
-          className="text-xs"
-        >
-          Clear Filters
-        </Button>
-      )}
-      
       <Collapsible open={showFilters} onOpenChange={setShowFilters}>
-        <CollapsibleTrigger asChild>
-          <Button variant="outline" size="sm" className="gap-1 text-xs">
-            <Filter size={14} />
-            Filters
-          </Button>
-        </CollapsibleTrigger>
+        <div className="flex items-center gap-2">
+          <CollapsibleTrigger asChild>
+            <Button variant="outline" size="sm" className="gap-1 text-xs">
+              <Filter size={14} />
+              Filters
+            </Button>
+          </CollapsibleTrigger>
+          
+          {/* Move the Clear Filters button next to the Filters button */}
+          {hasActiveFilters && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={resetFilters}
+              className="text-xs"
+            >
+              Clear Filters
+            </Button>
+          )}
+        </div>
+        
         <CollapsibleContent className="mt-2 p-4 border rounded-md bg-background shadow-sm">
           <div className="flex flex-col md:flex-row gap-4">
             <CloudLatencyRegionFilter 
