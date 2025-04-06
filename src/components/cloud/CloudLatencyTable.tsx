@@ -1,8 +1,28 @@
 
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { CloudLatencyData } from '@/hooks/useCloudLatency';
 import { Table, TableHeader, TableHead, TableBody, TableRow, TableCell } from '@/components/ui/table';
-import { Server, AlertTriangle } from 'lucide-react';
+import { Server, AlertTriangle, Filter } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 
 interface CloudLatencyTableProps {
   data: CloudLatencyData[];
@@ -12,6 +32,11 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
   // Log data received to help with debugging
   console.log(`CloudLatencyTable received ${data?.length || 0} items:`, data);
   
+  // State for filters
+  const [regionFilter, setRegionFilter] = useState<string | null>(null);
+  const [methodFilter, setMethodFilter] = useState<string | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
+
   if (!data || data.length === 0) {
     return (
       <div className="text-center py-4 flex flex-col items-center">
@@ -46,8 +71,25 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
     );
   }
 
+  // Extract unique regions and methods for filters
+  const uniqueRegions = Array.from(new Set(validData.map(item => item.origin?.region || 'Global')));
+  const uniqueMethods = Array.from(new Set(validData.map(item => item.method || 'eth_blockNumber')));
+
+  // Apply filters to data
+  const filteredData = useMemo(() => {
+    return validData.filter(item => {
+      const itemRegion = item.origin?.region || 'Global';
+      const itemMethod = item.method || 'eth_blockNumber';
+      
+      const regionMatches = !regionFilter || itemRegion === regionFilter;
+      const methodMatches = !methodFilter || itemMethod === methodFilter;
+      
+      return regionMatches && methodMatches;
+    });
+  }, [validData, regionFilter, methodFilter]);
+
   // Sort providers by p50 latency (fastest first)
-  const sortedData = [...validData].sort((a, b) => {
+  const sortedData = [...filteredData].sort((a, b) => {
     // Handle undefined or NaN values
     const aLatency = a.p50_latency !== undefined && !isNaN(a.p50_latency) ? a.p50_latency : Infinity;
     const bLatency = b.p50_latency !== undefined && !isNaN(b.p50_latency) ? b.p50_latency : Infinity;
@@ -86,6 +128,12 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
 
   const locationName = getLocationName();
 
+  // Reset all filters
+  const resetFilters = () => {
+    setRegionFilter(null);
+    setMethodFilter(null);
+  };
+
   return (
     <div>
       <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
@@ -93,7 +141,64 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
       </p>
       
       <div className="border rounded-lg p-4">
-        <h3 className="font-medium mb-3">{locationName}</h3>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="font-medium">{locationName}</h3>
+          
+          <div className="flex items-center gap-2">
+            {(regionFilter || methodFilter) && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={resetFilters}
+                className="text-xs"
+              >
+                Clear Filters
+              </Button>
+            )}
+            
+            <Collapsible open={showFilters} onOpenChange={setShowFilters}>
+              <CollapsibleTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1 text-xs">
+                  <Filter size={14} />
+                  Filters
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="mt-2 p-4 border rounded-md bg-background shadow-sm">
+                <div className="flex flex-col md:flex-row gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Region</label>
+                    <Select value={regionFilter || ""} onValueChange={(value) => setRegionFilter(value || null)}>
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Select region" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">All Regions</SelectItem>
+                        {uniqueRegions.map(region => (
+                          <SelectItem key={region} value={region}>{region}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Method</label>
+                    <Select value={methodFilter || ""} onValueChange={(value) => setMethodFilter(value || null)}>
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Select method" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">All Methods</SelectItem>
+                        {uniqueMethods.map(method => (
+                          <SelectItem key={method} value={method}>{method}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+          </div>
+        </div>
         
         <Table>
           <TableHeader>
@@ -107,31 +212,39 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sortedData.map((item, index) => (
-              <TableRow key={`${item.provider || 'unknown'}-${index}`}>
-                <TableCell>
-                  {item.origin?.region || 'Global'}
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Server size={16} />
-                    <span>{item.provider || 'Unknown provider'}</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  {item.method || 'eth_blockNumber'}
-                </TableCell>
-                <TableCell className={getLatencyColor(item.p50_latency)}>
-                  {formatLatency(item.p50_latency)}
-                </TableCell>
-                <TableCell className={getLatencyColor(item.p90_latency)}>
-                  {formatLatency(item.p90_latency)}
-                </TableCell>
-                <TableCell>
-                  {item.sample_size || 'N/A'}
+            {sortedData.length > 0 ? (
+              sortedData.map((item, index) => (
+                <TableRow key={`${item.provider || 'unknown'}-${index}`}>
+                  <TableCell>
+                    {item.origin?.region || 'Global'}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Server size={16} />
+                      <span>{item.provider || 'Unknown provider'}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {item.method || 'eth_blockNumber'}
+                  </TableCell>
+                  <TableCell className={getLatencyColor(item.p50_latency)}>
+                    {formatLatency(item.p50_latency)}
+                  </TableCell>
+                  <TableCell className={getLatencyColor(item.p90_latency)}>
+                    {formatLatency(item.p90_latency)}
+                  </TableCell>
+                  <TableCell>
+                    {item.sample_size || 'N/A'}
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-4">
+                  <p className="text-muted-foreground">No results match your filter criteria.</p>
                 </TableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
         </Table>
       </div>
