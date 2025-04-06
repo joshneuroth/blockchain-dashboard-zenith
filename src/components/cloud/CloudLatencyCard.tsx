@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { useCloudLatency } from '@/hooks/useCloudLatency';
-import { Cloud, AlertCircle, Loader2, ExternalLink, Info } from 'lucide-react';
+import { Cloud, AlertCircle, Loader2, ExternalLink, Info, Bug } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import CloudLatencyConnections from './CloudLatencyConnections';
@@ -13,7 +13,7 @@ interface CloudLatencyCardProps {
 }
 
 const CloudLatencyCard: React.FC<CloudLatencyCardProps> = ({ networkId, networkName }) => {
-  const { data, isLoading, error } = useCloudLatency(networkId);
+  const { data, isLoading, error, rawApiResponse } = useCloudLatency(networkId);
   
   console.log(`CloudLatencyCard for network: ${networkId}, name: ${networkName}`);
   console.log(`Data state: isLoading=${isLoading}, hasError=${!!error}, dataItems=${data?.length || 0}`);
@@ -60,15 +60,42 @@ const CloudLatencyCard: React.FC<CloudLatencyCardProps> = ({ networkId, networkN
                 </div>
               </AlertDescription>
             </Alert>
+            
+            {rawApiResponse && (
+              <div className="mt-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-md overflow-x-auto">
+                <div className="flex items-center mb-2">
+                  <Bug size={16} className="mr-2" />
+                  <span className="font-medium">Raw API Response (Debug):</span>
+                </div>
+                <pre className="text-xs overflow-x-auto">
+                  {JSON.stringify(rawApiResponse, null, 2)}
+                </pre>
+              </div>
+            )}
+            
             <p className="text-sm mt-2 text-muted-foreground">
               We're constantly adding more networks and data. Check back later for updates.
             </p>
           </div>
         ) : (
-          <CloudLatencyConnections 
-            data={data} 
-            networkName={networkName}
-          />
+          <>
+            <CloudLatencyConnections 
+              data={data} 
+              networkName={networkName}
+            />
+            
+            {/* Debug section */}
+            <div className="mt-6 p-4 bg-gray-100 dark:bg-gray-800 rounded-md">
+              <div className="flex items-center mb-2">
+                <Bug size={16} className="mr-2" />
+                <span className="font-medium">Debug Information:</span>
+              </div>
+              <p className="text-xs">Network ID: {networkId}</p>
+              <p className="text-xs">Data items: {data.length}</p>
+              <p className="text-xs">First provider: {data[0]?.provider}</p>
+              <p className="text-xs">Data format: {JSON.stringify(data[0], null, 2)}</p>
+            </div>
+          </>
         )}
       </CardContent>
       <CardFooter className="flex justify-between">

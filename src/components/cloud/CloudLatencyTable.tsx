@@ -24,8 +24,30 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
     );
   }
 
+  // Validate data objects before sorting
+  const validData = data.filter(item => 
+    item && typeof item === 'object' && item.p50_latency !== undefined && item.provider
+  );
+  
+  console.log(`CloudLatencyTable found ${validData.length} valid data items`);
+  
+  if (validData.length === 0) {
+    return (
+      <div className="text-center py-4 flex flex-col items-center">
+        <AlertTriangle className="h-8 w-8 text-amber-500 mb-2" />
+        <p>Received data format is invalid.</p>
+        <p className="text-sm text-muted-foreground mt-2">
+          The data structure doesn't match the expected format.
+        </p>
+        <pre className="mt-4 p-2 bg-gray-100 dark:bg-gray-800 text-xs rounded overflow-x-auto max-w-full">
+          {JSON.stringify(data[0], null, 2)}
+        </pre>
+      </div>
+    );
+  }
+
   // Sort providers by p50 latency (fastest first)
-  const sortedData = [...data].sort((a, b) => {
+  const sortedData = [...validData].sort((a, b) => {
     // Handle undefined or NaN values
     const aLatency = a.p50_latency !== undefined && !isNaN(a.p50_latency) ? a.p50_latency : Infinity;
     const bLatency = b.p50_latency !== undefined && !isNaN(b.p50_latency) ? b.p50_latency : Infinity;

@@ -25,11 +25,18 @@ const NetworkContent: React.FC<NetworkContentProps> = ({
       "polygon": "137",
       "optimism": "10",
       "arbitrum": "42161",
-      "base": "8453"
+      "base": "8453",
+      "zksync": "324",
+      "avalanche": "43114",
+      "bsc": "56",
+      "fantom": "250",
+      "solana": "501"  // Using placeholder ID for Solana
     };
     
     console.log(`Converting network ID: ${networkId} to API network ID`);
-    return networkMapping[networkId] || networkId;
+    const apiId = networkMapping[networkId] || networkId;
+    console.log(`Mapped network ID ${networkId} to API ID ${apiId}`);
+    return apiId;
   };
 
   const apiNetworkId = getApiNetworkId();
