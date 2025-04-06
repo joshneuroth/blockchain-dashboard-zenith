@@ -50,9 +50,34 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
   const uniqueRegions = Array.from(new Set(validData.map(item => item.origin?.region || 'Global')));
   const uniqueMethods = Array.from(new Set(validData.map(item => item.method || 'eth_blockNumber')));
 
+  // Filter to only show most recent method test per provider-method-region combination
+  const mostRecentData = useMemo(() => {
+    // Create a map to store the most recent entry for each provider-method-region combination
+    const latestEntryMap = new Map();
+    
+    validData.forEach(item => {
+      // Create a unique key for each provider-method-region combination
+      const itemRegion = item.origin?.region || 'Global';
+      const itemMethod = item.method || 'eth_blockNumber';
+      const key = `${item.provider}-${itemMethod}-${itemRegion}`;
+      
+      const existingItem = latestEntryMap.get(key);
+      
+      // If no entry exists for this key or the current item has a more recent timestamp
+      if (!existingItem || 
+          (item.timestamp && existingItem.timestamp && 
+          new Date(item.timestamp) > new Date(existingItem.timestamp))) {
+        latestEntryMap.set(key, item);
+      }
+    });
+    
+    // Convert map values back to an array
+    return Array.from(latestEntryMap.values());
+  }, [validData]);
+
   // Apply filters to data
   const filteredData = useMemo(() => {
-    return validData.filter(item => {
+    return mostRecentData.filter(item => {
       const itemRegion = item.origin?.region || 'Global';
       const itemMethod = item.method || 'eth_blockNumber';
       
@@ -61,7 +86,7 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
       
       return regionMatches && methodMatches;
     });
-  }, [validData, regionFilter, methodFilter]);
+  }, [mostRecentData, regionFilter, methodFilter]);
 
   // Sort providers by p50 latency (fastest first)
   const sortedData = [...filteredData].sort((a, b) => {
