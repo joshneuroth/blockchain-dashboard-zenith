@@ -2,7 +2,7 @@
 import React from 'react';
 import { CloudLatencyData } from '@/hooks/useCloudLatency';
 import CloudProviderConnection from './CloudProviderConnection';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Globe } from 'lucide-react';
 
 interface CloudLatencyConnectionsProps {
   data: CloudLatencyData[];
@@ -20,52 +20,42 @@ const CloudLatencyConnections: React.FC<CloudLatencyConnectionsProps> = ({ data,
     );
   }
 
-  // Organize data by provider
-  const providerData: Record<string, CloudLatencyData[]> = data.reduce((acc, item) => {
-    if (!acc[item.provider_name]) {
-      acc[item.provider_name] = [];
+  // Organize data by origin (testing location)
+  const originData: Record<string, CloudLatencyData[]> = data.reduce((acc, item) => {
+    if (!acc[item.origin]) {
+      acc[item.origin] = [];
     }
-    acc[item.provider_name].push(item);
+    acc[item.origin].push(item);
     return acc;
   }, {} as Record<string, CloudLatencyData[]>);
 
-  // Get the latest data point for each provider
-  const latestByProvider = Object.keys(providerData).map(provider => {
-    const providerItems = providerData[provider];
-    // Sort by timestamp (newest first) and get the first item
-    return providerItems.sort((a, b) => 
-      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-    )[0];
-  });
-
-  // Sort providers by p50_latency (faster first), falling back to response_time
-  const sortedProviders = latestByProvider
-    .filter(provider => provider)
-    .sort((a, b) => {
-      const aLatency = a.p50_latency !== undefined ? a.p50_latency : a.response_time;
-      const bLatency = b.p50_latency !== undefined ? b.p50_latency : b.response_time;
-      
-      // Handle undefined values in sorting
-      if (aLatency === undefined) return 1;
-      if (bLatency === undefined) return -1;
-      return aLatency - bLatency;
-    });
-
   return (
-    <div className="space-y-4">
+    <div>
       <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-        Response times from cloud services to {networkName} RPCs. Data collected over the last 7 days.
+        Response times from cloud providers to {networkName} RPCs. Data collected from global testing locations.
       </p>
       
-      <div className="space-y-3">
-        {sortedProviders.map((providerInfo, index) => (
-          <CloudProviderConnection 
-            key={`${providerInfo.provider_name}-${index}`}
-            provider={providerInfo}
-            allData={providerData[providerInfo.provider_name]}
-          />
-        ))}
-      </div>
+      {Object.entries(originData).map(([origin, providerData]) => (
+        <div key={origin} className="mb-6 border rounded-lg p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Globe size={18} className="text-blue-500" />
+            <h3 className="font-medium">Testing Location: {origin}</h3>
+          </div>
+          
+          <div className="space-y-3">
+            {providerData
+              // Sort by p50 latency (faster first)
+              .sort((a, b) => a.p50_latency - b.p50_latency)
+              .map((providerInfo, index) => (
+                <CloudProviderConnection 
+                  key={`${providerInfo.provider_name}-${index}`}
+                  provider={providerInfo}
+                />
+              ))
+            }
+          </div>
+        </div>
+      ))}
     </div>
   );
 };

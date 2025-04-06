@@ -3,24 +3,44 @@ import { useState, useEffect } from 'react';
 
 export interface CloudLatencyData {
   provider_name: string;
-  response_time: number;
-  p50_latency?: number;
-  status: number | string;
-  method: string;
+  origin: string;
+  p50_latency: number;
+  p90_latency: number;
+  sample_size: number;
+  success_rate: number;
   timestamp: string;
-  origin?: string | {
-    host?: string;
-    region?: string;
-    country?: string;
-    city?: string;
-    asn?: number | string;
-  };
 }
 
-export const useCloudLatency = () => {
+interface RawLatencyResponse {
+  metrics: {
+    [key: string]: {
+      [key: string]: {
+        p50: number;
+        p90: number;
+        samplesize: number;
+        success_rate: number;
+      }
+    }
+  };
+  timestamp: string;
+}
+
+export const useCloudLatency = (networkId: string) => {
   const [data, setData] = useState<CloudLatencyData[] | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Map network IDs to chain IDs
+  const getChainId = (networkId: string): string => {
+    const chainIdMap: Record<string, string> = {
+      ethereum: '1',
+      polygon: '137',
+      avalanche: '43114',
+      binance: '56'
+    };
+    
+    return chainIdMap[networkId] || '1'; // Default to Ethereum if not found
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -28,8 +48,12 @@ export const useCloudLatency = () => {
         setIsLoading(true);
         setError(null);
         
-        console.log('Fetching raw cloud latency data...');
-        const response = await fetch('https://edgeprobe.fly.dev/simple-latency', {
+        const chainId = getChainId(networkId);
+        console.log(`Fetching cloud latency data for chain ID ${chainId}...`);
+        
+        const apiUrl = `https://blockheight-api.fly.dev/metrics/latency?chain_id=${chainId}&metrics=p50,p90,samplesize,success_rate&group_by_origin=true`;
+        
+        const response = await fetch(apiUrl, {
           headers: {
             'Accept': 'application/json',
           },
@@ -40,11 +64,31 @@ export const useCloudLatency = () => {
           throw new Error(`HTTP error ${response.status}`);
         }
         
-        const cloudData = await response.json();
-        console.log('Retrieved raw cloud data', cloudData);
+        const rawData: RawLatencyResponse = await response.json();
+        console.log('Retrieved raw cloud data', rawData);
         
-        // Just return the raw data without processing
-        setData(cloudData);
+        // Process the data into our desired format
+        const processedData: CloudLatencyData[] = [];
+        
+        if (rawData && rawData.metrics) {
+          // For each origin
+          Object.entries(rawData.metrics).forEach(([origin, providerData]) => {
+            // For each provider in this origin
+            Object.entries(providerData).forEach(([provider, metrics]) => {
+              processedData.push({
+                provider_name: provider,
+                origin: origin,
+                p50_latency: metrics.p50,
+                p90_latency: metrics.p90,
+                sample_size: metrics.samplesize,
+                success_rate: metrics.success_rate,
+                timestamp: rawData.timestamp
+              });
+            });
+          });
+        }
+        
+        setData(processedData);
         setIsLoading(false);
       } catch (err) {
         console.error('Error fetching cloud latency data:', err);
@@ -59,7 +103,7 @@ export const useCloudLatency = () => {
     return () => {
       // AbortController cleanup happens automatically with AbortSignal.timeout
     };
-  }, []);
+  }, [networkId]);
 
   return { data, isLoading, error };
 };
