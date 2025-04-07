@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { CloudLatencyData } from '@/hooks/useCloudLatency';
 import { Table, TableHeader, TableHead, TableBody, TableRow, TableCell } from '@/components/ui/table';
@@ -109,7 +110,7 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
   return (
     <div>
       <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-        Response times from {locationName} to blockchain RPCs. Data collected over the last 7 days.
+        Response times sourced from our global monitoring system. Use this data to determine which provider is closest to your servers and users.
       </p>
       
       <div className="border rounded-lg p-4">

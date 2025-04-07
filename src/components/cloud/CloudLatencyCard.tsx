@@ -22,7 +22,7 @@ const CloudLatencyCard: React.FC<CloudLatencyCardProps> = ({ networkId, networkN
       <CardHeader>
         <CardTitle className="text-xl font-medium flex items-center gap-2">
           <Cloud size={20} />
-          Global Cloud Latency Data for {networkName}
+          Global Latency Data for {networkName}
         </CardTitle>
       </CardHeader>
       <CardContent>
