@@ -1,9 +1,10 @@
 
-import React from 'react';
-import { useBlockheightTimeSeries } from '@/hooks/useBlockheightTimeSeries';
+import React, { useState } from 'react';
+import { useBlockheightTimeSeries, TimeWindow } from '@/hooks/useBlockheightTimeSeries';
 import BlockheightTimeSeriesChart from './BlockheightTimeSeriesChart';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 interface BlockheightTimeSeriesSectionProps {
   networkId: string;
@@ -29,17 +30,43 @@ const BlockheightTimeSeriesSection: React.FC<BlockheightTimeSeriesSectionProps> 
   networkId, 
   networkName 
 }) => {
+  // State for selected time window
+  const [timeWindow, setTimeWindow] = useState<TimeWindow>('10s');
+  
   // Convert network ID to chain ID
   const chainId = NETWORK_TO_CHAIN_ID[networkId] || networkId;
   
-  // Fetch time series data
-  const { data, isLoading, error, uniqueRegions } = useBlockheightTimeSeries(chainId);
+  // Fetch time series data with the selected time window
+  const { data, isLoading, error, uniqueRegions, deviationData } = useBlockheightTimeSeries(chainId, timeWindow);
+
+  const handleTimeWindowChange = (value: string) => {
+    if (value) {
+      setTimeWindow(value as TimeWindow);
+    }
+  };
 
   return (
     <div className="glass-card p-6 mb-6 animate-fade-in">
-      <h2 className="text-xl font-semibold mb-4">Blockheight Monitoring</h2>
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+        <h2 className="text-xl font-semibold">Blockheight Monitoring</h2>
+        
+        <ToggleGroup 
+          type="single" 
+          value={timeWindow} 
+          onValueChange={handleTimeWindowChange}
+          className="border rounded-md"
+        >
+          <ToggleGroupItem value="10s" className="px-3 py-1 text-xs">10s</ToggleGroupItem>
+          <ToggleGroupItem value="30s" className="px-3 py-1 text-xs">30s</ToggleGroupItem>
+          <ToggleGroupItem value="1m" className="px-3 py-1 text-xs">1m</ToggleGroupItem>
+          <ToggleGroupItem value="5m" className="px-3 py-1 text-xs">5m</ToggleGroupItem>
+          <ToggleGroupItem value="15m" className="px-3 py-1 text-xs">15m</ToggleGroupItem>
+        </ToggleGroup>
+      </div>
+      
       <p className="text-sm text-muted-foreground mb-6">
         Real-time monitoring of blockheight progression across different providers for {networkName}.
+        {timeWindow === '10s' && " Showing most granular data (10-second intervals)."}
       </p>
       
       {error && (
@@ -55,6 +82,8 @@ const BlockheightTimeSeriesSection: React.FC<BlockheightTimeSeriesSectionProps> 
         data={data} 
         isLoading={isLoading}
         uniqueRegions={uniqueRegions}
+        deviationData={deviationData}
+        timeWindow={timeWindow}
       />
     </div>
   );
