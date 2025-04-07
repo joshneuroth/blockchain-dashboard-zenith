@@ -1,9 +1,11 @@
 
-import React from 'react';
-import { useBlockheightTimeSeries } from '@/hooks/useBlockheightTimeSeries';
+import React, { useState } from 'react';
+import { useBlockheightTimeSeries, TimeWindow } from '@/hooks/useBlockheightTimeSeries';
 import BlockheightTimeSeriesChart from './BlockheightTimeSeriesChart';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 interface BlockheightTimeSeriesSectionProps {
   networkId: string;
@@ -29,11 +31,13 @@ const BlockheightTimeSeriesSection: React.FC<BlockheightTimeSeriesSectionProps> 
   networkId, 
   networkName 
 }) => {
+  const [timeWindow, setTimeWindow] = useState<TimeWindow>('10s');
+  
   // Convert network ID to chain ID
   const chainId = NETWORK_TO_CHAIN_ID[networkId] || networkId;
   
   // Fetch time series data
-  const { data, isLoading, error, uniqueRegions } = useBlockheightTimeSeries(chainId);
+  const { data, isLoading, error, uniqueRegions } = useBlockheightTimeSeries(chainId, timeWindow);
 
   return (
     <div className="glass-card p-6 mb-6 animate-fade-in">
@@ -41,6 +45,27 @@ const BlockheightTimeSeriesSection: React.FC<BlockheightTimeSeriesSectionProps> 
       <p className="text-sm text-muted-foreground mb-6">
         Real-time monitoring of blockheight progression across different providers for {networkName}.
       </p>
+      
+      <div className="flex justify-end mb-4">
+        <div className="flex items-center gap-2">
+          <Label htmlFor="time-window-select" className="text-sm">Time Window:</Label>
+          <Select 
+            value={timeWindow} 
+            onValueChange={(value) => setTimeWindow(value as TimeWindow)}
+          >
+            <SelectTrigger id="time-window-select" className="w-[120px]">
+              <SelectValue placeholder="Select time window" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="10s">10 seconds</SelectItem>
+              <SelectItem value="30s">30 seconds</SelectItem>
+              <SelectItem value="1m">1 minute</SelectItem>
+              <SelectItem value="5m">5 minutes</SelectItem>
+              <SelectItem value="10m">10 minutes</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
       
       {error && (
         <Alert variant="destructive" className="mb-6">
