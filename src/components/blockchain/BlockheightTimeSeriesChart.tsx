@@ -19,7 +19,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TooltipProvider, Tooltip as UITooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { InfoCircle, ZoomIn } from "lucide-react";
+import { Info, ZoomIn } from "lucide-react";
 
 // Provider color mapping
 const PROVIDER_COLORS: Record<string, string> = {
@@ -269,7 +269,7 @@ const BlockheightTimeSeriesChart: React.FC<BlockheightTimeSeriesChartProps> = ({
     <div className="space-y-4">
       {hasDeviations && (
         <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md p-3 text-sm text-amber-800 dark:text-amber-200 flex items-start gap-2">
-          <InfoCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+          <Info className="h-5 w-5 flex-shrink-0 mt-0.5" />
           <div>
             <p className="font-medium">Blockheight deviations detected</p>
             <p className="text-xs mt-1">Some providers are reporting different blockheights, which could indicate network issues or blockchain forks.</p>
@@ -387,9 +387,9 @@ const BlockheightTimeSeriesChart: React.FC<BlockheightTimeSeriesChartProps> = ({
                 content={
                   <ChartTooltipContent
                     labelFormatter={(label) => `Time: ${label}`}
-                    formatter={(value, name, entry) => {
+                    formatter={(value, name) => {
                       // Special handling for deviation data
-                      if (name.startsWith('_')) return null;
+                      if (typeof name === 'string' && name.startsWith('_')) return null;
                       return [value.toLocaleString(), name];
                     }}
                   />
