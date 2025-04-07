@@ -65,7 +65,7 @@ const ProviderChart: React.FC<ProviderChartProps> = ({
           selectedProviders[provider] && (
             <Line
               key={provider}
-              type="monotone"
+              type="step"
               dataKey={provider}
               stroke={getProviderColor(provider)}
               // Show dots for each data point to emphasize the second-level granularity
