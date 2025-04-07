@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
 import NewsletterForm from '@/components/NewsletterForm';
 
 const NetworkFooter: React.FC = () => {
@@ -18,11 +17,10 @@ const NetworkFooter: React.FC = () => {
           <div className="col-span-1">
             <h3 className="text-sm font-semibold mb-4">BLOCKHEIGHT.XYZ</h3>
             <ul className="space-y-2 text-sm">
-              <li><Link to="/" className="hover:underline">Home</Link></li>
-              <li><Link to="/status" className="hover:underline">Status</Link></li>
               <li><a href="#" className="hover:underline">About Us</a></li>
               <li><a href="#" className="hover:underline">Mission</a></li>
               <li><a href="#" className="hover:underline">Blog</a></li>
+              <li><a href="#" className="hover:underline">Press & Media</a></li>
             </ul>
           </div>
           
