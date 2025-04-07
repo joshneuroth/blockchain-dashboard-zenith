@@ -36,6 +36,8 @@ const ProviderChart: React.FC<ProviderChartProps> = ({
           dataKey="time" 
           tick={{ fontSize: 12 }}
           tickMargin={10}
+          // Increase the number of ticks to show more time points
+          interval="preserveStartEnd"
         />
         <YAxis 
           domain={['dataMin', 'dataMax']}
@@ -46,7 +48,13 @@ const ProviderChart: React.FC<ProviderChartProps> = ({
         <ChartTooltip
           content={
             <ChartTooltipContent
-              labelFormatter={(label) => `Time: ${label}`}
+              labelFormatter={(label, payload) => {
+                // Display the exact timestamp in the tooltip for precision
+                if (payload && payload.length > 0 && payload[0].payload.formattedTime) {
+                  return `Time: ${payload[0].payload.formattedTime}`;
+                }
+                return `Time: ${label}`;
+              }}
               formatter={(value, name) => [value.toLocaleString(), name]}
             />
           }
@@ -60,10 +68,13 @@ const ProviderChart: React.FC<ProviderChartProps> = ({
               type="monotone"
               dataKey={provider}
               stroke={getProviderColor(provider)}
-              dot={false}
+              // Show dots for each data point to emphasize the second-level granularity
+              dot={{ r: 2 }}
               activeDot={{ r: 6 }}
               name={provider}
               isAnimationActive={false}
+              // Connect the dots only when data exists (no interpolation for missing points)
+              connectNulls={false}
             />
           )
         ))}

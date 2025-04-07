@@ -27,17 +27,21 @@ export const useChartData = (
       });
     });
     
-    // Sort timestamps
+    // Sort timestamps chronologically
     const sortedTimestamps = Array.from(allTimestamps).sort((a, b) => a - b);
     
-    // Create data points for each timestamp
+    // Create data points for each unique timestamp (second-level granularity)
     return sortedTimestamps.map(timestamp => {
+      const date = new Date(timestamp * 1000);
       const dataPoint: Record<string, any> = {
         timestamp,
-        time: format(new Date(timestamp * 1000), 'HH:mm:ss'),
+        // Format with seconds precision (HH:MM:SS)
+        time: format(date, 'HH:mm:ss'),
+        // Add a more detailed timestamp for tooltip
+        formattedTime: format(date, 'HH:mm:ss'),
       };
       
-      // Add blockheight for each provider
+      // Add blockheight for each provider at this exact timestamp
       Object.entries(data.providers).forEach(([provider, regions]) => {
         // Filter by selected region if one is selected
         const regionToUse = selectedRegion ? selectedRegion : Object.keys(regions)[0];
