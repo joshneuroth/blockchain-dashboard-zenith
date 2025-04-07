@@ -3,6 +3,7 @@ import React from 'react';
 import BlockchainCard from '@/components/BlockchainCard';
 import LatencyTest from '@/components/LatencyTest';
 import CloudLatencyCard from '@/components/cloud/CloudLatencyCard';
+import BlockheightTimeSeriesSection from '@/components/blockchain/BlockheightTimeSeriesSection';
 
 interface NetworkContentProps {
   networkId: string;
@@ -59,6 +60,11 @@ const NetworkContent: React.FC<NetworkContentProps> = ({
           networkId={networkId}
           networkName={networkName}
           networkColor={networkColor}
+        />
+        
+        <BlockheightTimeSeriesSection
+          networkId={networkId}
+          networkName={networkName}
         />
         
         <LatencyTest 
