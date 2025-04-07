@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useBlockheightTimeSeries } from '@/hooks/useBlockheightTimeSeries';
-import BlockheightTimeSeriesChart from './BlockheightTimeSeriesChart';
+import BlockheightTimeSeriesChart from './blockheight-chart';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 
