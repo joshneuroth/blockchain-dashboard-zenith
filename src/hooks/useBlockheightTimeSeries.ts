@@ -52,11 +52,49 @@ export const useBlockheightTimeSeries = (chainId: string) => {
     )).sort() : 
     [];
 
+  // Calculate max deviation per timestamp
+  const deviations = React.useMemo(() => {
+    if (!data?.providers) return {};
+    
+    const deviationMap: Record<number, number> = {};
+    const timestamps = new Set<number>();
+    
+    // Collect all timestamps
+    Object.values(data.providers).forEach(regions => {
+      Object.values(regions).forEach(points => {
+        points.forEach(point => timestamps.add(point.timestamp));
+      });
+    });
+    
+    // Calculate deviation for each timestamp
+    timestamps.forEach(timestamp => {
+      const blockheights: number[] = [];
+      
+      Object.values(data.providers).forEach(regions => {
+        Object.values(regions).forEach(points => {
+          const point = points.find(p => p.timestamp === timestamp);
+          if (point) blockheights.push(point.blockheight);
+        });
+      });
+      
+      if (blockheights.length > 1) {
+        const max = Math.max(...blockheights);
+        const min = Math.min(...blockheights);
+        deviationMap[timestamp] = max - min;
+      } else {
+        deviationMap[timestamp] = 0;
+      }
+    });
+    
+    return deviationMap;
+  }, [data]);
+
   return { 
     data, 
     isLoading, 
     error: error instanceof Error ? error.message : null,
     uniqueRegions,
+    deviations,
     refetch 
   };
 };

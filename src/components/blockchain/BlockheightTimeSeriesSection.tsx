@@ -33,7 +33,7 @@ const BlockheightTimeSeriesSection: React.FC<BlockheightTimeSeriesSectionProps> 
   const chainId = NETWORK_TO_CHAIN_ID[networkId] || networkId;
   
   // Fetch time series data
-  const { data, isLoading, error, uniqueRegions } = useBlockheightTimeSeries(chainId);
+  const { data, isLoading, error, uniqueRegions, deviations } = useBlockheightTimeSeries(chainId);
 
   return (
     <div className="glass-card p-6 mb-6 animate-fade-in">
@@ -55,6 +55,7 @@ const BlockheightTimeSeriesSection: React.FC<BlockheightTimeSeriesSectionProps> 
         data={data} 
         isLoading={isLoading}
         uniqueRegions={uniqueRegions}
+        deviations={deviations}
       />
     </div>
   );
