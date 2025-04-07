@@ -14,6 +14,8 @@ import { format } from 'date-fns';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BlockheightTimeSeriesData } from '@/hooks/useBlockheightTimeSeries';
 import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Provider color mapping
 const PROVIDER_COLORS: Record<string, string> = {
@@ -27,6 +29,11 @@ const PROVIDER_COLORS: Record<string, string> = {
   "Pocket": "#4CAF50",
   "Blast API": "#2196F3",
   "BlockPI": "#673AB7",
+  "FlashBots": "#2E7D32",
+  "Lava": "#D32F2F",
+  "NodeReal": "#00796B",
+  "Public Node": "#455A64",
+  "Tenderly-ETH": "#795548",
 };
 
 // Get color for a provider, fallback to a default color
@@ -37,14 +44,18 @@ const getProviderColor = (provider: string): string => {
 interface BlockheightTimeSeriesChartProps {
   data: BlockheightTimeSeriesData | null;
   isLoading: boolean;
+  uniqueRegions: string[];
 }
 
 const BlockheightTimeSeriesChart: React.FC<BlockheightTimeSeriesChartProps> = ({ 
   data, 
-  isLoading 
+  isLoading,
+  uniqueRegions
 }) => {
   // State for selected providers (all selected by default)
   const [selectedProviders, setSelectedProviders] = useState<Record<string, boolean>>({});
+  // State for selected region
+  const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
 
   // Initialize selected providers when data changes
   React.useEffect(() => {
@@ -54,8 +65,13 @@ const BlockheightTimeSeriesChart: React.FC<BlockheightTimeSeriesChartProps> = ({
         {}
       );
       setSelectedProviders(initialSelectedState);
+      
+      // Set the first region as default if none is selected and regions exist
+      if (selectedRegion === null && uniqueRegions.length > 0) {
+        setSelectedRegion(uniqueRegions[0]);
+      }
     }
-  }, [data?.providers]);
+  }, [data?.providers, uniqueRegions, selectedRegion]);
 
   // Toggle provider selection
   const toggleProvider = (provider: string) => {
@@ -65,15 +81,25 @@ const BlockheightTimeSeriesChart: React.FC<BlockheightTimeSeriesChartProps> = ({
     }));
   };
 
+  // Handle region change
+  const handleRegionChange = (region: string) => {
+    setSelectedRegion(region);
+  };
+
   // Prepare chart data
   const chartData = useMemo(() => {
     if (!data?.providers) return [];
 
-    // Get all timestamps across all providers
+    // Get all timestamps across all providers, filtered by selected region
     const allTimestamps = new Set<number>();
     
     Object.entries(data.providers).forEach(([provider, regions]) => {
-      Object.values(regions).forEach(regionData => {
+      // Filter by selected region if one is selected
+      const regionsToUse = selectedRegion ? 
+        (regions[selectedRegion] ? { [selectedRegion]: regions[selectedRegion] } : {}) : 
+        regions;
+      
+      Object.values(regionsToUse).forEach(regionData => {
         regionData.forEach(point => {
           allTimestamps.add(point.timestamp);
         });
@@ -92,18 +118,21 @@ const BlockheightTimeSeriesChart: React.FC<BlockheightTimeSeriesChartProps> = ({
       
       // Add blockheight for each provider
       Object.entries(data.providers).forEach(([provider, regions]) => {
-        // Combine all regions for now (can be separated later if needed)
-        const allRegionPoints = Object.values(regions).flat();
-        const pointForTimestamp = allRegionPoints.find(p => p.timestamp === timestamp);
+        // Filter by selected region if one is selected
+        const regionToUse = selectedRegion ? selectedRegion : Object.keys(regions)[0];
         
-        if (pointForTimestamp) {
-          dataPoint[provider] = pointForTimestamp.blockheight;
+        if (regions[regionToUse]) {
+          const pointForTimestamp = regions[regionToUse].find(p => p.timestamp === timestamp);
+          
+          if (pointForTimestamp) {
+            dataPoint[provider] = pointForTimestamp.blockheight;
+          }
         }
       });
       
       return dataPoint;
     });
-  }, [data]);
+  }, [data, selectedRegion]);
 
   // Create chart config for providers
   const chartConfig = useMemo(() => {
@@ -139,27 +168,48 @@ const BlockheightTimeSeriesChart: React.FC<BlockheightTimeSeriesChartProps> = ({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-3 items-center">
-        {Object.keys(data.providers).map(provider => (
-          <div key={provider} className="flex items-center space-x-2">
-            <Checkbox 
-              id={`provider-${provider}`}
-              checked={selectedProviders[provider]}
-              onCheckedChange={() => toggleProvider(provider)}
-              className="rounded"
-              style={{ 
-                borderColor: getProviderColor(provider),
-                backgroundColor: selectedProviders[provider] ? getProviderColor(provider) : 'transparent' 
-              }}
-            />
-            <label 
-              htmlFor={`provider-${provider}`}
-              className="text-sm font-medium cursor-pointer"
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-wrap gap-3 items-center">
+          {Object.keys(data.providers).map(provider => (
+            <div key={provider} className="flex items-center space-x-2">
+              <Checkbox 
+                id={`provider-${provider}`}
+                checked={selectedProviders[provider]}
+                onCheckedChange={() => toggleProvider(provider)}
+                className="rounded"
+                style={{ 
+                  borderColor: getProviderColor(provider),
+                  backgroundColor: selectedProviders[provider] ? getProviderColor(provider) : 'transparent' 
+                }}
+              />
+              <label 
+                htmlFor={`provider-${provider}`}
+                className="text-sm font-medium cursor-pointer"
+              >
+                {provider}
+              </label>
+            </div>
+          ))}
+        </div>
+        
+        {uniqueRegions.length > 0 && (
+          <div className="flex items-center gap-2">
+            <Label htmlFor="region-select" className="text-sm">Region:</Label>
+            <Select 
+              value={selectedRegion || ''} 
+              onValueChange={handleRegionChange}
             >
-              {provider}
-            </label>
+              <SelectTrigger id="region-select" className="w-[180px]">
+                <SelectValue placeholder="Select region" />
+              </SelectTrigger>
+              <SelectContent>
+                {uniqueRegions.map(region => (
+                  <SelectItem key={region} value={region}>{region}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-        ))}
+        )}
       </div>
 
       <div className="h-[400px] bg-white dark:bg-gray-800 rounded-lg p-4">
@@ -210,7 +260,10 @@ const BlockheightTimeSeriesChart: React.FC<BlockheightTimeSeriesChartProps> = ({
         </ChartContainer>
       </div>
       
-      <div className="flex justify-end">
+      <div className="flex justify-between items-center">
+        <div className="text-xs text-muted-foreground">
+          {selectedRegion ? `Showing data for region: ${selectedRegion}` : 'Showing data for all regions'}
+        </div>
         <div className="text-xs text-muted-foreground">
           Auto-refreshes every 10 seconds • Last updated: {new Date().toLocaleTimeString()}
         </div>

@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
 export interface BlockheightDataPoint {
   timestamp: number;
@@ -25,40 +26,37 @@ export interface BlockheightTimeSeriesData {
 }
 
 export const useBlockheightTimeSeries = (chainId: string) => {
-  const [data, setData] = useState<BlockheightTimeSeriesData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        const response = await fetch(`https://blockheight-api.fly.dev/internal/networks/${chainId}/blockheight/time-series`);
-        
-        if (!response.ok) {
-          throw new Error(`API error: ${response.status}`);
-        }
-        
-        const result = await response.json();
-        setData(result);
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching blockheight time series:', err);
-        setError(err instanceof Error ? err.message : 'Unknown error occurred');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    // Initial fetch
-    fetchData();
+  const fetchBlockheightData = async () => {
+    const response = await fetch(`https://blockheight-api.fly.dev/internal/networks/${chainId}/blockheight/time-series`);
     
-    // Set up auto-refresh every 10 seconds
-    const intervalId = setInterval(fetchData, 10000);
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
     
-    // Clean up interval on unmount
-    return () => clearInterval(intervalId);
-  }, [chainId]);
+    return await response.json() as BlockheightTimeSeriesData;
+  };
 
-  return { data, isLoading, error };
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['blockheightTimeSeries', chainId],
+    queryFn: fetchBlockheightData,
+    staleTime: 10000, // 10 seconds
+    refetchInterval: 10000, // Auto-refresh every 10 seconds
+  });
+
+  // Get all unique regions across all providers
+  const uniqueRegions = data ? 
+    Array.from(new Set(
+      Object.values(data.providers).flatMap(providerData => 
+        Object.keys(providerData)
+      )
+    )).sort() : 
+    [];
+
+  return { 
+    data, 
+    isLoading, 
+    error: error instanceof Error ? error.message : null,
+    uniqueRegions,
+    refetch 
+  };
 };
