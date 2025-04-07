@@ -1,10 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { Moon, Sun, Home } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import BlockchainCard from '@/components/BlockchainCard';
 import NewsletterForm from '@/components/NewsletterForm';
 import { NETWORKS } from '@/lib/api';
+import LeaderboardExplorer from '@/components/leaderboard/LeaderboardExplorer';
 
 const Index = () => {
   const [darkMode, setDarkMode] = useState(false);
@@ -106,6 +106,8 @@ const Index = () => {
               </div>
             </div>
           </div>
+          
+          <LeaderboardExplorer />
         </div>
       </section>
       
