@@ -8,8 +8,7 @@ import {
   CartesianGrid, 
   Tooltip, 
   Legend, 
-  ResponsiveContainer,
-  Area
+  ResponsiveContainer 
 } from 'recharts';
 import { ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 
@@ -32,14 +31,6 @@ const ProviderChart: React.FC<ProviderChartProps> = ({
         data={chartData}
         margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
       >
-        <defs>
-          {providers.map(provider => (
-            <linearGradient key={`gradient-${provider}`} id={`gradient-${provider}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={getProviderColor(provider)} stopOpacity={0.3}/>
-              <stop offset="95%" stopColor={getProviderColor(provider)} stopOpacity={0}/>
-            </linearGradient>
-          ))}
-        </defs>
         <CartesianGrid strokeDasharray="3 3" vertical={false} />
         <XAxis 
           dataKey="time" 
@@ -72,31 +63,19 @@ const ProviderChart: React.FC<ProviderChartProps> = ({
         
         {providers.map(provider => (
           selectedProviders[provider] && (
-            <React.Fragment key={provider}>
-              <Line
-                type="step"
-                dataKey={provider}
-                stroke={getProviderColor(provider)}
-                // Show dots for each data point to emphasize the second-level granularity
-                dot={{ r: 2 }}
-                activeDot={{ r: 6 }}
-                name={provider}
-                isAnimationActive={false}
-                // Connect the dots only when data exists (no interpolation for missing points)
-                connectNulls={false}
-                // Add fill property with gradient
-                fill={`url(#gradient-${provider})`}
-              />
-              <Area
-                type="step"
-                dataKey={provider}
-                stroke="none"
-                fill={`url(#gradient-${provider})`}
-                fillOpacity={1}
-                isAnimationActive={false}
-                connectNulls={false}
-              />
-            </React.Fragment>
+            <Line
+              key={provider}
+              type="step"
+              dataKey={provider}
+              stroke={getProviderColor(provider)}
+              // Show dots for each data point to emphasize the second-level granularity
+              dot={{ r: 2 }}
+              activeDot={{ r: 6 }}
+              name={provider}
+              isAnimationActive={false}
+              // Connect the dots only when data exists (no interpolation for missing points)
+              connectNulls={false}
+            />
           )
         ))}
       </LineChart>
