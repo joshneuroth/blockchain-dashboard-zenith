@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
 export interface BlockheightDataPoint {
@@ -25,11 +25,9 @@ export interface BlockheightTimeSeriesData {
   };
 }
 
-export type TimeWindowOption = "10s" | "30s" | "1m" | "5m" | "10m";
-
-export const useBlockheightTimeSeries = (chainId: string, timeWindow: TimeWindowOption = "10s") => {
+export const useBlockheightTimeSeries = (chainId: string) => {
   const fetchBlockheightData = async () => {
-    const response = await fetch(`https://blockheight-api.fly.dev/internal/networks/${chainId}/blockheight/time-series?window=${timeWindow}`);
+    const response = await fetch(`https://blockheight-api.fly.dev/internal/networks/${chainId}/blockheight/time-series`);
     
     if (!response.ok) {
       throw new Error(`API error: ${response.status}`);
@@ -39,7 +37,7 @@ export const useBlockheightTimeSeries = (chainId: string, timeWindow: TimeWindow
   };
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['blockheightTimeSeries', chainId, timeWindow],
+    queryKey: ['blockheightTimeSeries', chainId],
     queryFn: fetchBlockheightData,
     staleTime: 10000, // 10 seconds
     refetchInterval: 10000, // Auto-refresh every 10 seconds
@@ -54,50 +52,11 @@ export const useBlockheightTimeSeries = (chainId: string, timeWindow: TimeWindow
     )).sort() : 
     [];
 
-  // Calculate max deviation per timestamp
-  const deviations = useMemo(() => {
-    if (!data?.providers) return {};
-    
-    const deviationMap: Record<number, number> = {};
-    const timestamps = new Set<number>();
-    
-    // Collect all timestamps
-    Object.values(data.providers).forEach(regions => {
-      Object.values(regions).forEach(points => {
-        points.forEach(point => timestamps.add(point.timestamp));
-      });
-    });
-    
-    // Calculate deviation for each timestamp
-    timestamps.forEach(timestamp => {
-      const blockheights: number[] = [];
-      
-      Object.values(data.providers).forEach(regions => {
-        Object.values(regions).forEach(points => {
-          const point = points.find(p => p.timestamp === timestamp);
-          if (point) blockheights.push(point.blockheight);
-        });
-      });
-      
-      if (blockheights.length > 1) {
-        const max = Math.max(...blockheights);
-        const min = Math.min(...blockheights);
-        deviationMap[timestamp] = max - min;
-      } else {
-        deviationMap[timestamp] = 0;
-      }
-    });
-    
-    return deviationMap;
-  }, [data]);
-
   return { 
     data, 
     isLoading, 
     error: error instanceof Error ? error.message : null,
     uniqueRegions,
-    deviations,
-    refetch,
-    timeWindow
+    refetch 
   };
 };

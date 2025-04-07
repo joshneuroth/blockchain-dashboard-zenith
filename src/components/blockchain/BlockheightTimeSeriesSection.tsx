@@ -1,11 +1,9 @@
 
-import React, { useState } from 'react';
-import { useBlockheightTimeSeries, TimeWindowOption } from '@/hooks/useBlockheightTimeSeries';
+import React from 'react';
+import { useBlockheightTimeSeries } from '@/hooks/useBlockheightTimeSeries';
 import BlockheightTimeSeriesChart from './BlockheightTimeSeriesChart';
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, Clock } from "lucide-react";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { AlertCircle } from "lucide-react";
 
 interface BlockheightTimeSeriesSectionProps {
   networkId: string;
@@ -31,52 +29,15 @@ const BlockheightTimeSeriesSection: React.FC<BlockheightTimeSeriesSectionProps> 
   networkId, 
   networkName 
 }) => {
-  // State for selected time window, default to 10s for maximum granularity
-  const [timeWindow, setTimeWindow] = useState<TimeWindowOption>("10s");
-  
   // Convert network ID to chain ID
   const chainId = NETWORK_TO_CHAIN_ID[networkId] || networkId;
   
-  // Fetch time series data with selected time window
-  const { data, isLoading, error, uniqueRegions, deviations } = useBlockheightTimeSeries(chainId, timeWindow);
-
-  // Handle time window change
-  const handleTimeWindowChange = (value: string) => {
-    if (value) {
-      setTimeWindow(value as TimeWindowOption);
-    }
-  };
+  // Fetch time series data
+  const { data, isLoading, error, uniqueRegions } = useBlockheightTimeSeries(chainId);
 
   return (
     <div className="glass-card p-6 mb-6 animate-fade-in">
-      <div className="flex flex-wrap justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold">Blockheight Monitoring</h2>
-        
-        <div className="flex items-center space-x-2 mt-2 sm:mt-0">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex items-center text-sm text-muted-foreground mr-2">
-                  <Clock className="h-4 w-4 mr-1" />
-                  <span>Time Window:</span>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Select time window granularity for blockheight data</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          
-          <ToggleGroup type="single" value={timeWindow} onValueChange={handleTimeWindowChange}>
-            <ToggleGroupItem value="10s" aria-label="10 seconds">10s</ToggleGroupItem>
-            <ToggleGroupItem value="30s" aria-label="30 seconds">30s</ToggleGroupItem>
-            <ToggleGroupItem value="1m" aria-label="1 minute">1m</ToggleGroupItem>
-            <ToggleGroupItem value="5m" aria-label="5 minutes">5m</ToggleGroupItem>
-            <ToggleGroupItem value="10m" aria-label="10 minutes">10m</ToggleGroupItem>
-          </ToggleGroup>
-        </div>
-      </div>
-      
+      <h2 className="text-xl font-semibold mb-4">Blockheight Monitoring</h2>
       <p className="text-sm text-muted-foreground mb-6">
         Real-time monitoring of blockheight progression across different providers for {networkName}.
       </p>
@@ -94,7 +55,6 @@ const BlockheightTimeSeriesSection: React.FC<BlockheightTimeSeriesSectionProps> 
         data={data} 
         isLoading={isLoading}
         uniqueRegions={uniqueRegions}
-        deviations={deviations}
       />
     </div>
   );
