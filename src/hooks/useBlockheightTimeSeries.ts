@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
 export interface BlockheightDataPoint {
@@ -53,7 +53,7 @@ export const useBlockheightTimeSeries = (chainId: string) => {
     [];
 
   // Calculate max deviation per timestamp
-  const deviations = React.useMemo(() => {
+  const deviations = useMemo(() => {
     if (!data?.providers) return {};
     
     const deviationMap: Record<number, number> = {};
