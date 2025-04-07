@@ -25,9 +25,11 @@ export interface BlockheightTimeSeriesData {
   };
 }
 
-export const useBlockheightTimeSeries = (chainId: string) => {
+export type TimeWindowOption = "10s" | "30s" | "1m" | "5m" | "10m";
+
+export const useBlockheightTimeSeries = (chainId: string, timeWindow: TimeWindowOption = "10s") => {
   const fetchBlockheightData = async () => {
-    const response = await fetch(`https://blockheight-api.fly.dev/internal/networks/${chainId}/blockheight/time-series`);
+    const response = await fetch(`https://blockheight-api.fly.dev/internal/networks/${chainId}/blockheight/time-series?window=${timeWindow}`);
     
     if (!response.ok) {
       throw new Error(`API error: ${response.status}`);
@@ -37,7 +39,7 @@ export const useBlockheightTimeSeries = (chainId: string) => {
   };
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['blockheightTimeSeries', chainId],
+    queryKey: ['blockheightTimeSeries', chainId, timeWindow],
     queryFn: fetchBlockheightData,
     staleTime: 10000, // 10 seconds
     refetchInterval: 10000, // Auto-refresh every 10 seconds
@@ -95,6 +97,7 @@ export const useBlockheightTimeSeries = (chainId: string) => {
     error: error instanceof Error ? error.message : null,
     uniqueRegions,
     deviations,
-    refetch 
+    refetch,
+    timeWindow
   };
 };
