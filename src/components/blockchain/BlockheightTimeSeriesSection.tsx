@@ -39,7 +39,7 @@ const BlockheightTimeSeriesSection: React.FC<BlockheightTimeSeriesSectionProps> 
     <div className="glass-card p-6 mb-6 animate-fade-in">
       <h2 className="text-xl font-semibold mb-4">Blockheight Monitoring</h2>
       <p className="text-sm text-muted-foreground mb-6">
-        Real-time monitoring of blockheight progression across different providers for {networkName}.
+        Real-time monitoring of blockheight progression across different RPC providers using our blockheight monitoring system. Deviations represent reliability issues with providers.
       </p>
       
       {error && (
