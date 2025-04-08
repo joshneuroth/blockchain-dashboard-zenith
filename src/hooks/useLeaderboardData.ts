@@ -48,9 +48,12 @@ const fetchLeaderboardData = async (): Promise<LeaderboardResponse> => {
       });
     }
     
-    // Process latency data for regions
+    // Process latency data for regions - use the actual region name from the API
     if (chainData.leaderboards?.latency?.regions) {
-      Object.entries(chainData.leaderboards.latency.regions).forEach(([region, regionData]: [string, any]) => {
+      Object.entries(chainData.leaderboards.latency.regions).forEach(([regionKey, regionData]: [string, any]) => {
+        // Get region display name from the key (e.g., "us-east1" to "New York")
+        const regionDisplayName = regionKey; // We will display the exact region key from the API
+        
         if (regionData?.average_p50) {
           regionData.average_p50.forEach((item: any) => {
             // Find if provider already exists from timeliness data
@@ -61,7 +64,7 @@ const fetchLeaderboardData = async (): Promise<LeaderboardResponse> => {
             if (existingProvider) {
               // Update latency for existing provider
               existingProvider.latency = item.avg_p50_latency_ms;
-              existingProvider.region = region;
+              existingProvider.region = regionDisplayName;
               
               // Add p90 data if available
               if (regionData.average_p90) {
@@ -81,7 +84,7 @@ const fetchLeaderboardData = async (): Promise<LeaderboardResponse> => {
                 latency: item.avg_p50_latency_ms,
                 reliability: 0,
                 uptime: 100, // Default value
-                region
+                region: regionDisplayName
               };
               
               // Add p90 data if available
