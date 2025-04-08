@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Moon, Sun, TrendingUp, MoreHorizontal, EllipsisHorizontal } from 'lucide-react';
+import { Home, Moon, Sun, TrendingUp, MoreHorizontal } from 'lucide-react';
 import { NETWORKS } from '@/lib/api';
 import {
   DropdownMenu,
