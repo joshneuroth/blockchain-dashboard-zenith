@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Moon, Sun, Home } from 'lucide-react';
+import { Moon, Sun, Home, TrendingUp } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import BlockchainCard from '@/components/BlockchainCard';
 import NewsletterForm from '@/components/NewsletterForm';
@@ -49,6 +49,14 @@ const Index = () => {
               aria-label="Home"
             >
               <Home size={20} />
+            </Link>
+            
+            <Link 
+              to="/leaderboard" 
+              className="ml-4 p-2 rounded-full transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
+              aria-label="Leaderboard"
+            >
+              <TrendingUp size={20} />
             </Link>
             
             <div className="ml-4 blockchain-tabs hidden md:flex">
