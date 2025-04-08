@@ -7,6 +7,7 @@ import { LeaderboardProvider } from '@/hooks/useLeaderboardData';
 import { useLatencyRankingFilters } from '@/hooks/useLatencyRankingFilters';
 import LatencyFilterControls from './LatencyFilterControls';
 import LatencyRankingTable from './LatencyRankingTable';
+import LatencyInfoBox from './LatencyInfoBox';
 
 interface LatencyRankingCardProps {
   providers: LeaderboardProvider[];
@@ -76,24 +77,27 @@ const LatencyRankingCard: React.FC<LatencyRankingCardProps> = ({
 
   return (
     <Card className="glass-card">
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader>
         <CardTitle className="text-xl font-medium flex items-center gap-2">
           <Zap size={20} />
           Provider Latency Ranking
         </CardTitle>
-        <LatencyFilterControls
-          selectedNetwork={selectedNetwork}
-          selectedRegion={selectedRegion}
-          selectedPeriod={selectedPeriod}
-          availableNetworks={availableNetworks}
-          availableRegions={availableRegions}
-          availablePeriods={availablePeriods}
-          onNetworkChange={handleNetworkChange}
-          onRegionChange={handleRegionChange}
-          onPeriodChange={handlePeriodChange}
-        />
+        <LatencyInfoBox />
       </CardHeader>
       <CardContent>
+        <div className="mb-4">
+          <LatencyFilterControls
+            selectedNetwork={selectedNetwork}
+            selectedRegion={selectedRegion}
+            selectedPeriod={selectedPeriod}
+            availableNetworks={availableNetworks}
+            availableRegions={availableRegions}
+            availablePeriods={availablePeriods}
+            onNetworkChange={handleNetworkChange}
+            onRegionChange={handleRegionChange}
+            onPeriodChange={handlePeriodChange}
+          />
+        </div>
         <LatencyRankingTable 
           providers={filteredProviders}
           selectedNetwork={selectedNetwork}
