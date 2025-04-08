@@ -1,13 +1,14 @@
 
 import React from 'react';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Zap, ExternalLink } from 'lucide-react';
 import { LeaderboardProvider } from '@/hooks/useLeaderboardData';
 import { useLatencyRankingFilters } from '@/hooks/useLatencyRankingFilters';
-import LatencyFilterControls from './LatencyFilterControls';
-import LatencyRankingTable from './LatencyRankingTable';
 import LatencyInfoBox from './LatencyInfoBox';
+import LatencyTableSection from './LatencyTableSection';
+import LatencyLoadingState from './LatencyLoadingState';
+import LatencyErrorState from './LatencyErrorState';
 
 interface LatencyRankingCardProps {
   providers: LeaderboardProvider[];
@@ -42,17 +43,7 @@ const LatencyRankingCard: React.FC<LatencyRankingCardProps> = ({
   if (isLoading) {
     return (
       <Card className="glass-card">
-        <CardHeader>
-          <CardTitle className="text-xl font-medium flex items-center gap-2">
-            <Zap size={20} />
-            Provider Latency Ranking
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-60 flex items-center justify-center">
-            <p className="text-muted-foreground">Loading latency data...</p>
-          </div>
-        </CardContent>
+        <LatencyLoadingState />
       </Card>
     );
   }
@@ -60,17 +51,7 @@ const LatencyRankingCard: React.FC<LatencyRankingCardProps> = ({
   if (error) {
     return (
       <Card className="glass-card">
-        <CardHeader>
-          <CardTitle className="text-xl font-medium flex items-center gap-2">
-            <Zap size={20} />
-            Provider Latency Ranking
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-60 flex items-center justify-center">
-            <p className="text-red-500">Error loading latency data: {error.message}</p>
-          </div>
-        </CardContent>
+        <LatencyErrorState error={error} />
       </Card>
     );
   }
@@ -84,27 +65,20 @@ const LatencyRankingCard: React.FC<LatencyRankingCardProps> = ({
         </CardTitle>
         <LatencyInfoBox />
       </CardHeader>
-      <CardContent>
-        <div className="mb-4">
-          <LatencyFilterControls
-            selectedNetwork={selectedNetwork}
-            selectedRegion={selectedRegion}
-            selectedPeriod={selectedPeriod}
-            availableNetworks={availableNetworks}
-            availableRegions={availableRegions}
-            availablePeriods={availablePeriods}
-            onNetworkChange={handleNetworkChange}
-            onRegionChange={handleRegionChange}
-            onPeriodChange={handlePeriodChange}
-          />
-        </div>
-        <LatencyRankingTable 
-          providers={filteredProviders}
-          selectedNetwork={selectedNetwork}
-          selectedRegion={selectedRegion}
-          selectedPeriod={selectedPeriod}
-        />
-      </CardContent>
+      
+      <LatencyTableSection 
+        selectedNetwork={selectedNetwork}
+        selectedRegion={selectedRegion}
+        selectedPeriod={selectedPeriod}
+        availableNetworks={availableNetworks}
+        availableRegions={availableRegions}
+        availablePeriods={availablePeriods}
+        filteredProviders={filteredProviders}
+        handleNetworkChange={handleNetworkChange}
+        handleRegionChange={handleRegionChange}
+        handlePeriodChange={handlePeriodChange}
+      />
+      
       <CardFooter className="flex justify-between">
         <p className="text-sm text-muted-foreground">
           {lastUpdated ? `Last updated: ${formatDate(lastUpdated)}` : 'Data freshness unknown'}
