@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
@@ -10,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
+import TimelinessInfoBox from './TimelinessInfoBox';
 
 interface TimelinessRankingCardProps {
   providers: LeaderboardProvider[];
@@ -99,6 +99,7 @@ const TimelinessRankingCard: React.FC<TimelinessRankingCardProps> = ({
             <Clock size={20} />
             Provider Timeliness Ranking
           </CardTitle>
+          <TimelinessInfoBox />
           <div className="flex flex-wrap gap-2 mt-4">
             {/* Network Filter */}
             <Select value={selectedNetwork} onValueChange={setSelectedNetwork}>
@@ -172,6 +173,7 @@ const TimelinessRankingCard: React.FC<TimelinessRankingCardProps> = ({
           <Clock size={20} />
           Provider Timeliness Ranking
         </CardTitle>
+        <TimelinessInfoBox />
         
         <div className="flex flex-wrap gap-2 mt-4">
           {/* Network Filter */}
