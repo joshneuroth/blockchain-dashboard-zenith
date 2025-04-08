@@ -1,3 +1,4 @@
+
 // Networks and their RPC endpoints
 export const NETWORKS = {
   ethereum: {
@@ -43,17 +44,6 @@ export const NETWORKS = {
       { url: "https://binance.blockpi.network/v1/rpc/public", name: "BlockPI" }
     ],
     color: "binance"
-  },
-  base: {
-    name: "Base",
-    rpcs: [
-      { url: "https://mainnet.base.org", name: "Base" },
-      { url: "https://base.publicnode.com", name: "PublicNode" },
-      { url: "https://base.meowrpc.com", name: "MeowRPC" },
-      { url: "https://base.blockpi.network/v1/rpc/public", name: "BlockPI" },
-      { url: "https://rpc.ankr.com/base", name: "Ankr" }
-    ],
-    color: "base"
   }
 };
 
