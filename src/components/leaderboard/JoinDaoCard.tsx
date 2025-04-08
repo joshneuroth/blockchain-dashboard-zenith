@@ -15,7 +15,7 @@ const JoinDaoCard: React.FC = () => {
           </div>
           <Button 
             variant="outline" 
-            className="border-white/30 text-white hover:bg-white/10 hover:text-white"
+            className="border-white/30 text-white hover:bg-white/10 hover:text-white bg-transparent"
             onClick={() => window.open('https://blockheight.xyz/dao', '_blank')}
           >
             <ExternalLink size={16} className="mr-2" />
