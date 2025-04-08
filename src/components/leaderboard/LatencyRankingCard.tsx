@@ -24,11 +24,14 @@ const LatencyRankingCard: React.FC<LatencyRankingCardProps> = ({
   const {
     selectedNetwork,
     selectedRegion,
+    selectedPeriod,
     availableNetworks,
     availableRegions,
+    availablePeriods,
     filteredProviders,
     handleNetworkChange,
-    handleRegionChange
+    handleRegionChange,
+    handlePeriodChange
   } = useLatencyRankingFilters(providers);
 
   const formatDate = (dateStr: string) => {
@@ -81,10 +84,13 @@ const LatencyRankingCard: React.FC<LatencyRankingCardProps> = ({
         <LatencyFilterControls
           selectedNetwork={selectedNetwork}
           selectedRegion={selectedRegion}
+          selectedPeriod={selectedPeriod}
           availableNetworks={availableNetworks}
           availableRegions={availableRegions}
+          availablePeriods={availablePeriods}
           onNetworkChange={handleNetworkChange}
           onRegionChange={handleRegionChange}
+          onPeriodChange={handlePeriodChange}
         />
       </CardHeader>
       <CardContent>
@@ -92,6 +98,7 @@ const LatencyRankingCard: React.FC<LatencyRankingCardProps> = ({
           providers={filteredProviders}
           selectedNetwork={selectedNetwork}
           selectedRegion={selectedRegion}
+          selectedPeriod={selectedPeriod}
         />
       </CardContent>
       <CardFooter className="flex justify-between">

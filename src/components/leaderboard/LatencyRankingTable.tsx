@@ -4,17 +4,20 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@
 import { Badge } from '@/components/ui/badge';
 import { Award } from 'lucide-react';
 import { LeaderboardProvider } from '@/hooks/useLeaderboardData';
+import { TimePeriod } from '@/hooks/useLatencyRankingFilters';
 
 interface LatencyRankingTableProps {
   providers: LeaderboardProvider[];
   selectedNetwork: string;
   selectedRegion: string;
+  selectedPeriod: TimePeriod;
 }
 
 const LatencyRankingTable: React.FC<LatencyRankingTableProps> = ({
   providers,
   selectedNetwork,
-  selectedRegion
+  selectedRegion,
+  selectedPeriod
 }) => {
   const getLatencyColor = (latency: number) => {
     if (latency <= 200) return "bg-green-500 text-white";
@@ -28,6 +31,7 @@ const LatencyRankingTable: React.FC<LatencyRankingTableProps> = ({
         <p className="text-muted-foreground">
           No latency data available for {selectedNetwork} 
           {selectedRegion !== "All Regions" ? ` in ${selectedRegion}` : ''}
+          {selectedPeriod !== "all" ? ` over the past ${selectedPeriod}` : ''}
         </p>
       </div>
     );

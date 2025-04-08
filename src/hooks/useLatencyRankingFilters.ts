@@ -2,9 +2,12 @@
 import { useState, useMemo } from 'react';
 import { LeaderboardProvider } from '@/hooks/useLeaderboardData';
 
+export type TimePeriod = '24h' | '7d' | '30d' | 'all';
+
 export function useLatencyRankingFilters(providers: LeaderboardProvider[]) {
   const [selectedNetwork, setSelectedNetwork] = useState<string>("Ethereum");
   const [selectedRegion, setSelectedRegion] = useState<string>("All Regions");
+  const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>("24h");
   
   const availableNetworks = useMemo(() => {
     if (!providers || providers.length === 0) return ["Ethereum"];
@@ -22,6 +25,8 @@ export function useLatencyRankingFilters(providers: LeaderboardProvider[]) {
     
     return regions;
   }, [providers, selectedNetwork]);
+
+  const availablePeriods: TimePeriod[] = ["24h", "7d", "30d", "all"];
 
   const filteredProviders = useMemo(() => {
     return [...(providers || [])]
@@ -42,13 +47,20 @@ export function useLatencyRankingFilters(providers: LeaderboardProvider[]) {
     setSelectedRegion(region);
   };
 
+  const handlePeriodChange = (period: TimePeriod) => {
+    setSelectedPeriod(period);
+  };
+
   return {
     selectedNetwork,
     selectedRegion,
+    selectedPeriod,
     availableNetworks,
     availableRegions,
+    availablePeriods,
     filteredProviders,
     handleNetworkChange,
-    handleRegionChange
+    handleRegionChange,
+    handlePeriodChange
   };
 }
