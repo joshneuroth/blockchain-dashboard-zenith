@@ -5,6 +5,9 @@ import TimelinessRankingCard from '@/components/leaderboard/TimelinessRankingCar
 import LatencyRankingCard from '@/components/leaderboard/LatencyRankingCard';
 import { Moon, Sun, Home, TrendingUp } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import { NETWORKS } from '@/lib/api';
+import NetworkHeader from '@/components/network/NetworkHeader';
+import MobileNetworkSelector from '@/components/network/MobileNetworkSelector';
 
 const Leaderboard = () => {
   const [darkMode, setDarkMode] = useState(false);
@@ -23,39 +26,8 @@ const Leaderboard = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
-      <header className="w-full py-4 px-6 md:px-10 border-b border-gray-200 dark:border-gray-800 glass-effect">
-        <div className="container mx-auto flex justify-between items-center">
-          <div className="flex items-center">
-            <h1 className="text-lg md:text-xl font-bold">
-              blockheight<span className="text-gray-500 font-mono">.xyz</span>
-            </h1>
-            
-            <Link 
-              to="/" 
-              className="ml-4 p-2 rounded-full transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
-              aria-label="Home"
-            >
-              <Home size={20} />
-            </Link>
-            
-            <Link 
-              to="/leaderboard" 
-              className="ml-4 p-2 rounded-full transition-colors bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-gray-100"
-              aria-label="Leaderboard"
-            >
-              <TrendingUp size={20} />
-            </Link>
-          </div>
-          
-          <button
-            onClick={() => setDarkMode(!darkMode)}
-            className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-            aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
-          >
-            {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-          </button>
-        </div>
-      </header>
+      <NetworkHeader darkMode={darkMode} setDarkMode={setDarkMode} />
+      <MobileNetworkSelector />
       
       <section className="w-full py-16 px-6 md:px-10 animate-slide-in">
         <div className="container mx-auto max-w-4xl">
