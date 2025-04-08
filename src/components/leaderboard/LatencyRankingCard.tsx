@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Zap, Award, ExternalLink, Filter } from 'lucide-react';
+import { Zap, Award, ExternalLink, Filter, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { 
   Select, 
@@ -28,8 +28,9 @@ const LatencyRankingCard: React.FC<LatencyRankingCardProps> = ({
   error,
   lastUpdated
 }) => {
-  // State for selected network
+  // State for selected network and region
   const [selectedNetwork, setSelectedNetwork] = useState<string>("Ethereum");
+  const [selectedRegion, setSelectedRegion] = useState<string>("All Regions");
   
   // Get available networks from providers data
   const availableNetworks = React.useMemo(() => {
@@ -39,12 +40,27 @@ const LatencyRankingCard: React.FC<LatencyRankingCardProps> = ({
     return networks.length > 0 ? networks : ["Ethereum"];
   }, [providers]);
 
-  // Sort providers by latency (lower is better) and filter by selected network
+  // Get available regions from providers data for the selected network
+  const availableRegions = React.useMemo(() => {
+    if (!providers || providers.length === 0) return ["All Regions"];
+    
+    const regions = ["All Regions", ...new Set(providers
+      .filter(provider => provider.network === selectedNetwork && provider.region)
+      .map(provider => provider.region as string))];
+    
+    return regions;
+  }, [providers, selectedNetwork]);
+
+  // Sort providers by latency (lower is better) and filter by selected network and region
   const filteredProviders = React.useMemo(() => {
     return [...(providers || [])]
-      .filter(provider => provider.latency > 0 && provider.network === selectedNetwork)
+      .filter(provider => 
+        provider.latency > 0 && 
+        provider.network === selectedNetwork &&
+        (selectedRegion === "All Regions" || provider.region === selectedRegion)
+      )
       .sort((a, b) => a.latency - b.latency);
-  }, [providers, selectedNetwork]);
+  }, [providers, selectedNetwork, selectedRegion]);
 
   // Get latency color
   const getLatencyColor = (latency: number) => {
@@ -61,6 +77,12 @@ const LatencyRankingCard: React.FC<LatencyRankingCardProps> = ({
   // Handle network change
   const handleNetworkChange = (network: string) => {
     setSelectedNetwork(network);
+    setSelectedRegion("All Regions"); // Reset region when network changes
+  };
+
+  // Handle region change
+  const handleRegionChange = (region: string) => {
+    setSelectedRegion(region);
   };
 
   if (isLoading) {
@@ -106,26 +128,47 @@ const LatencyRankingCard: React.FC<LatencyRankingCardProps> = ({
           <Zap size={20} />
           Provider Latency Ranking
         </CardTitle>
-        <div className="flex items-center gap-2">
-          <Filter size={16} className="text-muted-foreground" />
-          <Select value={selectedNetwork} onValueChange={handleNetworkChange}>
-            <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="Select Network" />
-            </SelectTrigger>
-            <SelectContent>
-              {availableNetworks.map((network) => (
-                <SelectItem key={network} value={network}>
-                  {network}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1">
+            <Filter size={16} className="text-muted-foreground" />
+            <Select value={selectedNetwork} onValueChange={handleNetworkChange}>
+              <SelectTrigger className="w-[140px] h-10">
+                <SelectValue placeholder="Select Network" />
+              </SelectTrigger>
+              <SelectContent>
+                {availableNetworks.map((network) => (
+                  <SelectItem key={network} value={network}>
+                    {network}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="flex items-center gap-1">
+            <Globe size={16} className="text-muted-foreground" />
+            <Select value={selectedRegion} onValueChange={handleRegionChange}>
+              <SelectTrigger className="w-[140px] h-10">
+                <SelectValue placeholder="Select Region" />
+              </SelectTrigger>
+              <SelectContent>
+                {availableRegions.map((region) => (
+                  <SelectItem key={region} value={region}>
+                    {region}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
         {filteredProviders.length === 0 ? (
           <div className="h-60 flex items-center justify-center">
-            <p className="text-muted-foreground">No latency data available for {selectedNetwork}</p>
+            <p className="text-muted-foreground">
+              No latency data available for {selectedNetwork} 
+              {selectedRegion !== "All Regions" ? ` in ${selectedRegion}` : ''}
+            </p>
           </div>
         ) : (
           <Table>
