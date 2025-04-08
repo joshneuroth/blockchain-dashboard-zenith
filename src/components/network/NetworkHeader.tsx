@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Moon, Sun, TrendingUp, MoreHorizontal } from 'lucide-react';
+import { Home, Moon, Sun, TrendingUp, MoreHorizontal, ChainIcon } from 'lucide-react';
 import { NETWORKS } from '@/lib/api';
 import {
   DropdownMenu,
@@ -9,6 +9,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
 
 interface NetworkHeaderProps {
   darkMode: boolean;
@@ -92,6 +97,28 @@ const NetworkHeader: React.FC<NetworkHeaderProps> = ({ darkMode, setDarkMode }) 
               </DropdownMenu>
             )}
           </div>
+          
+          {/* Add the chain dropdown icon */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                className="ml-4 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                aria-label="More chains"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="7" width="6" height="10" rx="1" />
+                  <rect x="9" y="4" width="6" height="16" rx="1" />
+                  <rect x="16" y="10" width="6" height="7" rx="1" />
+                </svg>
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-72 p-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+              <div className="p-4">
+                <h3 className="text-sm font-medium mb-2">More Chains</h3>
+                <p className="text-xs text-gray-500">Dropdown content will be added in the next step</p>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
         
         <button
