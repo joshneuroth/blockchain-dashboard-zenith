@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Moon, Sun, TrendingUp, MoreHorizontal } from 'lucide-react';
@@ -97,7 +98,7 @@ const NetworkHeader: React.FC<NetworkHeaderProps> = ({ darkMode, setDarkMode }) 
             )}
           </div>
           
-          {/* Chain dropdown icon - we'll keep only this one */}
+          {/* Chain dropdown icon */}
           <Popover>
             <PopoverTrigger asChild>
               <button
@@ -110,21 +111,7 @@ const NetworkHeader: React.FC<NetworkHeaderProps> = ({ darkMode, setDarkMode }) 
             <PopoverContent className="w-72 p-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
               <div className="p-4">
                 <h3 className="text-sm font-medium mb-2">More Chains</h3>
-                <div className="grid grid-cols-1 gap-2">
-                  {Object.entries(NETWORKS).map(([id, network]) => (
-                    <Link
-                      key={id}
-                      to={`/${id}`}
-                      className={`px-3 py-2 rounded-md text-sm ${
-                        location.pathname === `/${id}`
-                          ? 'bg-gray-100 dark:bg-gray-700 font-medium'
-                          : 'hover:bg-gray-50 dark:hover:bg-gray-700'
-                      }`}
-                    >
-                      {network.name}
-                    </Link>
-                  ))}
-                </div>
+                <p className="text-xs text-gray-500">Dropdown content will be added in the next step</p>
               </div>
             </PopoverContent>
           </Popover>
