@@ -139,10 +139,6 @@
   @apply relative;
 }
 
-.blockchain-tabs .dropdown-menu {
-  @apply absolute z-50 mt-2 bg-white dark:bg-gray-800 rounded-md shadow-lg;
-}
-
 .animate-fade-in {
   animation: fadeIn 0.6s ease-in-out;
 }
