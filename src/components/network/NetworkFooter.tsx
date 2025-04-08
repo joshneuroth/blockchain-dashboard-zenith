@@ -6,7 +6,7 @@ const NetworkFooter: React.FC = () => {
   return (
     <footer className="w-full py-8 px-6 md:px-10 mt-12 bg-gray-100 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
       <div className="container mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
           <div className="col-span-1">
             <h2 className="text-lg font-bold mb-4">
               blockheight<span className="text-gray-500 font-mono">.xyz</span>

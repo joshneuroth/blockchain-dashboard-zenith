@@ -8,6 +8,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { NETWORKS } from '@/lib/api';
 import NetworkHeader from '@/components/network/NetworkHeader';
 import MobileNetworkSelector from '@/components/network/MobileNetworkSelector';
+import NetworkFooter from '@/components/network/NetworkFooter';
 
 const Leaderboard = () => {
   const [darkMode, setDarkMode] = useState(false);
@@ -72,18 +73,8 @@ const Leaderboard = () => {
         </div>
       </section>
       
-      <footer className="w-full py-8 px-6 md:px-10 mt-12 bg-gray-100 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
-        <div className="container mx-auto max-w-4xl">
-          <div className="text-center">
-            <p className="text-sm text-gray-500">
-              Data provided by the blockheight.xyz API. Updated every 5 minutes.
-            </p>
-            <p className="text-xs text-gray-400 mt-2">
-              &copy; {new Date().getFullYear()} blockheight.xyz. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </footer>
+      {/* Replace the custom footer with the NetworkFooter component */}
+      <NetworkFooter />
     </div>
   );
 };
