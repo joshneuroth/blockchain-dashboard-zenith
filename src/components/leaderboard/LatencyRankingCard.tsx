@@ -179,7 +179,7 @@ const LatencyRankingCard: React.FC<LatencyRankingCardProps> = ({
                 <TableHead>Network</TableHead>
                 <TableHead>Region</TableHead>
                 <TableHead className="text-right">P50 Latency (ms)</TableHead>
-                <TableHead className="text-right">P50/P90 Ratio</TableHead>
+                <TableHead className="text-right">P90/P50 Ratio</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
