@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Moon, Sun } from 'lucide-react';
+import { Home, Moon, Sun, TrendingUp } from 'lucide-react';
 import { NETWORKS } from '@/lib/api';
 
 interface NetworkHeaderProps {
@@ -12,6 +12,7 @@ interface NetworkHeaderProps {
 const NetworkHeader: React.FC<NetworkHeaderProps> = ({ darkMode, setDarkMode }) => {
   const location = useLocation();
   const isHomePage = location.pathname === '/';
+  const isLeaderboardPage = location.pathname === '/leaderboard';
 
   return (
     <header className="w-full py-4 px-6 md:px-10 border-b border-gray-200 dark:border-gray-800 glass-effect">
@@ -31,6 +32,18 @@ const NetworkHeader: React.FC<NetworkHeaderProps> = ({ darkMode, setDarkMode }) 
             aria-label="Home"
           >
             <Home size={20} />
+          </Link>
+          
+          <Link 
+            to="/leaderboard" 
+            className={`ml-4 p-2 rounded-full transition-colors ${
+              isLeaderboardPage 
+                ? 'bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-gray-100' 
+                : 'hover:bg-gray-200 dark:hover:bg-gray-700'
+            }`}
+            aria-label="Leaderboard"
+          >
+            <TrendingUp size={20} />
           </Link>
           
           <div className="ml-4 blockchain-tabs hidden md:flex">
