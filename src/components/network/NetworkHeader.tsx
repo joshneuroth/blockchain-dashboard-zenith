@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Moon, Sun, TrendingUp, MoreHorizontal } from 'lucide-react';
@@ -98,7 +97,7 @@ const NetworkHeader: React.FC<NetworkHeaderProps> = ({ darkMode, setDarkMode }) 
             )}
           </div>
           
-          {/* Chain dropdown icon */}
+          {/* Chain dropdown icon - we'll keep only this one */}
           <Popover>
             <PopoverTrigger asChild>
               <button
