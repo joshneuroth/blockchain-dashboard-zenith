@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { useLeaderboardData } from '@/hooks/useLeaderboardData';
 import TimelinessRankingCard from '@/components/leaderboard/TimelinessRankingCard';
 import LatencyRankingCard from '@/components/leaderboard/LatencyRankingCard';
-import { Moon, Sun, Home, TrendingUp } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { NETWORKS } from '@/lib/api';
 import NetworkHeader from '@/components/network/NetworkHeader';

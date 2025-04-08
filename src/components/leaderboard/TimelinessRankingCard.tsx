@@ -1,11 +1,15 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Award, ExternalLink } from 'lucide-react';
+import { Clock, Award, ExternalLink, Calendar, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LeaderboardProvider } from '@/hooks/useLeaderboardData';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { format } from 'date-fns';
 
 interface TimelinessRankingCardProps {
   providers: LeaderboardProvider[];
@@ -20,12 +24,24 @@ const TimelinessRankingCard: React.FC<TimelinessRankingCardProps> = ({
   error,
   lastUpdated
 }) => {
-  // Sort providers by timeliness (higher is better) and filter those with timeliness > 0
-  const sortedProviders = React.useMemo(() => {
+  // State for filters
+  const [selectedNetwork, setSelectedNetwork] = useState<string>("all");
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  
+  // Extract unique networks from providers
+  const networks = React.useMemo(() => {
+    const uniqueNetworks = [...new Set(providers.map(provider => provider.network))];
+    return ["all", ...uniqueNetworks].filter(Boolean);
+  }, [providers]);
+
+  // Sort and filter providers by timeliness (higher is better) and filter by selected network
+  const filteredProviders = React.useMemo(() => {
     return [...(providers || [])]
       .filter(provider => provider.timeliness > 0)
+      .filter(provider => selectedNetwork === "all" || provider.network === selectedNetwork)
       .sort((a, b) => b.timeliness - a.timeliness);
-  }, [providers]);
+  }, [providers, selectedNetwork]);
 
   // Get timeliness ranking color
   const getTimelinessColor = (score: number) => {
@@ -75,7 +91,7 @@ const TimelinessRankingCard: React.FC<TimelinessRankingCardProps> = ({
     );
   }
 
-  if (sortedProviders.length === 0) {
+  if (filteredProviders.length === 0) {
     return (
       <Card className="glass-card">
         <CardHeader>
@@ -83,10 +99,66 @@ const TimelinessRankingCard: React.FC<TimelinessRankingCardProps> = ({
             <Clock size={20} />
             Provider Timeliness Ranking
           </CardTitle>
+          <div className="flex flex-wrap gap-2 mt-4">
+            {/* Network Filter */}
+            <Select value={selectedNetwork} onValueChange={setSelectedNetwork}>
+              <SelectTrigger className="w-[180px]">
+                <div className="flex items-center gap-2">
+                  <Filter size={16} />
+                  <SelectValue placeholder="Filter by network" />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                {networks.map((network) => (
+                  <SelectItem key={network} value={network}>
+                    {network === "all" ? "All Networks" : network}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            {/* Date Range Selector - Start Date */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-[200px] justify-start">
+                  <Calendar className="mr-2 h-4 w-4" />
+                  {startDate ? format(startDate, "PPP") : "Start Date"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <CalendarComponent
+                  mode="single"
+                  selected={startDate}
+                  onSelect={setStartDate}
+                  initialFocus
+                  className="pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+            
+            {/* Date Range Selector - End Date */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-[200px] justify-start">
+                  <Calendar className="mr-2 h-4 w-4" />
+                  {endDate ? format(endDate, "PPP") : "End Date"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <CalendarComponent
+                  mode="single"
+                  selected={endDate}
+                  onSelect={setEndDate}
+                  initialFocus
+                  className="pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="h-60 flex items-center justify-center">
-            <p className="text-muted-foreground">No timeliness data available</p>
+            <p className="text-muted-foreground">No timeliness data available for the selected filters</p>
           </div>
         </CardContent>
       </Card>
@@ -100,6 +172,79 @@ const TimelinessRankingCard: React.FC<TimelinessRankingCardProps> = ({
           <Clock size={20} />
           Provider Timeliness Ranking
         </CardTitle>
+        
+        <div className="flex flex-wrap gap-2 mt-4">
+          {/* Network Filter */}
+          <Select value={selectedNetwork} onValueChange={setSelectedNetwork}>
+            <SelectTrigger className="w-[180px]">
+              <div className="flex items-center gap-2">
+                <Filter size={16} />
+                <SelectValue placeholder="Filter by network" />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              {networks.map((network) => (
+                <SelectItem key={network} value={network}>
+                  {network === "all" ? "All Networks" : network}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          {/* Date Range Selector - Start Date */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-[200px] justify-start">
+                <Calendar className="mr-2 h-4 w-4" />
+                {startDate ? format(startDate, "PPP") : "Start Date"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <CalendarComponent
+                mode="single"
+                selected={startDate}
+                onSelect={setStartDate}
+                initialFocus
+                className="pointer-events-auto"
+              />
+            </PopoverContent>
+          </Popover>
+          
+          {/* Date Range Selector - End Date */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-[200px] justify-start">
+                <Calendar className="mr-2 h-4 w-4" />
+                {endDate ? format(endDate, "PPP") : "End Date"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <CalendarComponent
+                mode="single"
+                selected={endDate}
+                onSelect={setEndDate}
+                initialFocus
+                className="pointer-events-auto"
+              />
+            </PopoverContent>
+          </Popover>
+          
+          {/* Reset Filters Button */}
+          {(selectedNetwork !== "all" || startDate || endDate) && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => {
+                setSelectedNetwork("all");
+                setStartDate(undefined);
+                setEndDate(undefined);
+              }}
+              className="text-xs"
+            >
+              Reset Filters
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         <Table>
@@ -112,7 +257,7 @@ const TimelinessRankingCard: React.FC<TimelinessRankingCardProps> = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sortedProviders.map((provider, index) => (
+            {filteredProviders.map((provider, index) => (
               <TableRow key={`${provider.provider}-${provider.network}`}>
                 <TableCell className="font-mono">
                   {index === 0 ? (
