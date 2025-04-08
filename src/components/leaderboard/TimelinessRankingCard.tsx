@@ -3,10 +3,9 @@ import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Award, ExternalLink, AlertCircle } from 'lucide-react';
+import { Clock, Award, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LeaderboardProvider } from '@/hooks/useLeaderboardData';
-import { Skeleton } from '@/components/ui/skeleton';
 
 interface TimelinessRankingCardProps {
   providers: LeaderboardProvider[];
@@ -21,14 +20,11 @@ const TimelinessRankingCard: React.FC<TimelinessRankingCardProps> = ({
   error,
   lastUpdated
 }) => {
-  // Log props for debugging
-  React.useEffect(() => {
-    console.log("TimelinessRankingCard Props:", { providers, isLoading, error, lastUpdated });
-  }, [providers, isLoading, error, lastUpdated]);
-
-  // Sort providers by timeliness (higher is better)
+  // Sort providers by timeliness (higher is better) and filter those with timeliness > 0
   const sortedProviders = React.useMemo(() => {
-    return [...(providers || [])].sort((a, b) => b.timeliness - a.timeliness);
+    return [...(providers || [])]
+      .filter(provider => provider.timeliness > 0)
+      .sort((a, b) => b.timeliness - a.timeliness);
   }, [providers]);
 
   // Get timeliness ranking color
@@ -40,7 +36,6 @@ const TimelinessRankingCard: React.FC<TimelinessRankingCardProps> = ({
 
   // Format date
   const formatDate = (dateStr: string) => {
-    if (!dateStr) return 'Unknown';
     return new Date(dateStr).toLocaleString();
   };
 
@@ -54,12 +49,8 @@ const TimelinessRankingCard: React.FC<TimelinessRankingCardProps> = ({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-8 w-full" />
+          <div className="h-60 flex items-center justify-center">
+            <p className="text-muted-foreground">Loading timeliness data...</p>
           </div>
         </CardContent>
       </Card>
@@ -67,27 +58,6 @@ const TimelinessRankingCard: React.FC<TimelinessRankingCardProps> = ({
   }
 
   if (error) {
-    return (
-      <Card className="glass-card border-red-200">
-        <CardHeader>
-          <CardTitle className="text-xl font-medium flex items-center gap-2">
-            <Clock size={20} />
-            Provider Timeliness Ranking
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-60 flex flex-col items-center justify-center gap-2">
-            <AlertCircle className="text-red-500" size={32} />
-            <p className="text-red-500 text-center">Error loading timeliness data</p>
-            <p className="text-sm text-gray-500 text-center max-w-md">{error.message}</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // Check if providers array is empty
-  if (!providers || providers.length === 0) {
     return (
       <Card className="glass-card">
         <CardHeader>
@@ -97,8 +67,26 @@ const TimelinessRankingCard: React.FC<TimelinessRankingCardProps> = ({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-60 flex flex-col items-center justify-center gap-2">
-            <p className="text-gray-500">No provider data available</p>
+          <div className="h-60 flex items-center justify-center">
+            <p className="text-red-500">Error loading timeliness data: {error.message}</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (sortedProviders.length === 0) {
+    return (
+      <Card className="glass-card">
+        <CardHeader>
+          <CardTitle className="text-xl font-medium flex items-center gap-2">
+            <Clock size={20} />
+            Provider Timeliness Ranking
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-60 flex items-center justify-center">
+            <p className="text-muted-foreground">No timeliness data available</p>
           </div>
         </CardContent>
       </Card>

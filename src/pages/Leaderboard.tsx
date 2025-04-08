@@ -13,13 +13,6 @@ const Leaderboard = () => {
   // Fetch leaderboard data
   const { data, isLoading, error } = useLeaderboardData();
   
-  // Log data for debugging
-  useEffect(() => {
-    console.log("Leaderboard Data:", data);
-    console.log("Loading State:", isLoading);
-    console.log("Error State:", error);
-  }, [data, isLoading, error]);
-
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark');
