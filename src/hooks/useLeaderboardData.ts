@@ -8,6 +8,8 @@ export interface LeaderboardProvider {
   latency: number;
   reliability: number;
   uptime: number;
+  region?: string;
+  p90_latency?: number;
 }
 
 export interface LeaderboardResponse {
@@ -46,26 +48,54 @@ const fetchLeaderboardData = async (): Promise<LeaderboardResponse> => {
       });
     }
     
-    // Process latency data for New York region
-    if (chainData.leaderboards?.latency?.regions?.["New York"]?.average_p50) {
-      chainData.leaderboards.latency.regions["New York"].average_p50.forEach((item: any) => {
-        // Find if provider already exists from timeliness data
-        const existingProvider = providers.find(
-          p => p.provider === item.provider_name && p.network === network
-        );
-        
-        if (existingProvider) {
-          // Update latency for existing provider
-          existingProvider.latency = item.avg_p50_latency_ms;
-        } else {
-          // Add new provider with latency data
-          providers.push({
-            provider: item.provider_name,
-            network,
-            timeliness: 0, // Not in timeliness data
-            latency: item.avg_p50_latency_ms,
-            reliability: 0,
-            uptime: 100, // Default value
+    // Process latency data for regions
+    if (chainData.leaderboards?.latency?.regions) {
+      Object.entries(chainData.leaderboards.latency.regions).forEach(([region, regionData]: [string, any]) => {
+        if (regionData?.average_p50) {
+          regionData.average_p50.forEach((item: any) => {
+            // Find if provider already exists from timeliness data
+            const existingProvider = providers.find(
+              p => p.provider === item.provider_name && p.network === network
+            );
+            
+            if (existingProvider) {
+              // Update latency for existing provider
+              existingProvider.latency = item.avg_p50_latency_ms;
+              existingProvider.region = region;
+              
+              // Add p90 data if available
+              if (regionData.average_p90) {
+                const p90Data = regionData.average_p90.find((p90Item: any) => 
+                  p90Item.provider_name === item.provider_name
+                );
+                if (p90Data) {
+                  existingProvider.p90_latency = p90Data.avg_p90_latency_ms;
+                }
+              }
+            } else {
+              // Add new provider with latency data
+              const newProvider: LeaderboardProvider = {
+                provider: item.provider_name,
+                network,
+                timeliness: 0, // Not in timeliness data
+                latency: item.avg_p50_latency_ms,
+                reliability: 0,
+                uptime: 100, // Default value
+                region
+              };
+              
+              // Add p90 data if available
+              if (regionData.average_p90) {
+                const p90Data = regionData.average_p90.find((p90Item: any) => 
+                  p90Item.provider_name === item.provider_name
+                );
+                if (p90Data) {
+                  newProvider.p90_latency = p90Data.avg_p90_latency_ms;
+                }
+              }
+              
+              providers.push(newProvider);
+            }
           });
         }
       });

@@ -34,6 +34,14 @@ const LatencyRankingCard: React.FC<LatencyRankingCardProps> = ({
     return "bg-red-500 text-white";
   };
 
+  // Calculate p50/p90 ratio
+  const calculateP50P90Ratio = (provider: LeaderboardProvider): number | null => {
+    if (!provider.p90_latency || provider.p90_latency <= 0 || !provider.latency || provider.latency <= 0) {
+      return null;
+    }
+    return parseFloat((provider.latency / provider.p90_latency).toFixed(2));
+  };
+
   // Format date
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleString();
@@ -108,30 +116,43 @@ const LatencyRankingCard: React.FC<LatencyRankingCardProps> = ({
               <TableHead className="w-12">Rank</TableHead>
               <TableHead>Provider</TableHead>
               <TableHead>Network</TableHead>
-              <TableHead className="text-right">Latency (ms)</TableHead>
+              <TableHead>Region</TableHead>
+              <TableHead className="text-right">P50 Latency (ms)</TableHead>
+              <TableHead className="text-right">P50/P90 Ratio</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sortedProviders.map((provider, index) => (
-              <TableRow key={`${provider.provider}-${provider.network}`}>
-                <TableCell className="font-mono">
-                  {index === 0 ? (
-                    <div className="flex items-center justify-center">
-                      <Award className="text-yellow-500" size={18} />
-                    </div>
-                  ) : (
-                    <div className="text-center">{index + 1}</div>
-                  )}
-                </TableCell>
-                <TableCell className="font-medium">{provider.provider}</TableCell>
-                <TableCell>{provider.network}</TableCell>
-                <TableCell className="text-right">
-                  <Badge className={getLatencyColor(provider.latency)}>
-                    {provider.latency.toFixed(1)} ms
-                  </Badge>
-                </TableCell>
-              </TableRow>
-            ))}
+            {sortedProviders.map((provider, index) => {
+              const p50p90Ratio = calculateP50P90Ratio(provider);
+              return (
+                <TableRow key={`${provider.provider}-${provider.network}`}>
+                  <TableCell className="font-mono">
+                    {index === 0 ? (
+                      <div className="flex items-center justify-center">
+                        <Award className="text-yellow-500" size={18} />
+                      </div>
+                    ) : (
+                      <div className="text-center">{index + 1}</div>
+                    )}
+                  </TableCell>
+                  <TableCell className="font-medium">{provider.provider}</TableCell>
+                  <TableCell>{provider.network}</TableCell>
+                  <TableCell>{provider.region || "Global"}</TableCell>
+                  <TableCell className="text-right">
+                    <Badge className={getLatencyColor(provider.latency)}>
+                      {provider.latency.toFixed(1)} ms
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {p50p90Ratio !== null ? (
+                      <span>{p50p90Ratio}</span>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </CardContent>
