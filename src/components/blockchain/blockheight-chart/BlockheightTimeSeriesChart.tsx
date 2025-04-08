@@ -7,6 +7,8 @@ import ProviderChart from './ProviderChart';
 import ChartFooter from './ChartFooter';
 import { useChartData } from './hooks/useChartData';
 import { useProviderColors } from './hooks/useProviderColors';
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface BlockheightTimeSeriesChartProps {
   data: BlockheightTimeSeriesData | null;
@@ -23,6 +25,8 @@ const BlockheightTimeSeriesChart: React.FC<BlockheightTimeSeriesChartProps> = ({
   const [selectedProviders, setSelectedProviders] = useState<Record<string, boolean>>({});
   // State for selected region
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
+  // Check if we're on mobile
+  const isMobile = useIsMobile();
 
   // Initialize selected providers when data changes
   React.useEffect(() => {
@@ -88,14 +92,30 @@ const BlockheightTimeSeriesChart: React.FC<BlockheightTimeSeriesChartProps> = ({
       />
 
       <div className="h-[400px] bg-white dark:bg-gray-800 rounded-lg p-4">
-        <ChartContainer config={chartConfig} className="h-full">
-          <ProviderChart 
-            chartData={chartData} 
-            providers={Object.keys(data.providers)}
-            selectedProviders={selectedProviders}
-            getProviderColor={getProviderColor}
-          />
-        </ChartContainer>
+        {isMobile ? (
+          <ScrollArea orientation="horizontal" className="h-full">
+            {/* Set a minimum width to ensure chart is scrollable on mobile */}
+            <div className="min-w-[800px] h-full">
+              <ChartContainer config={chartConfig} className="h-full">
+                <ProviderChart 
+                  chartData={chartData} 
+                  providers={Object.keys(data.providers)}
+                  selectedProviders={selectedProviders}
+                  getProviderColor={getProviderColor}
+                />
+              </ChartContainer>
+            </div>
+          </ScrollArea>
+        ) : (
+          <ChartContainer config={chartConfig} className="h-full">
+            <ProviderChart 
+              chartData={chartData} 
+              providers={Object.keys(data.providers)}
+              selectedProviders={selectedProviders}
+              getProviderColor={getProviderColor}
+            />
+          </ChartContainer>
+        )}
       </div>
       
       <ChartFooter selectedRegion={selectedRegion} />
