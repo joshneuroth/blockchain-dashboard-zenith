@@ -1,14 +1,8 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Moon, Sun, TrendingUp, MoreHorizontal } from 'lucide-react';
+import { Home, Moon, Sun, TrendingUp } from 'lucide-react';
 import { NETWORKS } from '@/lib/api';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 interface NetworkHeaderProps {
   darkMode: boolean;
@@ -19,13 +13,6 @@ const NetworkHeader: React.FC<NetworkHeaderProps> = ({ darkMode, setDarkMode }) 
   const location = useLocation();
   const isHomePage = location.pathname === '/';
   const isLeaderboardPage = location.pathname === '/leaderboard';
-
-  // Main networks to display directly in the header
-  const mainNetworks = ['ethereum', 'polygon', 'avalanche', 'binance'];
-  
-  // Additional networks for the dropdown
-  const additionalNetworks = Object.entries(NETWORKS)
-    .filter(([id]) => !mainNetworks.includes(id));
 
   return (
     <header className="w-full py-4 px-6 md:px-10 border-b border-gray-200 dark:border-gray-800 glass-effect">
@@ -60,35 +47,15 @@ const NetworkHeader: React.FC<NetworkHeaderProps> = ({ darkMode, setDarkMode }) 
           </Link>
           
           <div className="ml-4 blockchain-tabs hidden md:flex">
-            {mainNetworks.map(id => (
+            {Object.entries(NETWORKS).map(([id, network]) => (
               <Link
                 key={id}
                 to={`/${id}`}
                 className={`blockchain-tab ${location.pathname === `/${id}` ? 'active' : ''}`}
               >
-                {NETWORKS[id].name}
+                {network.name}
               </Link>
             ))}
-            
-            {additionalNetworks.length > 0 && (
-              <DropdownMenu>
-                <DropdownMenuTrigger className="blockchain-tab flex items-center">
-                  <MoreHorizontal size={20} />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-background border border-gray-200 dark:border-gray-800">
-                  {additionalNetworks.map(([id, network]) => (
-                    <DropdownMenuItem key={id} asChild>
-                      <Link
-                        to={`/${id}`}
-                        className={`w-full px-2 py-1.5 ${location.pathname === `/${id}` ? 'font-semibold' : ''}`}
-                      >
-                        {network.name}
-                      </Link>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
           </div>
         </div>
         

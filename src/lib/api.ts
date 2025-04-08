@@ -1,3 +1,4 @@
+
 // Networks and their RPC endpoints
 export const NETWORKS = {
   ethereum: {
@@ -43,17 +44,6 @@ export const NETWORKS = {
       { url: "https://binance.blockpi.network/v1/rpc/public", name: "BlockPI" }
     ],
     color: "binance"
-  },
-  base: {
-    name: "Base",
-    rpcs: [
-      { url: "https://base.llamarpc.com", name: "LlamaRPC" },
-      { url: "https://base.publicnode.com", name: "PublicNode" },
-      { url: "https://base.meowrpc.com", name: "MeowRPC" },
-      { url: "https://1rpc.io/base", name: "1RPC" },
-      { url: "https://base.blockpi.network/v1/rpc/public", name: "BlockPI" }
-    ],
-    color: "base"
   }
 };
 
@@ -63,7 +53,7 @@ export interface BlockData {
   timestamp: number;
   provider: string;
   endpoint: string;
-  latency?: number;
+  latency?: number; // Added latency field
 }
 
 export interface NetworkData {
@@ -106,7 +96,7 @@ export const fetchBlockchainData = async (network: string, rpcUrl: string): Prom
                       rpcUrl.includes("onfinality") ? "OnFinality" : "Unknown";
   
   try {
-    const startTime = performance.now();
+    const startTime = performance.now(); // Start time measurement
     
     const response = await fetch(rpcUrl, {
       method: 'POST',
@@ -119,11 +109,12 @@ export const fetchBlockchainData = async (network: string, rpcUrl: string): Prom
         params: [],
         id: 1,
       }),
+      // Add a timeout to prevent hanging requests
       signal: AbortSignal.timeout(5000),
     });
 
-    const endTime = performance.now();
-    const latency = Math.round(endTime - startTime);
+    const endTime = performance.now(); // End time measurement
+    const latency = Math.round(endTime - startTime); // Calculate latency
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -135,10 +126,12 @@ export const fetchBlockchainData = async (network: string, rpcUrl: string): Prom
       throw new Error(data.error.message || 'RPC error');
     }
 
+    // Convert hex block number to decimal string
     const blockHeight = data.result ? 
       BigInt(data.result).toString() : 
       "0";
       
+    // Store latency in local storage for use by the latency test
     const blockHeightLatencyKey = `blockheight-latency-${network}`;
     try {
       let latencyData: Record<string, any> = {};
@@ -148,6 +141,7 @@ export const fetchBlockchainData = async (network: string, rpcUrl: string): Prom
         latencyData = JSON.parse(existingData);
       }
       
+      // Update with the latest latency reading
       latencyData[providerName] = {
         latency,
         endpoint: rpcUrl,
@@ -156,6 +150,7 @@ export const fetchBlockchainData = async (network: string, rpcUrl: string): Prom
       
       localStorage.setItem(blockHeightLatencyKey, JSON.stringify(latencyData));
       
+      // Dispatch a storage event for the latency test to pick up
       window.dispatchEvent(new StorageEvent('storage', {
         key: blockHeightLatencyKey,
         newValue: JSON.stringify(latencyData)
@@ -169,7 +164,7 @@ export const fetchBlockchainData = async (network: string, rpcUrl: string): Prom
       timestamp: Date.now(),
       provider: providerName,
       endpoint: rpcUrl,
-      latency: latency
+      latency: latency // Store the latency
     };
   } catch (error) {
     console.error(`Error fetching block data from ${rpcUrl}:`, error);
