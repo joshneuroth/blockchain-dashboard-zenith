@@ -22,7 +22,9 @@ const fetchLeaderboardData = async (): Promise<LeaderboardResponse> => {
     throw new Error(`Failed to fetch leaderboard data: ${response.status}`);
   }
   
-  return response.json();
+  const data = await response.json();
+  console.log("API Response:", data); // Add logging to see the response
+  return data;
 };
 
 export function useLeaderboardData() {
