@@ -10,7 +10,6 @@ import BlockchainCardHeader from './blockchain/BlockchainCardHeader';
 import BlockComparisonChart, { TimeFilterOption } from './BlockComparisonChart';
 import ReliabilityTable from './ReliabilityTable';
 import { useReliabilityData, TimePeriod } from '@/hooks/blockchain/useReliabilityData';
-import MonitorPaymentModal from './MonitorPaymentModal';
 
 interface BlockchainCardProps {
   networkId: string;
@@ -27,7 +26,6 @@ const BlockchainCard: React.FC<BlockchainCardProps> = ({
   const [timeFilter, setTimeFilter] = useState<TimeFilterOption>('last10');
   const [reliabilityDialogOpen, setReliabilityDialogOpen] = useState(false);
   const [reliabilityTimePeriod, setReliabilityTimePeriod] = useState<TimePeriod>('all-time');
-  const [monitorModalOpen, setMonitorModalOpen] = useState(false);
   const [timeUntilRefresh, setTimeUntilRefresh] = useState(30);
   
   const reliabilityData = useReliabilityData({ 
@@ -67,7 +65,6 @@ const BlockchainCard: React.FC<BlockchainCardProps> = ({
       <BlockchainCardHeader 
         networkName={networkName}
         onOpenReliability={() => setReliabilityDialogOpen(true)}
-        onOpenMonitor={() => setMonitorModalOpen(true)}
         hasBlockHistory={blockHistory.length > 0}
       />
       
@@ -118,12 +115,6 @@ const BlockchainCard: React.FC<BlockchainCardProps> = ({
           />
         </DialogContent>
       </Dialog>
-      
-      <MonitorPaymentModal
-        open={monitorModalOpen}
-        onOpenChange={setMonitorModalOpen}
-        networkName={networkName}
-      />
     </div>
   );
 };

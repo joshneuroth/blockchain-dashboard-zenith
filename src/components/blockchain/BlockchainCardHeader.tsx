@@ -6,14 +6,12 @@ import { Button } from "@/components/ui/button";
 interface BlockchainCardHeaderProps {
   networkName: string;
   onOpenReliability: () => void;
-  onOpenMonitor: () => void;
   hasBlockHistory: boolean;
 }
 
 const BlockchainCardHeader: React.FC<BlockchainCardHeaderProps> = ({
   networkName,
   onOpenReliability,
-  onOpenMonitor,
   hasBlockHistory
 }) => {
   return (
@@ -29,14 +27,6 @@ const BlockchainCardHeader: React.FC<BlockchainCardHeaderProps> = ({
         >
           <BarChart size={16} />
           <span className="hidden sm:inline">Reliability</span>
-        </Button>
-        <Button 
-          variant="default" 
-          size="sm"
-          className="bg-black text-white hover:bg-black/80 dark:bg-green-600 dark:hover:bg-green-700 dark:text-white"
-          onClick={onOpenMonitor}
-        >
-          Monitor your RPC
         </Button>
       </div>
     </div>
