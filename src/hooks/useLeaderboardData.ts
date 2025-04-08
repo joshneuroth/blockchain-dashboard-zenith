@@ -10,6 +10,7 @@ export interface LeaderboardProvider {
   uptime: number;
   region?: string;
   p90_latency?: number;
+  p50_p90_ratio?: number;
 }
 
 export interface LeaderboardResponse {
@@ -54,7 +55,40 @@ const fetchLeaderboardData = async (): Promise<LeaderboardResponse> => {
         // Get region display name from the key (e.g., "us-east1" to "New York")
         const regionDisplayName = regionKey; // We will display the exact region key from the API
         
-        if (regionData?.average_p50) {
+        // Use p50_p90_ratio data instead of average_p50
+        if (regionData?.p50_p90_ratio) {
+          regionData.p50_p90_ratio.forEach((item: any) => {
+            // Find if provider already exists from timeliness data
+            const existingProvider = providers.find(
+              p => p.provider === item.provider_name && p.network === network
+            );
+            
+            if (existingProvider) {
+              // Update latency for existing provider
+              existingProvider.latency = item.avg_p50_latency_ms;
+              existingProvider.region = regionDisplayName;
+              existingProvider.p90_latency = item.avg_p90_latency_ms;
+              existingProvider.p50_p90_ratio = item.p50_p90_ratio;
+            } else {
+              // Add new provider with latency data
+              const newProvider: LeaderboardProvider = {
+                provider: item.provider_name,
+                network,
+                timeliness: 0, // Not in timeliness data
+                latency: item.avg_p50_latency_ms,
+                reliability: 0,
+                uptime: 100, // Default value
+                region: regionDisplayName,
+                p90_latency: item.avg_p90_latency_ms,
+                p50_p90_ratio: item.p50_p90_ratio
+              };
+              
+              providers.push(newProvider);
+            }
+          });
+        }
+        // Fallback to average_p50 if p50_p90_ratio is not available
+        else if (regionData?.average_p50) {
           regionData.average_p50.forEach((item: any) => {
             // Find if provider already exists from timeliness data
             const existingProvider = providers.find(
@@ -73,6 +107,9 @@ const fetchLeaderboardData = async (): Promise<LeaderboardResponse> => {
                 );
                 if (p90Data) {
                   existingProvider.p90_latency = p90Data.avg_p90_latency_ms;
+                  if (item.avg_p50_latency_ms && p90Data.avg_p90_latency_ms) {
+                    existingProvider.p50_p90_ratio = item.avg_p50_latency_ms / p90Data.avg_p90_latency_ms;
+                  }
                 }
               }
             } else {
@@ -94,6 +131,9 @@ const fetchLeaderboardData = async (): Promise<LeaderboardResponse> => {
                 );
                 if (p90Data) {
                   newProvider.p90_latency = p90Data.avg_p90_latency_ms;
+                  if (item.avg_p50_latency_ms && p90Data.avg_p90_latency_ms) {
+                    newProvider.p50_p90_ratio = item.avg_p50_latency_ms / p90Data.avg_p90_latency_ms;
+                  }
                 }
               }
               
