@@ -1,8 +1,14 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Moon, Sun, TrendingUp } from 'lucide-react';
+import { Home, Moon, Sun, TrendingUp, MoreHorizontal } from 'lucide-react';
 import { NETWORKS } from '@/lib/api';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface NetworkHeaderProps {
   darkMode: boolean;
@@ -13,6 +19,11 @@ const NetworkHeader: React.FC<NetworkHeaderProps> = ({ darkMode, setDarkMode }) 
   const location = useLocation();
   const isHomePage = location.pathname === '/';
   const isLeaderboardPage = location.pathname === '/leaderboard';
+  
+  // Define main networks to show in the header
+  const mainNetworks = Object.entries(NETWORKS).slice(0, 4);
+  // Define additional networks for the dropdown
+  const additionalNetworks = Object.entries(NETWORKS).slice(4);
 
   return (
     <header className="w-full py-4 px-6 md:px-10 border-b border-gray-200 dark:border-gray-800 glass-effect">
@@ -47,7 +58,7 @@ const NetworkHeader: React.FC<NetworkHeaderProps> = ({ darkMode, setDarkMode }) 
           </Link>
           
           <div className="ml-4 blockchain-tabs hidden md:flex">
-            {Object.entries(NETWORKS).map(([id, network]) => (
+            {mainNetworks.map(([id, network]) => (
               <Link
                 key={id}
                 to={`/${id}`}
@@ -56,6 +67,30 @@ const NetworkHeader: React.FC<NetworkHeaderProps> = ({ darkMode, setDarkMode }) 
                 {network.name}
               </Link>
             ))}
+            
+            {additionalNetworks.length > 0 && (
+              <DropdownMenu>
+                <DropdownMenuTrigger className="blockchain-tab flex items-center">
+                  <MoreHorizontal size={20} />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                  {additionalNetworks.map(([id, network]) => (
+                    <DropdownMenuItem key={id} asChild>
+                      <Link
+                        to={`/${id}`}
+                        className={`w-full px-4 py-2 text-sm ${
+                          location.pathname === `/${id}` 
+                            ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white' 
+                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                        }`}
+                      >
+                        {network.name}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </div>
         
