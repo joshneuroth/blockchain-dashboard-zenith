@@ -1,4 +1,3 @@
-
 // Networks and their RPC endpoints
 export const NETWORKS = {
   ethereum: {
@@ -44,6 +43,39 @@ export const NETWORKS = {
       { url: "https://binance.blockpi.network/v1/rpc/public", name: "BlockPI" }
     ],
     color: "binance"
+  },
+  base: {
+    name: "Base",
+    rpcs: [
+      { url: "https://mainnet.base.org", name: "Base" },
+      { url: "https://base.publicnode.com", name: "PublicNode" },
+      { url: "https://base.llamarpc.com", name: "LlamaRPC" },
+      { url: "https://base.meowrpc.com", name: "MeowRPC" },
+      { url: "https://base.blockpi.network/v1/rpc/public", name: "BlockPI" }
+    ],
+    color: "base"
+  },
+  optimism: {
+    name: "Optimism",
+    rpcs: [
+      { url: "https://mainnet.optimism.io", name: "Optimism" },
+      { url: "https://optimism.publicnode.com", name: "PublicNode" },
+      { url: "https://optimism.llamarpc.com", name: "LlamaRPC" },
+      { url: "https://optimism.meowrpc.com", name: "MeowRPC" },
+      { url: "https://optimism.blockpi.network/v1/rpc/public", name: "BlockPI" }
+    ],
+    color: "optimism"
+  },
+  arbitrum: {
+    name: "Arbitrum",
+    rpcs: [
+      { url: "https://arb1.arbitrum.io/rpc", name: "Arbitrum" },
+      { url: "https://arbitrum.publicnode.com", name: "PublicNode" },
+      { url: "https://arbitrum.llamarpc.com", name: "LlamaRPC" },
+      { url: "https://arbitrum.meowrpc.com", name: "MeowRPC" },
+      { url: "https://arbitrum.blockpi.network/v1/rpc/public", name: "BlockPI" }
+    ],
+    color: "arbitrum"
   }
 };
 
