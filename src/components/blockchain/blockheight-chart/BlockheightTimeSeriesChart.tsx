@@ -93,7 +93,7 @@ const BlockheightTimeSeriesChart: React.FC<BlockheightTimeSeriesChartProps> = ({
 
       <div className="h-[400px] bg-white dark:bg-gray-800 rounded-lg p-4">
         {isMobile ? (
-          <ScrollArea orientation="horizontal" className="h-full">
+          <ScrollArea className="h-full">
             {/* Set a minimum width to ensure chart is scrollable on mobile */}
             <div className="min-w-[800px] h-full">
               <ChartContainer config={chartConfig} className="h-full">
