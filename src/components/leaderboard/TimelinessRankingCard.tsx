@@ -20,11 +20,9 @@ const TimelinessRankingCard: React.FC<TimelinessRankingCardProps> = ({
   error,
   lastUpdated
 }) => {
-  // Sort providers by timeliness (higher is better) and filter those with timeliness > 0
+  // Sort providers by timeliness (higher is better)
   const sortedProviders = React.useMemo(() => {
-    return [...(providers || [])]
-      .filter(provider => provider.timeliness > 0)
-      .sort((a, b) => b.timeliness - a.timeliness);
+    return [...(providers || [])].sort((a, b) => b.timeliness - a.timeliness);
   }, [providers]);
 
   // Get timeliness ranking color
@@ -69,24 +67,6 @@ const TimelinessRankingCard: React.FC<TimelinessRankingCardProps> = ({
         <CardContent>
           <div className="h-60 flex items-center justify-center">
             <p className="text-red-500">Error loading timeliness data: {error.message}</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (sortedProviders.length === 0) {
-    return (
-      <Card className="glass-card">
-        <CardHeader>
-          <CardTitle className="text-xl font-medium flex items-center gap-2">
-            <Clock size={20} />
-            Provider Timeliness Ranking
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-60 flex items-center justify-center">
-            <p className="text-muted-foreground">No timeliness data available</p>
           </div>
         </CardContent>
       </Card>

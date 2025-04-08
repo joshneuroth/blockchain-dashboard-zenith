@@ -20,11 +20,9 @@ const LatencyRankingCard: React.FC<LatencyRankingCardProps> = ({
   error,
   lastUpdated
 }) => {
-  // Sort providers by latency (lower is better) and filter those with latency > 0
+  // Sort providers by latency (lower is better)
   const sortedProviders = React.useMemo(() => {
-    return [...(providers || [])]
-      .filter(provider => provider.latency > 0)
-      .sort((a, b) => a.latency - b.latency);
+    return [...(providers || [])].sort((a, b) => a.latency - b.latency);
   }, [providers]);
 
   // Get latency ranking color
@@ -69,24 +67,6 @@ const LatencyRankingCard: React.FC<LatencyRankingCardProps> = ({
         <CardContent>
           <div className="h-60 flex items-center justify-center">
             <p className="text-red-500">Error loading latency data: {error.message}</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (sortedProviders.length === 0) {
-    return (
-      <Card className="glass-card">
-        <CardHeader>
-          <CardTitle className="text-xl font-medium flex items-center gap-2">
-            <Zap size={20} />
-            Provider Latency Ranking
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-60 flex items-center justify-center">
-            <p className="text-muted-foreground">No latency data available</p>
           </div>
         </CardContent>
       </Card>
