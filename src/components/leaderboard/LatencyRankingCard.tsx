@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
@@ -28,11 +27,9 @@ const LatencyRankingCard: React.FC<LatencyRankingCardProps> = ({
   error,
   lastUpdated
 }) => {
-  // State for selected network and region
   const [selectedNetwork, setSelectedNetwork] = useState<string>("Ethereum");
   const [selectedRegion, setSelectedRegion] = useState<string>("All Regions");
   
-  // Get available networks from providers data
   const availableNetworks = React.useMemo(() => {
     if (!providers || providers.length === 0) return ["Ethereum"];
     
@@ -40,7 +37,6 @@ const LatencyRankingCard: React.FC<LatencyRankingCardProps> = ({
     return networks.length > 0 ? networks : ["Ethereum"];
   }, [providers]);
 
-  // Get available regions from providers data for the selected network
   const availableRegions = React.useMemo(() => {
     if (!providers || providers.length === 0) return ["All Regions"];
     
@@ -51,7 +47,6 @@ const LatencyRankingCard: React.FC<LatencyRankingCardProps> = ({
     return regions;
   }, [providers, selectedNetwork]);
 
-  // Sort providers by latency (lower is better) and filter by selected network and region
   const filteredProviders = React.useMemo(() => {
     return [...(providers || [])]
       .filter(provider => 
@@ -62,25 +57,21 @@ const LatencyRankingCard: React.FC<LatencyRankingCardProps> = ({
       .sort((a, b) => a.latency - b.latency);
   }, [providers, selectedNetwork, selectedRegion]);
 
-  // Get latency color
   const getLatencyColor = (latency: number) => {
     if (latency <= 200) return "bg-green-500 text-white";
     if (latency <= 500) return "bg-yellow-500 text-white";
     return "bg-red-500 text-white";
   };
 
-  // Format date
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleString();
   };
 
-  // Handle network change
   const handleNetworkChange = (network: string) => {
     setSelectedNetwork(network);
-    setSelectedRegion("All Regions"); // Reset region when network changes
+    setSelectedRegion("All Regions");
   };
 
-  // Handle region change
   const handleRegionChange = (region: string) => {
     setSelectedRegion(region);
   };
@@ -178,7 +169,7 @@ const LatencyRankingCard: React.FC<LatencyRankingCardProps> = ({
                 <TableHead>Provider</TableHead>
                 <TableHead>Network</TableHead>
                 <TableHead>Region</TableHead>
-                <TableHead className="text-right">P50 Latency (ms)</TableHead>
+                <TableHead className="text-right">P50 Latency</TableHead>
                 <TableHead className="text-right">P90/P50 Ratio</TableHead>
               </TableRow>
             </TableHeader>
