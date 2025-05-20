@@ -17,7 +17,7 @@ export interface ServiceEvent {
 export const fetchServiceEvents = async (): Promise<ServiceEvent[]> => {
   try {
     const response = await fetch(
-      "https://api.internal.blockheight.xyz/events?api_key=bh_a7c63f38-5757-4250-88cd-8d1f842a7142"
+      "https://blockheight.xyz/api/v1/events"
     );
 
     if (!response.ok) {
