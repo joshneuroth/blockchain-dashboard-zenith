@@ -33,6 +33,17 @@ export interface HighLatencyEventsCount {
   provider_name: string;
   event_count: number;
   rank: number;
+  is_tied?: boolean;
+  tied_count?: number;
+}
+
+export interface HighLatencyEventsPercentage {
+  provider_name: string;
+  event_count: number;
+  percentage: number;
+  rank: number;
+  is_tied: boolean;
+  tied_count: number;
 }
 
 export interface BlockheightAccuracy {
@@ -71,7 +82,7 @@ export interface ProviderData {
   };
   high_latency_events: {
     count: HighLatencyEventsCount;
-    percentage: any; // Using any as it can be null
+    percentage: HighLatencyEventsPercentage | null;
   };
   blockheight_accuracy: BlockheightAccuracy;
   reliability: Reliability;
@@ -90,8 +101,8 @@ export interface LeaderboardResponse {
 }
 
 const fetchLeaderboardData = async (): Promise<LeaderboardResponse> => {
-  // Using the correct API endpoint based on the documentation
-  const response = await fetch("https://blockheight-api.fly.dev/docs#/default/get_provider_leaderboard_internal_leaderboard_v1_get");
+  // Using the correct API endpoint URL for provider leaderboard data
+  const response = await fetch("https://blockheight-api.fly.dev/internal/leaderboard/v1");
   
   if (!response.ok) {
     throw new Error(`Failed to fetch leaderboard data: ${response.status}`);
