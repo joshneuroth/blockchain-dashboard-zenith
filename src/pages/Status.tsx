@@ -9,6 +9,7 @@ import EventCard from '@/components/status/EventCard';
 import EventFilter from '@/components/status/EventFilter';
 import RefreshIndicator from '@/components/status/RefreshIndicator';
 import { AlertTriangle } from 'lucide-react';
+import { ServiceEvent } from '@/lib/eventsApi';
 
 const Status = () => {
   const [darkMode, setDarkMode] = useState(false);
@@ -21,7 +22,7 @@ const Status = () => {
   
   // Fetch service events data with refresh state
   const { 
-    data: events = [], 
+    data: events, 
     isLoading, 
     error, 
     secondsSinceRefresh 

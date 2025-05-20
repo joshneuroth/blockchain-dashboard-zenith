@@ -11,10 +11,16 @@ export function useServiceEvents(types: string[] = []) {
     queryKey: ['serviceEvents', { types }],
     queryFn: () => fetchServiceEvents(types),
     refetchInterval: 60000, // Refetch every minute
-    onSuccess: () => {
+    meta: {
+      onSuccess: () => {
+        setLastRefreshTime(new Date());
+        setSecondsSinceRefresh(0);
+      }
+    },
+    onSettled: (data) => {
       setLastRefreshTime(new Date());
       setSecondsSinceRefresh(0);
-    },
+    }
   });
 
   // Update seconds counter
@@ -29,6 +35,7 @@ export function useServiceEvents(types: string[] = []) {
   return {
     ...result,
     lastRefreshTime,
-    secondsSinceRefresh
+    secondsSinceRefresh,
+    data: result.data || [] // Ensure data is always an array
   };
 }
