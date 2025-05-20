@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Check, Filter } from "lucide-react";
 import {
@@ -34,7 +33,7 @@ const EventFilter: React.FC<EventFilterProps> = ({
   // Get unique providers and chains
   const providers = Array.from(new Set(events.map(event => event.provider)));
   const chains = Array.from(new Set(events.map(event => event.chain)));
-  const statuses = ['degraded', 'outage', 'resolved'];
+  const statuses = ['active', 'resolved'];
 
   const toggleStatus = (status: string) => {
     if (selectedStatuses.includes(status)) {
