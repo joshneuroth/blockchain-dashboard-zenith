@@ -7,6 +7,8 @@ import MobileNetworkSelector from '@/components/network/MobileNetworkSelector';
 import NetworkFooter from '@/components/network/NetworkFooter';
 import LeaderboardCard from '@/components/leaderboard/LeaderboardCard';
 import ApiInfoSection from '@/components/status/ApiInfoSection';
+import RawDataDisplay from '@/components/leaderboard/RawDataDisplay';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 const Leaderboard = () => {
   const [darkMode, setDarkMode] = useState(false);
@@ -29,7 +31,7 @@ const Leaderboard = () => {
       <MobileNetworkSelector />
       
       <section className="w-full py-16 px-6 md:px-10 animate-slide-in">
-        <div className="container mx-auto max-w-4xl">
+        <div className="container mx-auto max-w-5xl">
           <div>
             <h1 className="text-4xl md:text-6xl font-bold mb-4">
               Provider <span className="font-extralight font-mono">LEADERBOARD</span>
@@ -49,14 +51,31 @@ const Leaderboard = () => {
       </section>
       
       <section className="flex-grow w-full px-6 md:px-10">
-        <div className="container mx-auto max-w-4xl">
+        <div className="container mx-auto max-w-5xl">
           <div className="pb-12">
-            <LeaderboardCard 
-              providers={data?.provider_metrics || []} 
-              isLoading={isLoading} 
-              error={error as Error} 
-              lastUpdated={data?.time_range?.end || null}
-            />
+            <Tabs defaultValue="dashboard" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+                <TabsTrigger value="raw">Raw Data</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="dashboard">
+                <LeaderboardCard 
+                  providers={data?.provider_metrics || []} 
+                  isLoading={isLoading} 
+                  error={error as Error} 
+                  lastUpdated={data?.time_range?.end || null}
+                />
+              </TabsContent>
+              
+              <TabsContent value="raw">
+                <RawDataDisplay 
+                  data={data} 
+                  isLoading={isLoading} 
+                  error={error as Error}
+                />
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
       </section>
