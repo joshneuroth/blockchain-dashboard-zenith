@@ -38,7 +38,9 @@ const LeaderboardCard: React.FC<LeaderboardCardProps> = ({
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return 'Unknown';
     try {
-      return new Date(dateStr).toLocaleString();
+      const date = new Date(dateStr);
+      // Format to YYYY-MM-DD
+      return date.toISOString().split('T')[0];
     } catch (e) {
       console.error("Error formatting date:", e);
       return 'Invalid date';
