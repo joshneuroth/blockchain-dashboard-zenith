@@ -33,6 +33,11 @@ const BlockheightTable: React.FC<BlockheightTableProps> = ({ providers, isLoadin
     );
   }
 
+  // Filter out any null or undefined providers
+  const validProviders = providers.filter(provider => provider !== null && provider !== undefined);
+
+  console.log("Valid providers for blockheight table:", validProviders);
+
   return (
     <Table>
       <TableHeader>
@@ -45,7 +50,7 @@ const BlockheightTable: React.FC<BlockheightTableProps> = ({ providers, isLoadin
         </TableRow>
       </TableHeader>
       <TableBody>
-        {providers.map((provider) => (
+        {validProviders.map((provider) => (
           <TableRow key={provider.provider_name}>
             <TableCell className="font-mono">
               {provider.rank === 1 ? (

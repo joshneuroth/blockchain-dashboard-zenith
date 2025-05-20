@@ -2,7 +2,7 @@
 import React from 'react';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Medal, MedalIcon } from 'lucide-react';
+import { Medal } from 'lucide-react';
 import { LatencyOverallData } from '@/hooks/useLeaderboardData';
 
 interface LatencyTableProps {
@@ -33,6 +33,11 @@ const LatencyTable: React.FC<LatencyTableProps> = ({ providers, isLoading }) => 
     );
   }
 
+  // Filter out any null or undefined providers
+  const validProviders = providers.filter(provider => provider !== null && provider !== undefined);
+
+  console.log("Valid providers for latency table:", validProviders);
+
   return (
     <Table>
       <TableHeader>
@@ -44,7 +49,7 @@ const LatencyTable: React.FC<LatencyTableProps> = ({ providers, isLoading }) => 
         </TableRow>
       </TableHeader>
       <TableBody>
-        {providers.map((provider) => (
+        {validProviders.map((provider) => (
           <TableRow key={provider.provider_name}>
             <TableCell className="font-mono">
               {provider.rank === 1 ? (

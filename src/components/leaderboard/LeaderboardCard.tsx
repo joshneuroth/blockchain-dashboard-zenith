@@ -22,10 +22,10 @@ const LeaderboardCard: React.FC<LeaderboardCardProps> = ({
   error,
   lastUpdated
 }) => {
-  // Extract data for different tabs
-  const latencyData = providers?.map(p => p.latency.overall) || [];
-  const reliabilityData = providers?.map(p => p.reliability) || [];
-  const blockheightData = providers?.map(p => p.blockheight_accuracy) || [];
+  // Extract data for different tabs, ensuring we don't include null/undefined values
+  const latencyData = providers?.filter(p => p && p.latency && p.latency.overall).map(p => p.latency.overall) || [];
+  const reliabilityData = providers?.filter(p => p && p.reliability).map(p => p.reliability) || [];
+  const blockheightData = providers?.filter(p => p && p.blockheight_accuracy).map(p => p.blockheight_accuracy) || [];
   
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return 'Unknown';
@@ -45,7 +45,10 @@ const LeaderboardCard: React.FC<LeaderboardCardProps> = ({
     );
   }
 
-  console.log("Provider data:", providers);
+  console.log("Provider data in LeaderboardCard:", providers);
+  console.log("Latency data:", latencyData);
+  console.log("Reliability data:", reliabilityData);
+  console.log("Blockheight data:", blockheightData);
 
   return (
     <Card className="glass-card">
