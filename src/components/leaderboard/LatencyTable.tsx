@@ -2,8 +2,14 @@
 import React from 'react';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Medal } from 'lucide-react';
+import { Medal, HelpCircle } from 'lucide-react';
 import { LatencyOverallData, ProviderData } from '@/hooks/useLeaderboardData';
+import { 
+  Tooltip, 
+  TooltipContent, 
+  TooltipProvider, 
+  TooltipTrigger 
+} from '@/components/ui/tooltip';
 
 interface LatencyTableProps {
   providers: LatencyOverallData[];
@@ -47,40 +53,70 @@ const LatencyTable: React.FC<LatencyTableProps> = ({ providers, isLoading, provi
   console.log("Valid providers for latency table:", validProviders);
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-16">P50 Latency Rank</TableHead>
-          <TableHead>Provider</TableHead>
-          <TableHead className="text-right">P50 Latency</TableHead>
-          <TableHead className="text-right">High Latency Events</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {validProviders.map((provider) => (
-          <TableRow key={provider.provider_name}>
-            <TableCell className="font-mono">
-              {provider.rank === 1 ? (
-                <div className="flex items-center justify-center">
-                  <Medal className="text-yellow-500" size={18} />
-                </div>
-              ) : (
-                <div className="text-center">{provider.rank}</div>
-              )}
-            </TableCell>
-            <TableCell className="font-medium">{provider.provider_name}</TableCell>
-            <TableCell className="text-right">
-              <Badge className={getLatencyColor(provider.overall_p50_latency_ms)}>
-                {provider.overall_p50_latency_ms.toFixed(1)} ms
-              </Badge>
-            </TableCell>
-            <TableCell className="text-right">
-              {getHighLatencyEventCount(provider.provider_name)}
-            </TableCell>
+    <TooltipProvider>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-16">P50 Latency Rank</TableHead>
+            <TableHead>Provider</TableHead>
+            <TableHead className="text-right">
+              <div className="flex items-center justify-end gap-1">
+                P50 Latency
+                <Tooltip delayDuration={300}>
+                  <TooltipTrigger asChild>
+                    <span className="inline-flex cursor-help">
+                      <HelpCircle size={14} className="text-muted-foreground" />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    <p className="max-w-xs">The average of all the p50 latency readings</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            </TableHead>
+            <TableHead className="text-right">
+              <div className="flex items-center justify-end gap-1">
+                High Latency Events
+                <Tooltip delayDuration={300}>
+                  <TooltipTrigger asChild>
+                    <span className="inline-flex cursor-help">
+                      <HelpCircle size={14} className="text-muted-foreground" />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    <p className="max-w-xs">Events where the provider spiked higher than 400ms for consecutive tests</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            </TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {validProviders.map((provider) => (
+            <TableRow key={provider.provider_name}>
+              <TableCell className="font-mono">
+                {provider.rank === 1 ? (
+                  <div className="flex items-center justify-center">
+                    <Medal className="text-yellow-500" size={18} />
+                  </div>
+                ) : (
+                  <div className="text-center">{provider.rank}</div>
+                )}
+              </TableCell>
+              <TableCell className="font-medium">{provider.provider_name}</TableCell>
+              <TableCell className="text-right">
+                <Badge className={getLatencyColor(provider.overall_p50_latency_ms)}>
+                  {provider.overall_p50_latency_ms.toFixed(1)} ms
+                </Badge>
+              </TableCell>
+              <TableCell className="text-right">
+                {getHighLatencyEventCount(provider.provider_name)}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TooltipProvider>
   );
 };
 
