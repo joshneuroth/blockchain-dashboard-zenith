@@ -162,7 +162,8 @@ const Status = () => {
         </div>
       </section>
       
-      <section className="flex-grow w-full px-6 md:px-10 mb-10">
+      {/* Removed mb-10 class from this section */}
+      <section className="flex-grow w-full px-6 md:px-10">
         <div className="container mx-auto max-w-4xl">
           <div className="flex justify-between items-center mb-4">
             <EventFilter 
@@ -183,7 +184,7 @@ const Status = () => {
         </div>
       </section>
       
-      <ApiInfoSection />
+      <ApiInfoSection removeBottomPadding={true} />
       <NetworkFooter />
     </div>
   );
