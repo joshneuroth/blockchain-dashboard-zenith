@@ -65,6 +65,7 @@ const Leaderboard = () => {
                   isLoading={isLoading} 
                   error={error as Error} 
                   lastUpdated={data?.time_range?.end || null}
+                  timeRange={data?.time_range}
                 />
               </TabsContent>
               

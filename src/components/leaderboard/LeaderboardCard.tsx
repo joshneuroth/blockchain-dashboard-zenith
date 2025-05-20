@@ -15,13 +15,18 @@ interface LeaderboardCardProps {
   isLoading: boolean;
   error: Error | null;
   lastUpdated: string | null;
+  timeRange?: {
+    start: string;
+    end: string;
+  };
 }
 
 const LeaderboardCard: React.FC<LeaderboardCardProps> = ({
   providers,
   isLoading,
   error,
-  lastUpdated
+  lastUpdated,
+  timeRange
 }) => {
   const { toast } = useToast();
   
@@ -102,10 +107,15 @@ const LeaderboardCard: React.FC<LeaderboardCardProps> = ({
           </TabsContent>
         </Tabs>
       </CardContent>
-      <CardFooter className="flex justify-between">
-        <p className="text-sm text-muted-foreground">
-          Last updated: {formatDate(lastUpdated)}
-        </p>
+      <CardFooter className="flex flex-col sm:flex-row justify-between w-full gap-2">
+        <div className="text-sm text-muted-foreground">
+          <p>Last updated: {formatDate(lastUpdated)}</p>
+          {timeRange && (
+            <p className="text-xs">
+              Time range: {formatDate(timeRange.start)} - {formatDate(timeRange.end)}
+            </p>
+          )}
+        </div>
         <Button 
           variant="outline" 
           size="sm"
