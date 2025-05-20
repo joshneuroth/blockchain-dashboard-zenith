@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useServiceEvents } from '@/hooks/useServiceEvents';
 import { Link, useLocation } from 'react-router-dom';
@@ -162,7 +161,7 @@ const Status = () => {
         </div>
       </section>
       
-      <section className="flex-grow w-full px-6 md:px-10 mb-10">
+      <section className="flex-grow w-full px-6 md:px-10">
         <div className="container mx-auto max-w-4xl">
           <div className="flex justify-between items-center mb-4">
             <EventFilter 
