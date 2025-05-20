@@ -29,10 +29,17 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
 
   const startedAt = formatDate(event.started_at);
   const resolvedAt = formatDate(event.resolved_at);
-  const duration = event.resolved_at ? 
-    formatDistanceToNow(new Date(event.started_at), { 
-      addSuffix: false 
-    }) : "Ongoing";
+  
+  // Use elapsed_time if available, otherwise calculate duration
+  const duration = isActive 
+    ? "Ongoing"
+    : event.elapsed_time
+      ? event.elapsed_time.human_readable
+      : event.resolved_at && event.started_at
+        ? formatDistanceToNow(new Date(event.started_at), { 
+            addSuffix: false 
+          })
+        : "Unknown";
 
   // Create a formatted title using the formatted event type
   const formattedTitle = `${formatEventType(event.type || '')} on ${event.provider}`;

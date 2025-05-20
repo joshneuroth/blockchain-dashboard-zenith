@@ -7,7 +7,26 @@ import MobileNetworkSelector from '@/components/network/MobileNetworkSelector';
 import NetworkFooter from '@/components/network/NetworkFooter';
 import EventCard from '@/components/status/EventCard';
 import EventFilter from '@/components/status/EventFilter';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Clock } from 'lucide-react';
+import { ServiceEvent } from '@/lib/eventsApi';
+
+// Component to show time since last refresh
+const RefreshIndicator: React.FC<{ seconds: number }> = ({ seconds }) => {
+  const minutesUntilRefresh = Math.max(0, 60 - seconds);
+  const isNearRefresh = minutesUntilRefresh < 10;
+  
+  return (
+    <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+      <Clock size={14} />
+      <span>
+        Updated {seconds} {seconds === 1 ? 'second' : 'seconds'} ago
+        {isNearRefresh && (
+          <span className="ml-1 text-primary">• Refreshing soon...</span>
+        )}
+      </span>
+    </div>
+  );
+};
 
 const Status = () => {
   const [darkMode, setDarkMode] = useState(false);
@@ -18,13 +37,18 @@ const Status = () => {
   const [selectedChains, setSelectedChains] = useState<string[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   
-  // Fetch service events data
-  const { data: events = [], isLoading, error } = useServiceEvents(selectedTypes);
+  // Fetch service events data with auto-refresh functionality
+  const { 
+    data: events = [], 
+    isLoading, 
+    error,
+    secondsSinceRefresh
+  } = useServiceEvents(selectedTypes);
   
   console.log("Events loaded:", events.length, events);
 
   // Apply filters
-  const filteredEvents = events.filter(event => {
+  const filteredEvents = events.filter((event: ServiceEvent) => {
     const statusMatch = selectedStatuses.length === 0 || selectedStatuses.includes(event.status);
     const providerMatch = selectedProviders.length === 0 || selectedProviders.includes(event.provider);
     const chainMatch = selectedChains.length === 0 || selectedChains.includes(event.chain);
@@ -33,10 +57,10 @@ const Status = () => {
   });
 
   // Get active incidents (not resolved)
-  const activeIncidents = filteredEvents.filter(event => event.status === 'active');
+  const activeIncidents = filteredEvents.filter((event: ServiceEvent) => event.status === 'active');
   
   // Get resolved events
-  const resolvedEvents = filteredEvents.filter(event => event.status === 'resolved');
+  const resolvedEvents = filteredEvents.filter((event: ServiceEvent) => event.status === 'resolved');
 
   useEffect(() => {
     if (darkMode) {
@@ -89,7 +113,7 @@ const Status = () => {
               Active Incidents ({activeIncidents.length})
             </h2>
             <div>
-              {activeIncidents.map(event => (
+              {activeIncidents.map((event: ServiceEvent) => (
                 <EventCard key={event.id} event={event} />
               ))}
             </div>
@@ -102,7 +126,7 @@ const Status = () => {
               Resolved Incidents ({resolvedEvents.length})
             </h2>
             <div>
-              {resolvedEvents.map(event => (
+              {resolvedEvents.map((event: ServiceEvent) => (
                 <EventCard key={event.id} event={event} />
               ))}
             </div>
@@ -139,17 +163,20 @@ const Status = () => {
       
       <section className="flex-grow w-full px-6 md:px-10 mb-10">
         <div className="container mx-auto max-w-4xl">
-          <EventFilter 
-            events={events}
-            selectedStatuses={selectedStatuses}
-            selectedProviders={selectedProviders}
-            selectedChains={selectedChains}
-            selectedTypes={selectedTypes}
-            onStatusChange={setSelectedStatuses}
-            onProviderChange={setSelectedProviders}
-            onChainChange={setSelectedChains}
-            onTypeChange={setSelectedTypes}
-          />
+          <div className="flex justify-between items-center mb-4">
+            <EventFilter 
+              events={events as ServiceEvent[]}
+              selectedStatuses={selectedStatuses}
+              selectedProviders={selectedProviders}
+              selectedChains={selectedChains}
+              selectedTypes={selectedTypes}
+              onStatusChange={setSelectedStatuses}
+              onProviderChange={setSelectedProviders}
+              onChainChange={setSelectedChains}
+              onTypeChange={setSelectedTypes}
+            />
+            <RefreshIndicator seconds={secondsSinceRefresh} />
+          </div>
           
           {renderContent()}
         </div>
