@@ -3,7 +3,13 @@ import { useQuery } from "@tanstack/react-query";
 import { ServiceEvent, fetchServiceEvents } from "@/lib/eventsApi";
 import { useState, useEffect } from "react";
 
-export function useServiceEvents(types: string[] = []) {
+export function useServiceEvents(types: string[] = []): {
+  data: ServiceEvent[];
+  isLoading: boolean;
+  error: Error | null;
+  lastRefreshTime: Date;
+  secondsSinceRefresh: number;
+} {
   const [lastRefreshTime, setLastRefreshTime] = useState<Date>(new Date());
   const [secondsSinceRefresh, setSecondsSinceRefresh] = useState(0);
 
@@ -11,13 +17,7 @@ export function useServiceEvents(types: string[] = []) {
     queryKey: ['serviceEvents', { types }],
     queryFn: () => fetchServiceEvents(types),
     refetchInterval: 60000, // Refetch every minute
-    meta: {
-      onSuccess: () => {
-        setLastRefreshTime(new Date());
-        setSecondsSinceRefresh(0);
-      }
-    },
-    onSettled: (data) => {
+    onSuccess: () => {
       setLastRefreshTime(new Date());
       setSecondsSinceRefresh(0);
     }
