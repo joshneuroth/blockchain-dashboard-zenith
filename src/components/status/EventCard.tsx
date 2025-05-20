@@ -17,12 +17,25 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
     return formatDistanceToNow(new Date(dateString), { addSuffix: true });
   };
 
+  // Format event type by removing underscores and capitalizing each word
+  const formatEventType = (type: string | undefined) => {
+    if (!type) return "Issue";
+    
+    return type
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
   const startedAt = formatDate(event.started_at);
   const resolvedAt = formatDate(event.resolved_at);
   const duration = event.resolved_at ? 
     formatDistanceToNow(new Date(event.started_at), { 
       addSuffix: false 
     }) : "Ongoing";
+
+  // Create a formatted title using the formatted event type
+  const formattedTitle = `${formatEventType(event.type || '')} on ${event.provider}`;
 
   return (
     <Card className={`${isActive ? "border-l-4 border-l-red-500" : ""} mb-4`}>
@@ -40,7 +53,7 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
         </div>
       </CardHeader>
       <CardContent className="pb-3">
-        <h3 className="font-medium mb-1">{event.title}</h3>
+        <h3 className="font-medium mb-1">{formattedTitle}</h3>
         <p className="text-sm text-muted-foreground">{event.description}</p>
       </CardContent>
       <CardFooter className="pt-0 text-xs text-muted-foreground">
