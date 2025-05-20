@@ -19,6 +19,8 @@ const Status = () => {
   
   // Fetch service events data
   const { data: events = [], isLoading, error } = useServiceEvents();
+  
+  console.log("Events loaded:", events.length, events);
 
   // Apply filters
   const filteredEvents = events.filter(event => {
@@ -29,10 +31,10 @@ const Status = () => {
   });
 
   // Get active incidents (not resolved)
-  const activeIncidents = filteredEvents.filter(event => !event.resolved_at);
+  const activeIncidents = filteredEvents.filter(event => event.status === 'active');
   
-  // Group events by day for the resolved ones
-  const resolvedEvents = filteredEvents.filter(event => event.resolved_at);
+  // Get resolved events
+  const resolvedEvents = filteredEvents.filter(event => event.status === 'resolved');
 
   useEffect(() => {
     if (darkMode) {
