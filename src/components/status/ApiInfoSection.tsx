@@ -6,24 +6,23 @@ import { Button } from '@/components/ui/button';
 const ApiInfoSection: React.FC = () => {
   return (
     <section className="w-full py-12 px-6 md:px-10 relative overflow-hidden border-t border-gray-200 dark:border-gray-800">
-      {/* SVG Texture Background */}
+      {/* SVG Block Pattern Background */}
       <div className="absolute inset-0 z-0">
         <svg className="w-full h-full opacity-10 dark:opacity-5" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
           <defs>
-            <pattern id="dots-pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-              <circle cx="3" cy="3" r="1.5" fill="currentColor" />
-            </pattern>
-            <pattern id="grid-pattern" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeWidth="0.5" />
+            <pattern id="blocks-pattern" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+              <rect x="0" y="0" width="20" height="20" fill="#333333" />
+              <rect x="20" y="0" width="20" height="20" fill="#555555" />
+              <rect x="0" y="20" width="20" height="20" fill="#555555" />
+              <rect x="20" y="20" width="20" height="20" fill="#333333" />
             </pattern>
           </defs>
-          <rect x="0" y="0" width="100%" height="100%" fill="url(#dots-pattern)" />
-          <rect x="0" y="0" width="100%" height="100%" fill="url(#grid-pattern)" />
+          <rect x="0" y="0" width="100%" height="100%" fill="url(#blocks-pattern)" />
         </svg>
       </div>
       
       {/* Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 dark:from-indigo-900/20 dark:to-purple-900/20 z-0"></div>
+      <div className="absolute inset-0 bg-gradient-to-r from-gray-500/10 to-gray-700/10 dark:from-gray-800/20 dark:to-gray-900/20 z-0"></div>
       
       {/* Content */}
       <div className="container mx-auto max-w-4xl relative z-10">
