@@ -7,6 +7,7 @@ import MobileNetworkSelector from '@/components/network/MobileNetworkSelector';
 import NetworkFooter from '@/components/network/NetworkFooter';
 import EventCard from '@/components/status/EventCard';
 import EventFilter from '@/components/status/EventFilter';
+import ApiInfoSection from '@/components/status/ApiInfoSection';
 import { AlertTriangle, Clock } from 'lucide-react';
 import { ServiceEvent } from '@/lib/eventsApi';
 
@@ -182,6 +183,7 @@ const Status = () => {
         </div>
       </section>
       
+      <ApiInfoSection />
       <NetworkFooter />
     </div>
   );
