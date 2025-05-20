@@ -16,9 +16,10 @@ const Status = () => {
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [selectedProviders, setSelectedProviders] = useState<string[]>([]);
   const [selectedChains, setSelectedChains] = useState<string[]>([]);
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   
   // Fetch service events data
-  const { data: events = [], isLoading, error } = useServiceEvents();
+  const { data: events = [], isLoading, error } = useServiceEvents(selectedTypes);
   
   console.log("Events loaded:", events.length, events);
 
@@ -27,7 +28,8 @@ const Status = () => {
     const statusMatch = selectedStatuses.length === 0 || selectedStatuses.includes(event.status);
     const providerMatch = selectedProviders.length === 0 || selectedProviders.includes(event.provider);
     const chainMatch = selectedChains.length === 0 || selectedChains.includes(event.chain);
-    return statusMatch && providerMatch && chainMatch;
+    const typeMatch = selectedTypes.length === 0 || (event.type && selectedTypes.includes(event.type));
+    return statusMatch && providerMatch && chainMatch && typeMatch;
   });
 
   // Get active incidents (not resolved)
@@ -142,9 +144,11 @@ const Status = () => {
             selectedStatuses={selectedStatuses}
             selectedProviders={selectedProviders}
             selectedChains={selectedChains}
+            selectedTypes={selectedTypes}
             onStatusChange={setSelectedStatuses}
             onProviderChange={setSelectedProviders}
             onChainChange={setSelectedChains}
+            onTypeChange={setSelectedTypes}
           />
           
           {renderContent()}

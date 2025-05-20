@@ -45,12 +45,19 @@ export interface ServiceEvent {
 }
 
 // API service for fetching events
-export const fetchServiceEvents = async (): Promise<ServiceEvent[]> => {
+export const fetchServiceEvents = async (types: string[] = []): Promise<ServiceEvent[]> => {
   try {
-    // Using the provided API endpoint with API key
-    const response = await fetch(
-      "https://api.internal.blockheight.xyz/events?api_key=bh_a7c63f38-5757-4250-88cd-8d1f842a7142"
-    );
+    // Build URL with type filters if provided
+    let url = "https://api.internal.blockheight.xyz/events?api_key=bh_a7c63f38-5757-4250-88cd-8d1f842a7142";
+    
+    // Add type filters if any are selected
+    if (types.length > 0) {
+      types.forEach(type => {
+        url += `&type=${type}`;
+      });
+    }
+    
+    const response = await fetch(url);
 
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
