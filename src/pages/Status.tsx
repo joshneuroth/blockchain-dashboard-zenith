@@ -7,6 +7,7 @@ import MobileNetworkSelector from '@/components/network/MobileNetworkSelector';
 import NetworkFooter from '@/components/network/NetworkFooter';
 import EventCard from '@/components/status/EventCard';
 import EventFilter from '@/components/status/EventFilter';
+import RefreshIndicator from '@/components/status/RefreshIndicator';
 import { AlertTriangle } from 'lucide-react';
 
 const Status = () => {
@@ -18,8 +19,13 @@ const Status = () => {
   const [selectedChains, setSelectedChains] = useState<string[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   
-  // Fetch service events data
-  const { data: events = [], isLoading, error } = useServiceEvents(selectedTypes);
+  // Fetch service events data with refresh state
+  const { 
+    data: events = [], 
+    isLoading, 
+    error, 
+    secondsSinceRefresh 
+  } = useServiceEvents(selectedTypes);
   
   console.log("Events loaded:", events.length, events);
 
@@ -139,6 +145,10 @@ const Status = () => {
       
       <section className="flex-grow w-full px-6 md:px-10 mb-10">
         <div className="container mx-auto max-w-4xl">
+          <div className="flex justify-between items-center mb-4">
+            <RefreshIndicator secondsSinceRefresh={secondsSinceRefresh} />
+          </div>
+          
           <EventFilter 
             events={events}
             selectedStatuses={selectedStatuses}
