@@ -101,8 +101,8 @@ export interface LeaderboardResponse {
 }
 
 const fetchLeaderboardData = async (): Promise<LeaderboardResponse> => {
-  // Using the correct API endpoint URL for provider leaderboard data
-  const response = await fetch("https://blockheight-api.fly.dev/internal/leaderboard/v1");
+  // Using the new API endpoint URL with API key
+  const response = await fetch("https://api.internal.blockheight.xyz/leaderboard/ethereum?api_key=bh_a7c63f38-5757-4250-88cd-8d1f842a7142");
   
   if (!response.ok) {
     throw new Error(`Failed to fetch leaderboard data: ${response.status}`);

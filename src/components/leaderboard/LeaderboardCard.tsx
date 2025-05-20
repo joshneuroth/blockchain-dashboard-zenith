@@ -32,7 +32,12 @@ const LeaderboardCard: React.FC<LeaderboardCardProps> = ({
   
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return 'Unknown';
-    return new Date(dateStr).toLocaleString();
+    try {
+      return new Date(dateStr).toLocaleString();
+    } catch (e) {
+      console.error("Error formatting date:", e);
+      return 'Invalid date';
+    }
   };
   
   // Show toast when there's an error
@@ -105,7 +110,7 @@ const LeaderboardCard: React.FC<LeaderboardCardProps> = ({
           variant="outline" 
           size="sm"
           className="flex items-center gap-1"
-          onClick={() => window.open('https://blockheight-api.fly.dev/docs', '_blank')}
+          onClick={() => window.open('https://api.internal.blockheight.xyz', '_blank')}
         >
           <ExternalLink size={14} />
           API Docs
