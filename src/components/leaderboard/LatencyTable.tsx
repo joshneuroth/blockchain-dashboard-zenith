@@ -57,7 +57,7 @@ const LatencyTable: React.FC<LatencyTableProps> = ({ providers, isLoading, provi
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-16">P50 Latency Rank</TableHead>
+            <TableHead className="w-16">Rank</TableHead>
             <TableHead>Provider</TableHead>
             <TableHead className="text-right">
               <div className="flex items-center justify-end gap-1">
