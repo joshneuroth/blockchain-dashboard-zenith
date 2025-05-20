@@ -3,13 +3,9 @@ import React from 'react';
 import { ExternalLink, Database } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-interface ApiInfoSectionProps {
-  removeBottomPadding?: boolean;
-}
-
-const ApiInfoSection: React.FC<ApiInfoSectionProps> = ({ removeBottomPadding = true }) => {
+const ApiInfoSection: React.FC = () => {
   return (
-    <section className={`w-full py-12 px-6 md:px-10 relative overflow-hidden border-t border-gray-200 dark:border-gray-700 ${removeBottomPadding ? 'mb-0' : 'mb-10'}`}>
+    <section className="w-full py-12 px-6 md:px-10 relative overflow-hidden border-t border-gray-200 dark:border-gray-700">
       {/* Gradient Background */}
       <div className="absolute inset-0 bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-900/80 dark:to-gray-800/80 z-0"></div>
       
