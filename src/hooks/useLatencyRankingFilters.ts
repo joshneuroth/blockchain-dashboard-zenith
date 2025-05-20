@@ -1,10 +1,10 @@
 
 import { useState, useMemo } from 'react';
-import { LeaderboardProvider } from '@/hooks/useLeaderboardData';
+import { ProviderData } from '@/hooks/useLeaderboardData';
 
 export type TimePeriod = '24h' | '7d' | '30d' | 'all';
 
-export function useLatencyRankingFilters(providers: LeaderboardProvider[]) {
+export function useLatencyRankingFilters(providers: ProviderData[]) {
   const [selectedNetwork, setSelectedNetwork] = useState<string>("Ethereum");
   const [selectedRegion, setSelectedRegion] = useState<string>("All Regions");
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>("24h");
@@ -12,31 +12,48 @@ export function useLatencyRankingFilters(providers: LeaderboardProvider[]) {
   const availableNetworks = useMemo(() => {
     if (!providers || providers.length === 0) return ["Ethereum"];
     
-    const networks = [...new Set(providers.map(provider => provider.network))];
-    return networks.length > 0 ? networks : ["Ethereum"];
+    // Since we're using the new API, we'll just return Ethereum for now
+    return ["Ethereum"];
   }, [providers]);
 
   const availableRegions = useMemo(() => {
     if (!providers || providers.length === 0) return ["All Regions"];
     
-    const regions = ["All Regions", ...new Set(providers
-      .filter(provider => provider.network === selectedNetwork && provider.region)
-      .map(provider => provider.region as string))];
+    // Get unique regions from all providers' latency by_region data
+    const regions = ["All Regions"];
+    providers.forEach(provider => {
+      provider.latency.by_region.forEach(regionData => {
+        if (!regions.includes(regionData.region)) {
+          regions.push(regionData.region);
+        }
+      });
+    });
     
     return regions;
-  }, [providers, selectedNetwork]);
+  }, [providers]);
 
   const availablePeriods: TimePeriod[] = ["24h", "7d", "30d", "all"];
 
   const filteredProviders = useMemo(() => {
-    return [...(providers || [])]
-      .filter(provider => 
-        provider.latency > 0 && 
-        provider.network === selectedNetwork &&
-        (selectedRegion === "All Regions" || provider.region === selectedRegion)
-      )
-      .sort((a, b) => a.latency - b.latency);
-  }, [providers, selectedNetwork, selectedRegion]);
+    if (!providers || providers.length === 0) return [];
+    
+    return [...providers]
+      .filter(provider => {
+        // For region filtering
+        if (selectedRegion === "All Regions") {
+          return true;
+        }
+        
+        // Check if provider has data for the selected region
+        return provider.latency.by_region.some(
+          regionData => regionData.region === selectedRegion
+        );
+      })
+      .sort((a, b) => {
+        // Sort by overall latency ranking
+        return a.latency.overall.rank - b.latency.overall.rank;
+      });
+  }, [providers, selectedRegion]);
 
   const handleNetworkChange = (network: string) => {
     setSelectedNetwork(network);

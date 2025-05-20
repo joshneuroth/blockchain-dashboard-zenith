@@ -4,7 +4,7 @@ import { CardContent } from '@/components/ui/card';
 import LatencyFilterControls from './LatencyFilterControls';
 import LatencyRankingTable from './LatencyRankingTable';
 import LatencyEmptyState from './LatencyEmptyState';
-import { LeaderboardProvider } from '@/hooks/useLeaderboardData';
+import { ProviderData } from '@/hooks/useLeaderboardData';
 import { TimePeriod } from '@/hooks/useLatencyRankingFilters';
 
 interface LatencyTableSectionProps {
@@ -14,7 +14,7 @@ interface LatencyTableSectionProps {
   availableNetworks: string[];
   availableRegions: string[];
   availablePeriods: TimePeriod[];
-  filteredProviders: LeaderboardProvider[];
+  filteredProviders: ProviderData[];
   handleNetworkChange: (network: string) => void;
   handleRegionChange: (region: string) => void;
   handlePeriodChange: (period: TimePeriod) => void;

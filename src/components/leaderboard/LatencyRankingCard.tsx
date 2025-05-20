@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Zap, ExternalLink } from 'lucide-react';
-import { LeaderboardProvider } from '@/hooks/useLeaderboardData';
+import { ProviderData } from '@/hooks/useLeaderboardData';
 import { useLatencyRankingFilters } from '@/hooks/useLatencyRankingFilters';
 import LatencyInfoBox from './LatencyInfoBox';
 import LatencyTableSection from './LatencyTableSection';
@@ -11,7 +11,7 @@ import LatencyLoadingState from './LatencyLoadingState';
 import LatencyErrorState from './LatencyErrorState';
 
 interface LatencyRankingCardProps {
-  providers: LeaderboardProvider[];
+  providers: ProviderData[];
   isLoading: boolean;
   error: Error | null;
   lastUpdated: string | null;

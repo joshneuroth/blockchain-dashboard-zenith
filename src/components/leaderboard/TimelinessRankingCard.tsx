@@ -3,7 +3,7 @@ import React, { useState, useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Clock, ExternalLink } from 'lucide-react';
-import { LeaderboardProvider } from '@/hooks/useLeaderboardData';
+import { ProviderData } from '@/hooks/useLeaderboardData';
 import TimelinessInfoBox from './TimelinessInfoBox';
 import TimelinessFilterControls from './TimelinessFilterControls';
 import TimelinessTable from './TimelinessTable';
@@ -12,7 +12,7 @@ import TimelinessLoadingState from './TimelinessLoadingState';
 import TimelinessErrorState from './TimelinessErrorState';
 
 interface TimelinessRankingCardProps {
-  providers: LeaderboardProvider[];
+  providers: ProviderData[];
   isLoading: boolean;
   error: Error | null;
   lastUpdated: string | null;
@@ -29,19 +29,16 @@ const TimelinessRankingCard: React.FC<TimelinessRankingCardProps> = ({
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   
-  // Extract unique networks from providers
+  // Extract unique networks 
   const networks = useMemo(() => {
-    const uniqueNetworks = [...new Set(providers.map(provider => provider.network))];
-    return ["all", ...uniqueNetworks].filter(Boolean);
-  }, [providers]);
+    return ["all", "Ethereum"]; // Only Ethereum is available in this case
+  }, []);
 
-  // Sort and filter providers by timeliness (higher is better) and filter by selected network
+  // Sort and filter providers by blockheight accuracy
   const filteredProviders = useMemo(() => {
     return [...(providers || [])]
-      .filter(provider => provider.timeliness > 0)
-      .filter(provider => selectedNetwork === "all" || provider.network === selectedNetwork)
-      .sort((a, b) => b.timeliness - a.timeliness);
-  }, [providers, selectedNetwork]);
+      .sort((a, b) => a.blockheight_accuracy.rank - b.blockheight_accuracy.rank);
+  }, [providers]);
 
   // Format date
   const formatDate = (dateStr: string) => {
@@ -70,7 +67,7 @@ const TimelinessRankingCard: React.FC<TimelinessRankingCardProps> = ({
         <CardHeader>
           <CardTitle className="text-xl font-medium flex items-center gap-2">
             <Clock size={20} />
-            Provider Timeliness Ranking
+            Blockheight Accuracy
           </CardTitle>
           <TimelinessInfoBox />
           <TimelinessFilterControls
@@ -93,7 +90,7 @@ const TimelinessRankingCard: React.FC<TimelinessRankingCardProps> = ({
       <CardHeader>
         <CardTitle className="text-xl font-medium flex items-center gap-2">
           <Clock size={20} />
-          Provider Timeliness Ranking
+          Blockheight Accuracy
         </CardTitle>
         <TimelinessInfoBox />
         
