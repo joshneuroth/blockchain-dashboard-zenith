@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Moon, Sun, TrendingUp, MoreHorizontal } from 'lucide-react';
+import { Home, Moon, Sun, TrendingUp, MoreHorizontal, Activity } from 'lucide-react';
 import { NETWORKS } from '@/lib/api';
 import {
   DropdownMenu,
@@ -24,6 +24,7 @@ const NetworkHeader: React.FC<NetworkHeaderProps> = ({ darkMode, setDarkMode }) 
   const location = useLocation();
   const isHomePage = location.pathname === '/';
   const isLeaderboardPage = location.pathname === '/leaderboard';
+  const isStatusPage = location.pathname === '/status';
   
   // Define main networks to show in the header
   const mainNetworks = Object.entries(NETWORKS).slice(0, 4);
@@ -60,6 +61,18 @@ const NetworkHeader: React.FC<NetworkHeaderProps> = ({ darkMode, setDarkMode }) 
             aria-label="Leaderboard"
           >
             <TrendingUp size={20} />
+          </Link>
+          
+          <Link 
+            to="/status" 
+            className={`ml-4 p-2 rounded-full transition-colors ${
+              isStatusPage 
+                ? 'bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-gray-100' 
+                : 'hover:bg-gray-200 dark:hover:bg-gray-700'
+            }`}
+            aria-label="Status"
+          >
+            <Activity size={20} />
           </Link>
           
           <div className="ml-4 blockchain-tabs hidden md:flex">
