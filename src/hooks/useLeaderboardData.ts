@@ -78,8 +78,15 @@ export interface ProviderData {
 }
 
 export interface LeaderboardResponse {
-  providers: ProviderData[];
-  last_updated: string;
+  network: string;
+  chain_id: string;
+  time_period: string;
+  time_range: {
+    start: string;
+    end: string;
+  };
+  provider_metrics: ProviderData[];
+  last_updated?: string;
 }
 
 const fetchLeaderboardData = async (): Promise<LeaderboardResponse> => {
@@ -92,8 +99,8 @@ const fetchLeaderboardData = async (): Promise<LeaderboardResponse> => {
   const data = await response.json();
   
   return {
-    providers: data.providers || [],
-    last_updated: data.last_updated || new Date().toISOString()
+    ...data,
+    last_updated: new Date().toISOString()
   };
 };
 

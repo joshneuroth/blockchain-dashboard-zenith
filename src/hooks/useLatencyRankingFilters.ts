@@ -20,16 +20,16 @@ export function useLatencyRankingFilters(providers: ProviderData[]) {
     if (!providers || providers.length === 0) return ["All Regions"];
     
     // Get unique regions from all providers' latency by_region data
-    const regions = ["All Regions"];
+    const regions = new Set(["All Regions"]);
     providers.forEach(provider => {
       provider.latency.by_region.forEach(regionData => {
-        if (!regions.includes(regionData.region)) {
-          regions.push(regionData.region);
+        if (regionData.region) {
+          regions.add(regionData.region);
         }
       });
     });
     
-    return regions;
+    return Array.from(regions);
   }, [providers]);
 
   const availablePeriods: TimePeriod[] = ["24h", "7d", "30d", "all"];

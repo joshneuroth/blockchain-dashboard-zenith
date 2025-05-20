@@ -50,14 +50,12 @@ const Leaderboard = () => {
       
       <section className="flex-grow w-full px-6 md:px-10">
         <div className="container mx-auto max-w-4xl">
-          {/* Removed DAO Card section */}
-          
           <div className="pb-12">
             <LeaderboardCard 
-              providers={data?.providers || []} 
+              providers={data?.provider_metrics || []} 
               isLoading={isLoading} 
               error={error as Error} 
-              lastUpdated={data?.last_updated || null}
+              lastUpdated={data?.time_range?.end || null}
             />
           </div>
         </div>

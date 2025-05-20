@@ -45,6 +45,8 @@ const LeaderboardCard: React.FC<LeaderboardCardProps> = ({
     );
   }
 
+  console.log("Provider data:", providers);
+
   return (
     <Card className="glass-card">
       <CardHeader>
