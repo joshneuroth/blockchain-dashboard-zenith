@@ -98,7 +98,7 @@ const EventFilter: React.FC<EventFilterProps> = ({
               value={type.id}
               aria-label={type.label}
               className="flex items-center gap-1 text-xs h-8 px-2"
-              pressed={selectedTypes.includes(type.id)}
+              data-state={selectedTypes.includes(type.id) ? "on" : "off"}
               onClick={() => toggleType(type.id)}
             >
               {type.icon}
