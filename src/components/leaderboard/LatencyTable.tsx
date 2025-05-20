@@ -3,14 +3,15 @@ import React from 'react';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Medal } from 'lucide-react';
-import { LatencyOverallData } from '@/hooks/useLeaderboardData';
+import { LatencyOverallData, ProviderData } from '@/hooks/useLeaderboardData';
 
 interface LatencyTableProps {
   providers: LatencyOverallData[];
   isLoading: boolean;
+  providerData?: ProviderData[]; // Added to access high_latency_events data
 }
 
-const LatencyTable: React.FC<LatencyTableProps> = ({ providers, isLoading }) => {
+const LatencyTable: React.FC<LatencyTableProps> = ({ providers, isLoading, providerData }) => {
   const getLatencyColor = (latency: number) => {
     if (latency <= 50) return "bg-green-500 text-white";
     if (latency <= 100) return "bg-yellow-500 text-white";
@@ -36,16 +37,23 @@ const LatencyTable: React.FC<LatencyTableProps> = ({ providers, isLoading }) => 
   // Filter out any null or undefined providers
   const validProviders = providers.filter(provider => provider !== null && provider !== undefined);
 
+  // Find high latency events for each provider
+  const getHighLatencyEventCount = (providerName: string) => {
+    if (!providerData) return null;
+    const provider = providerData.find(p => p.provider_name === providerName);
+    return provider?.high_latency_events?.count?.event_count ?? 0;
+  };
+
   console.log("Valid providers for latency table:", validProviders);
 
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="w-16">Rank</TableHead>
+          <TableHead className="w-16">P50 Latency Rank</TableHead>
           <TableHead>Provider</TableHead>
           <TableHead className="text-right">P50 Latency</TableHead>
-          <TableHead>Status</TableHead>
+          <TableHead className="text-right">High Latency Events</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -66,14 +74,8 @@ const LatencyTable: React.FC<LatencyTableProps> = ({ providers, isLoading }) => 
                 {provider.overall_p50_latency_ms.toFixed(1)} ms
               </Badge>
             </TableCell>
-            <TableCell>
-              {provider.is_tied ? (
-                <Badge variant="outline">
-                  Tied with {provider.tied_count} other{provider.tied_count > 1 ? "s" : ""}
-                </Badge>
-              ) : (
-                <span className="text-muted-foreground">—</span>
-              )}
+            <TableCell className="text-right">
+              {getHighLatencyEventCount(provider.provider_name)}
             </TableCell>
           </TableRow>
         ))}

@@ -92,7 +92,7 @@ const LeaderboardCard: React.FC<LeaderboardCardProps> = ({
             <TabsTrigger value="blockheight">Blockheight</TabsTrigger>
           </TabsList>
           <TabsContent value="latency" className="pt-2">
-            <LatencyTable providers={latencyData} isLoading={isLoading} />
+            <LatencyTable providers={latencyData} isLoading={isLoading} providerData={providers} />
           </TabsContent>
           <TabsContent value="reliability" className="pt-2">
             <ReliabilityTable providers={reliabilityData} isLoading={isLoading} />
