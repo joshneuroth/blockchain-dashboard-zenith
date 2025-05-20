@@ -8,6 +8,7 @@ import LatencyTable from './LatencyTable';
 import ReliabilityTable from './ReliabilityTable';
 import BlockheightTable from './BlockheightTable';
 import { ProviderData } from '@/hooks/useLeaderboardData';
+import { useToast } from '@/hooks/use-toast';
 
 interface LeaderboardCardProps {
   providers: ProviderData[];
@@ -22,6 +23,8 @@ const LeaderboardCard: React.FC<LeaderboardCardProps> = ({
   error,
   lastUpdated
 }) => {
+  const { toast } = useToast();
+  
   // Extract data for different tabs, ensuring we don't include null/undefined values
   const latencyData = providers?.filter(p => p && p.latency && p.latency.overall).map(p => p.latency.overall) || [];
   const reliabilityData = providers?.filter(p => p && p.reliability).map(p => p.reliability) || [];
@@ -32,6 +35,17 @@ const LeaderboardCard: React.FC<LeaderboardCardProps> = ({
     return new Date(dateStr).toLocaleString();
   };
   
+  // Show toast when there's an error
+  React.useEffect(() => {
+    if (error) {
+      toast({
+        title: "Error loading data",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  }, [error, toast]);
+  
   if (error) {
     return (
       <Card className="glass-card">
@@ -39,6 +53,14 @@ const LeaderboardCard: React.FC<LeaderboardCardProps> = ({
           <div className="flex flex-col items-center justify-center h-60">
             <p className="text-lg font-medium text-red-500 mb-2">Failed to load leaderboard data</p>
             <p className="text-sm text-muted-foreground">{error.message}</p>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="mt-4"
+              onClick={() => window.location.reload()}
+            >
+              Retry
+            </Button>
           </div>
         </CardContent>
       </Card>
