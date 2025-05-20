@@ -1,153 +1,99 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-export interface LeaderboardProvider {
-  provider: string;
-  network: string;
-  timeliness: number;
-  latency: number;
-  reliability: number;
-  uptime: number;
-  region?: string;
-  p90_latency?: number;
-  p50_p90_ratio?: number;
+export interface LatencyRegionData {
+  provider_name: string;
+  region: string;
+  p50_latency_ms: number;
+  p90_latency_ms: number;
+  total_tests: number;
+  rank: number;
+  is_tied: boolean;
+  tied_count: number;
+}
+
+export interface LatencyOverallData {
+  provider_name: string;
+  overall_p50_latency_ms: number;
+  rank: number;
+  is_tied: boolean;
+  tied_count: number;
+}
+
+export interface ConsistencyData {
+  provider_name: string;
+  region: string;
+  consistency_ratio: number;
+  rank: number;
+  is_tied: boolean;
+  tied_count: number;
+}
+
+export interface HighLatencyEventsCount {
+  provider_name: string;
+  event_count: number;
+  rank: number;
+}
+
+export interface BlockheightAccuracy {
+  provider_name: string;
+  ahead_count: number;
+  at_count: number;
+  behind_count: number;
+  total_count: number;
+  tip_accuracy_percentage: number;
+  ahead_percentage: number;
+  tip_rank: number;
+  ahead_rank: number;
+  rank: number;
+  is_tied_tip_rank: boolean;
+  tied_count_tip_rank: number;
+  is_tied_ahead_rank: boolean;
+  tied_count_ahead_rank: number;
+}
+
+export interface Reliability {
+  provider_name: string;
+  provider_error_count: number;
+  total_tests: number;
+  error_rate_percentage: number;
+  rank: number;
+  is_tied: boolean;
+  tied_count: number;
+}
+
+export interface ProviderData {
+  provider_name: string;
+  latency: {
+    by_region: LatencyRegionData[];
+    overall: LatencyOverallData;
+    consistency: ConsistencyData[];
+  };
+  high_latency_events: {
+    count: HighLatencyEventsCount;
+    percentage: any; // Using any as it can be null
+  };
+  blockheight_accuracy: BlockheightAccuracy;
+  reliability: Reliability;
 }
 
 export interface LeaderboardResponse {
-  providers: LeaderboardProvider[];
+  providers: ProviderData[];
   last_updated: string;
 }
 
 const fetchLeaderboardData = async (): Promise<LeaderboardResponse> => {
-  const response = await fetch("https://blockheight-api.fly.dev/internal/leaderboard/v1");
+  const response = await fetch("https://api.internal.blockheight.xyz/leaderboard/ethereum?api_key=bh_a7c63f38-5757-4250-88cd-8d1f842a7142");
   
   if (!response.ok) {
     throw new Error(`Failed to fetch leaderboard data: ${response.status}`);
   }
   
-  const rawData = await response.json();
-  
-  // Transform the API response into our expected format
-  const providers: LeaderboardProvider[] = [];
-  const now = new Date().toISOString();
-  
-  // Process each chain in the response
-  Object.entries(rawData.chains || {}).forEach(([chainId, chainData]: [string, any]) => {
-    const network = chainData.network;
-    
-    // Process timeliness data
-    if (chainData.leaderboards?.timeliness) {
-      chainData.leaderboards.timeliness.forEach((item: any) => {
-        providers.push({
-          provider: item.provider_name,
-          network,
-          timeliness: item.at_block_height_percentage,
-          latency: 0, // Will be updated for providers that have latency data
-          reliability: item.total_at_tip / item.total_checks * 100,
-          uptime: 100, // Default value
-        });
-      });
-    }
-    
-    // Process latency data for regions - use the actual region name from the API
-    if (chainData.leaderboards?.latency?.regions) {
-      Object.entries(chainData.leaderboards.latency.regions).forEach(([regionKey, regionData]: [string, any]) => {
-        // Get region display name from the key (e.g., "us-east1" to "New York")
-        const regionDisplayName = regionKey; // We will display the exact region key from the API
-        
-        // Use p50_p90_ratio data instead of average_p50
-        if (regionData?.p50_p90_ratio) {
-          regionData.p50_p90_ratio.forEach((item: any) => {
-            // Find if provider already exists from timeliness data
-            const existingProvider = providers.find(
-              p => p.provider === item.provider_name && p.network === network
-            );
-            
-            if (existingProvider) {
-              // Update latency for existing provider
-              existingProvider.latency = item.avg_p50_latency_ms;
-              existingProvider.region = regionDisplayName;
-              existingProvider.p90_latency = item.avg_p90_latency_ms;
-              existingProvider.p50_p90_ratio = item.p50_p90_ratio;
-            } else {
-              // Add new provider with latency data
-              const newProvider: LeaderboardProvider = {
-                provider: item.provider_name,
-                network,
-                timeliness: 0, // Not in timeliness data
-                latency: item.avg_p50_latency_ms,
-                reliability: 0,
-                uptime: 100, // Default value
-                region: regionDisplayName,
-                p90_latency: item.avg_p90_latency_ms,
-                p50_p90_ratio: item.p50_p90_ratio
-              };
-              
-              providers.push(newProvider);
-            }
-          });
-        }
-        // Fallback to average_p50 if p50_p90_ratio is not available
-        else if (regionData?.average_p50) {
-          regionData.average_p50.forEach((item: any) => {
-            // Find if provider already exists from timeliness data
-            const existingProvider = providers.find(
-              p => p.provider === item.provider_name && p.network === network
-            );
-            
-            if (existingProvider) {
-              // Update latency for existing provider
-              existingProvider.latency = item.avg_p50_latency_ms;
-              existingProvider.region = regionDisplayName;
-              
-              // Add p90 data if available
-              if (regionData.average_p90) {
-                const p90Data = regionData.average_p90.find((p90Item: any) => 
-                  p90Item.provider_name === item.provider_name
-                );
-                if (p90Data) {
-                  existingProvider.p90_latency = p90Data.avg_p90_latency_ms;
-                  if (item.avg_p50_latency_ms && p90Data.avg_p90_latency_ms) {
-                    existingProvider.p50_p90_ratio = item.avg_p50_latency_ms / p90Data.avg_p90_latency_ms;
-                  }
-                }
-              }
-            } else {
-              // Add new provider with latency data
-              const newProvider: LeaderboardProvider = {
-                provider: item.provider_name,
-                network,
-                timeliness: 0, // Not in timeliness data
-                latency: item.avg_p50_latency_ms,
-                reliability: 0,
-                uptime: 100, // Default value
-                region: regionDisplayName
-              };
-              
-              // Add p90 data if available
-              if (regionData.average_p90) {
-                const p90Data = regionData.average_p90.find((p90Item: any) => 
-                  p90Item.provider_name === item.provider_name
-                );
-                if (p90Data) {
-                  newProvider.p90_latency = p90Data.avg_p90_latency_ms;
-                  if (item.avg_p50_latency_ms && p90Data.avg_p90_latency_ms) {
-                    newProvider.p50_p90_ratio = item.avg_p50_latency_ms / p90Data.avg_p90_latency_ms;
-                  }
-                }
-              }
-              
-              providers.push(newProvider);
-            }
-          });
-        }
-      });
-    }
-  });
+  const data = await response.json();
   
   return {
-    providers,
-    last_updated: now
+    providers: data.providers || [],
+    last_updated: data.last_updated || new Date().toISOString()
   };
 };
 

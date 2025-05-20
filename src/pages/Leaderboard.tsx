@@ -1,13 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { useLeaderboardData } from '@/hooks/useLeaderboardData';
-import TimelinessRankingCard from '@/components/leaderboard/TimelinessRankingCard';
-import LatencyRankingCard from '@/components/leaderboard/LatencyRankingCard';
-import { Link, useLocation } from 'react-router-dom';
-import { NETWORKS } from '@/lib/api';
+import { useLocation } from 'react-router-dom';
 import NetworkHeader from '@/components/network/NetworkHeader';
 import MobileNetworkSelector from '@/components/network/MobileNetworkSelector';
 import NetworkFooter from '@/components/network/NetworkFooter';
+import LeaderboardCard from '@/components/leaderboard/LeaderboardCard';
+import ApiInfoSection from '@/components/status/ApiInfoSection';
 
 const Leaderboard = () => {
   const [darkMode, setDarkMode] = useState(false);
@@ -38,10 +37,10 @@ const Leaderboard = () => {
             
             <div className="flex my-8">
               <div>
-                <div className="text-xs text-gray-500 font-mono mb-1">BLOCKCHAIN PROVIDER RANKINGS</div>
+                <div className="text-xs text-gray-500 font-mono mb-1">ETHEREUM PROVIDER RANKINGS</div>
                 <div className="text-sm max-w-md">
-                  Track the performance of different blockchain RPC providers across networks. 
-                  See which providers offer the best timeliness and lowest latency for your applications.
+                  Compare performance metrics for Ethereum RPC providers across latency, 
+                  reliability, and blockheight accuracy metrics. Rankings are updated regularly.
                 </div>
               </div>
             </div>
@@ -53,25 +52,19 @@ const Leaderboard = () => {
         <div className="container mx-auto max-w-4xl">
           {/* Removed DAO Card section */}
           
-          <div className="grid grid-cols-1 gap-8 pb-12">
-            <TimelinessRankingCard 
+          <div className="pb-12">
+            <LeaderboardCard 
               providers={data?.providers || []} 
               isLoading={isLoading} 
               error={error as Error} 
               lastUpdated={data?.last_updated || null}
             />
-            
-            <LatencyRankingCard 
-              providers={data?.providers || []} 
-              isLoading={isLoading} 
-              error={error as Error} 
-              lastUpdated={data?.last_updated || null} 
-            />
           </div>
         </div>
       </section>
       
-      {/* Replace the custom footer with the NetworkFooter component */}
+      <ApiInfoSection />
+      
       <NetworkFooter />
     </div>
   );
