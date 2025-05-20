@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { useLeaderboardData } from '@/hooks/useLeaderboardData';
 import TimelinessRankingCard from '@/components/leaderboard/TimelinessRankingCard';
 import LatencyRankingCard from '@/components/leaderboard/LatencyRankingCard';
-import JoinDaoCard from '@/components/leaderboard/JoinDaoCard';
 import { Link, useLocation } from 'react-router-dom';
 import { NETWORKS } from '@/lib/api';
 import NetworkHeader from '@/components/network/NetworkHeader';
@@ -52,8 +51,7 @@ const Leaderboard = () => {
       
       <section className="flex-grow w-full px-6 md:px-10">
         <div className="container mx-auto max-w-4xl">
-          {/* New DAO Card placed after hero section */}
-          <JoinDaoCard />
+          {/* Removed DAO Card section */}
           
           <div className="grid grid-cols-1 gap-8 pb-12">
             <TimelinessRankingCard 
