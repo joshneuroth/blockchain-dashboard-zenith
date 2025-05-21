@@ -100,9 +100,11 @@ export interface LeaderboardResponse {
   last_updated?: string;
 }
 
-const fetchLeaderboardData = async (): Promise<LeaderboardResponse> => {
-  // Using the new API endpoint URL with API key
-  const response = await fetch("https://api.internal.blockheight.xyz/leaderboard/ethereum?api_key=bh_a7c63f38-5757-4250-88cd-8d1f842a7142");
+export type TimePeriod = 'month' | 'week' | 'day';
+
+const fetchLeaderboardData = async (timePeriod: TimePeriod): Promise<LeaderboardResponse> => {
+  // Using the API endpoint with API key and time period parameter
+  const response = await fetch(`https://api.internal.blockheight.xyz/leaderboard/ethereum?api_key=bh_a7c63f38-5757-4250-88cd-8d1f842a7142&time_period=${timePeriod}`);
   
   if (!response.ok) {
     throw new Error(`Failed to fetch leaderboard data: ${response.status}`);
@@ -115,9 +117,9 @@ const fetchLeaderboardData = async (): Promise<LeaderboardResponse> => {
   const mockData: LeaderboardResponse = {
     network: "ethereum",
     chain_id: "1",
-    time_period: "24h",
+    time_period: timePeriod,
     time_range: {
-      start: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+      start: new Date(Date.now() - getTimePeriodInMs(timePeriod)).toISOString(),
       end: new Date().toISOString()
     },
     provider_metrics: [],
@@ -131,10 +133,22 @@ const fetchLeaderboardData = async (): Promise<LeaderboardResponse> => {
   };
 };
 
-export function useLeaderboardData() {
+const getTimePeriodInMs = (timePeriod: TimePeriod): number => {
+  switch (timePeriod) {
+    case 'day':
+      return 24 * 60 * 60 * 1000;
+    case 'week':
+      return 7 * 24 * 60 * 60 * 1000;
+    case 'month':
+    default:
+      return 30 * 24 * 60 * 60 * 1000;
+  }
+};
+
+export function useLeaderboardData(timePeriod: TimePeriod = 'month') {
   return useQuery({
-    queryKey: ["leaderboard"],
-    queryFn: fetchLeaderboardData,
+    queryKey: ["leaderboard", timePeriod],
+    queryFn: () => fetchLeaderboardData(timePeriod),
     refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
     staleTime: 4 * 60 * 1000, // Consider data stale after 4 minutes
     retry: 2, // Retry failed requests 2 times

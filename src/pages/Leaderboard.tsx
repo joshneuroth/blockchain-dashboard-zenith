@@ -1,18 +1,20 @@
 
 import React, { useState, useEffect } from 'react';
-import { useLeaderboardData } from '@/hooks/useLeaderboardData';
+import { useLeaderboardData, TimePeriod } from '@/hooks/useLeaderboardData';
 import { useLocation } from 'react-router-dom';
 import NetworkHeader from '@/components/network/NetworkHeader';
 import MobileNetworkSelector from '@/components/network/MobileNetworkSelector';
 import NetworkFooter from '@/components/network/NetworkFooter';
 import LeaderboardCard from '@/components/leaderboard/LeaderboardCard';
+import TimePeriodFilter from '@/components/leaderboard/TimePeriodFilter';
 
 const Leaderboard = () => {
   const [darkMode, setDarkMode] = useState(false);
+  const [timePeriod, setTimePeriod] = useState<TimePeriod>('month');
   const location = useLocation();
   
-  // Fetch leaderboard data
-  const { data, isLoading, error } = useLeaderboardData();
+  // Fetch leaderboard data with time period
+  const { data, isLoading, error } = useLeaderboardData(timePeriod);
   
   useEffect(() => {
     if (darkMode) {
@@ -21,6 +23,10 @@ const Leaderboard = () => {
       document.documentElement.classList.remove('dark');
     }
   }, [darkMode]);
+
+  const handleTimePeriodChange = (newPeriod: TimePeriod) => {
+    setTimePeriod(newPeriod);
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
@@ -42,6 +48,13 @@ const Leaderboard = () => {
                   reliability, and blockheight accuracy metrics. Rankings are updated regularly.
                 </div>
               </div>
+            </div>
+            
+            <div className="mb-8 max-w-xl">
+              <TimePeriodFilter 
+                selectedPeriod={timePeriod} 
+                onChange={handleTimePeriodChange} 
+              />
             </div>
           </div>
         </div>
