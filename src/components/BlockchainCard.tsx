@@ -68,6 +68,11 @@ const BlockchainCard: React.FC<BlockchainCardProps> = ({
         hasBlockHistory={blockHistory.length > 0}
       />
       
+      {/* Network Public RPCs text */}
+      <p className="text-sm text-gray-500 opacity-80 mt-1 mb-4">
+        {networkName} Public RPCs
+      </p>
+      
       {isLoading && blockHistory.length === 0 ? (
         <div className="h-48 flex items-center justify-center">
           <div className="animate-pulse-opacity">Loading blockchain data...</div>
