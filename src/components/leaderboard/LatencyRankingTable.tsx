@@ -20,8 +20,8 @@ const LatencyRankingTable: React.FC<LatencyRankingTableProps> = ({
   selectedPeriod
 }) => {
   const getLatencyColor = (latency: number) => {
-    if (latency <= 50) return "bg-green-500 text-white";
-    if (latency <= 100) return "bg-yellow-500 text-white";
+    if (latency < 80) return "bg-green-500 text-white";
+    if (latency <= 120) return "bg-yellow-500 text-white";
     return "bg-red-500 text-white";
   };
 

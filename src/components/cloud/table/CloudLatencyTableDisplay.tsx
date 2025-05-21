@@ -31,7 +31,7 @@ const CloudLatencyTableDisplay: React.FC<CloudLatencyTableDisplayProps> = ({
     <>
       {sortedData.map((item, index) => {
         // Determine if this is a high latency connection
-        const isHighLatency = item.p50_latency !== undefined && item.p50_latency > 200;
+        const isHighLatency = item.p50_latency !== undefined && item.p50_latency > 120;
         
         return (
           <TableRow key={`${item.provider || 'unknown'}-${index}`}>

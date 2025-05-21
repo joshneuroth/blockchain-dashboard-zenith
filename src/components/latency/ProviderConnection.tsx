@@ -16,8 +16,8 @@ const ProviderConnection: React.FC<ProviderConnectionProps> = ({ result }) => {
     
     if (status === 'loading') return "bg-gray-200 dark:bg-gray-700";
     if (status === 'error' || value === null) return "bg-red-50 text-red-800 dark:bg-red-900/30 dark:text-red-300";
-    if (value < 100) return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
-    if (value < 300) return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300";
+    if (value < 80) return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
+    if (value < 120) return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300";
     return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
   };
   

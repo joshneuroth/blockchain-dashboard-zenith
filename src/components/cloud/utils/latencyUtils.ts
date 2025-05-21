@@ -4,8 +4,8 @@
  */
 export const getLatencyColor = (time: number | undefined): string => {
   if (time === undefined || isNaN(time)) return "text-gray-500";
-  if (time < 100) return "text-green-600 dark:text-green-400";
-  if (time < 300) return "text-amber-600 dark:text-amber-400";
+  if (time < 80) return "text-green-600 dark:text-green-400";
+  if (time < 120) return "text-amber-600 dark:text-amber-400";
   return "text-red-600 dark:text-red-400";
 };
 

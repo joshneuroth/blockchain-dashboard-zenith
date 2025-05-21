@@ -12,8 +12,8 @@ const CloudProviderConnection: React.FC<CloudProviderConnectionProps> = ({ provi
   // Get color based on latency
   const getLatencyColor = (latency: number | undefined) => {
     if (latency === undefined || isNaN(latency)) return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
-    if (latency < 100) return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
-    if (latency < 300) return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300";
+    if (latency < 80) return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
+    if (latency < 120) return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300";
     return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
   };
 
