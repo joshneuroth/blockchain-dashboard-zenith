@@ -43,7 +43,7 @@ const NetworkFooter: React.FC = () => {
         </div>
         
         <div className="mt-12 pt-4 border-t border-gray-200 dark:border-gray-800 text-xs text-gray-500">
-          <p>&copy; {new Date().getFullYear()} blockheight.xyz. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} blockheight.xyz.</p>
         </div>
       </div>
     </footer>
