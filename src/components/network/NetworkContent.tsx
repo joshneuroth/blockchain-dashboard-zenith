@@ -46,13 +46,13 @@ const NetworkContent: React.FC<NetworkContentProps> = ({
   return (
     <div className="w-full py-16 px-6 md:px-10">
       <div className="container mx-auto max-w-4xl">
-        <h1 className={`text-4xl md:text-6xl font-bold mb-8 ${getTextColorClass()}`}>
+        <h1 className={`text-4xl md:text-6xl font-bold mb-4 ${getTextColorClass()}`}>
           {networkName} <span className="font-extralight">Monitoring</span>
         </h1>
         
         <div className="mb-8">
           <p className={`${getTextColorClass()} opacity-80`}>
-            Detailed monitoring for {networkName} network. More metrics and analytics coming soon.
+            {networkName} Public RPCs
           </p>
         </div>
         
