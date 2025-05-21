@@ -43,7 +43,7 @@ const CloudLatencyCard: React.FC<CloudLatencyCardProps> = ({ networkId, networkN
           variant="outline" 
           size="sm"
           className="flex items-center gap-1"
-          onClick={() => window.open('https://blockheight-api.fly.dev/docs', '_blank')}
+          onClick={() => window.open('https://docs.blockheight.xyz/api-reference/introduction#3-get-network-leaderboard', '_blank')}
         >
           <ExternalLink size={14} />
           API Docs

@@ -122,7 +122,7 @@ const LeaderboardCard: React.FC<LeaderboardCardProps> = ({
           variant="outline" 
           size="sm"
           className="flex items-center gap-1"
-          onClick={() => window.open('https://api.internal.blockheight.xyz', '_blank')}
+          onClick={() => window.open('https://docs.blockheight.xyz/api-reference/introduction#3-get-network-leaderboard', '_blank')}
         >
           <ExternalLink size={14} />
           API Docs
