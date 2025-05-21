@@ -1,12 +1,8 @@
 
 import React from 'react';
-import { Filter } from 'lucide-react';
+import { Filter, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+import { Badge } from '@/components/ui/badge';
 import CloudLatencyRegionFilter from './CloudLatencyRegionFilter';
 import CloudLatencyMethodFilter from './CloudLatencyMethodFilter';
 
@@ -17,64 +13,105 @@ interface CloudLatencyFiltersProps {
   setRegionFilter: (region: string | null) => void;
   methodFilter: string | null;
   setMethodFilter: (method: string | null) => void;
+  testTypeFilter: string | null;
+  setTestTypeFilter: (testType: string | null) => void;
   uniqueRegions: string[];
   uniqueMethods: string[];
+  uniqueTestTypes: string[];
   hasActiveFilters: boolean;
   resetFilters: () => void;
 }
 
 const CloudLatencyFilters: React.FC<CloudLatencyFiltersProps> = ({
-  showFilters,
-  setShowFilters,
-  regionFilter,
-  setRegionFilter,
-  methodFilter,
-  setMethodFilter,
-  uniqueRegions,
-  uniqueMethods,
-  hasActiveFilters,
-  resetFilters
+  showFilters, setShowFilters,
+  regionFilter, setRegionFilter,
+  methodFilter, setMethodFilter,
+  testTypeFilter, setTestTypeFilter,
+  uniqueRegions, uniqueMethods, uniqueTestTypes,
+  hasActiveFilters, resetFilters
 }) => {
   return (
-    <div className="flex items-center gap-2">
-      <Collapsible open={showFilters} onOpenChange={setShowFilters}>
+    <div className="w-full">
+      <div className="flex justify-between items-center">
         <div className="flex items-center gap-2">
-          <CollapsibleTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-1 text-xs">
-              <Filter size={14} />
-              Filters
-            </Button>
-          </CollapsibleTrigger>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowFilters(!showFilters)}
+            className="flex items-center gap-1"
+          >
+            <Filter size={14} />
+            <span>Filters</span>
+            {hasActiveFilters && <Badge className="ml-1 h-5 w-5 p-0 flex items-center justify-center">{
+              (regionFilter ? 1 : 0) + (methodFilter ? 1 : 0) + (testTypeFilter ? 1 : 0)
+            }</Badge>}
+          </Button>
           
-          {/* Move the Clear Filters button next to the Filters button */}
-          {hasActiveFilters && (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={resetFilters}
-              className="text-xs"
-            >
-              Clear Filters
-            </Button>
+          {regionFilter && (
+            <Badge variant="secondary" className="flex items-center gap-1">
+              Region: {regionFilter}
+              <X size={12} className="ml-1 cursor-pointer" onClick={() => setRegionFilter(null)} />
+            </Badge>
+          )}
+          
+          {methodFilter && (
+            <Badge variant="secondary" className="flex items-center gap-1">
+              Method: {methodFilter}
+              <X size={12} className="ml-1 cursor-pointer" onClick={() => setMethodFilter(null)} />
+            </Badge>
+          )}
+          
+          {testTypeFilter && (
+            <Badge variant="secondary" className="flex items-center gap-1">
+              Test Type: {testTypeFilter}
+              <X size={12} className="ml-1 cursor-pointer" onClick={() => setTestTypeFilter(null)} />
+            </Badge>
           )}
         </div>
         
-        <CollapsibleContent className="mt-2 p-4 border rounded-md bg-background shadow-sm">
-          <div className="flex flex-col md:flex-row gap-4">
-            <CloudLatencyRegionFilter 
-              regionFilter={regionFilter} 
-              setRegionFilter={setRegionFilter}
-              uniqueRegions={uniqueRegions} 
-            />
-            
-            <CloudLatencyMethodFilter 
-              methodFilter={methodFilter} 
-              setMethodFilter={setMethodFilter}
-              uniqueMethods={uniqueMethods} 
-            />
+        {hasActiveFilters && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={resetFilters}
+            className="text-xs"
+          >
+            Clear Filters
+          </Button>
+        )}
+      </div>
+      
+      {showFilters && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4 p-4 border border-gray-200 dark:border-gray-800 rounded-md bg-gray-50 dark:bg-gray-900">
+          <CloudLatencyRegionFilter
+            regions={uniqueRegions}
+            selectedRegion={regionFilter}
+            setRegion={setRegionFilter}
+          />
+          
+          <CloudLatencyMethodFilter
+            methods={uniqueMethods}
+            selectedMethod={methodFilter}
+            setMethod={setMethodFilter}
+          />
+          
+          <div>
+            <h3 className="text-sm font-medium mb-2">Test Type</h3>
+            <div className="flex flex-wrap gap-2">
+              {uniqueTestTypes.map(testType => (
+                <Badge 
+                  key={testType} 
+                  variant={testTypeFilter === testType ? "default" : "outline"}
+                  className="cursor-pointer"
+                  onClick={() => setTestTypeFilter(testTypeFilter === testType ? null : testType)}
+                >
+                  {testType}
+                </Badge>
+              ))}
+            </div>
           </div>
-        </CollapsibleContent>
-      </Collapsible>
+        </div>
+      )}
     </div>
   );
 };

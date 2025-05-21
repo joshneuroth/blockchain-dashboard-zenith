@@ -18,6 +18,7 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
   // State for filters
   const [regionFilter, setRegionFilter] = useState<string | null>(null);
   const [methodFilter, setMethodFilter] = useState<string | null>(null);
+  const [testTypeFilter, setTestTypeFilter] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
 
   if (!data || data.length === 0) {
@@ -46,9 +47,10 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
     );
   }
 
-  // Extract unique regions and methods for filters
+  // Extract unique regions, methods and test types for filters
   const uniqueRegions = Array.from(new Set(validData.map(item => item.origin?.region || 'Global')));
   const uniqueMethods = Array.from(new Set(validData.map(item => item.method || 'eth_blockNumber')));
+  const uniqueTestTypes = Array.from(new Set(validData.map(item => item.test_type).filter(Boolean)));
 
   // Filter to only show most recent method test per provider-method-region combination
   const mostRecentData = useMemo(() => {
@@ -59,7 +61,8 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
       // Create a unique key for each provider-method-region combination
       const itemRegion = item.origin?.region || 'Global';
       const itemMethod = item.method || 'eth_blockNumber';
-      const key = `${item.provider}-${itemMethod}-${itemRegion}`;
+      const itemTestType = item.test_type || 'simple';
+      const key = `${item.provider}-${itemMethod}-${itemRegion}-${itemTestType}`;
       
       const existingItem = latestEntryMap.get(key);
       
@@ -80,13 +83,15 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
     return mostRecentData.filter(item => {
       const itemRegion = item.origin?.region || 'Global';
       const itemMethod = item.method || 'eth_blockNumber';
+      const itemTestType = item.test_type || 'simple';
       
       const regionMatches = !regionFilter || itemRegion === regionFilter;
       const methodMatches = !methodFilter || itemMethod === methodFilter;
+      const testTypeMatches = !testTypeFilter || itemTestType === testTypeFilter;
       
-      return regionMatches && methodMatches;
+      return regionMatches && methodMatches && testTypeMatches;
     });
-  }, [mostRecentData, regionFilter, methodFilter]);
+  }, [mostRecentData, regionFilter, methodFilter, testTypeFilter]);
 
   // Sort providers by p50 latency (fastest first)
   const sortedData = [...filteredData].sort((a, b) => {
@@ -102,10 +107,11 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
   const resetFilters = () => {
     setRegionFilter(null);
     setMethodFilter(null);
+    setTestTypeFilter(null);
   };
 
   // Check if we have active filters
-  const hasActiveFilters = regionFilter !== null || methodFilter !== null;
+  const hasActiveFilters = regionFilter !== null || methodFilter !== null || testTypeFilter !== null;
 
   return (
     <div>
@@ -122,8 +128,11 @@ const CloudLatencyTable: React.FC<CloudLatencyTableProps> = ({ data }) => {
             setRegionFilter={setRegionFilter}
             methodFilter={methodFilter}
             setMethodFilter={setMethodFilter}
+            testTypeFilter={testTypeFilter}
+            setTestTypeFilter={setTestTypeFilter}
             uniqueRegions={uniqueRegions}
             uniqueMethods={uniqueMethods}
+            uniqueTestTypes={uniqueTestTypes}
             hasActiveFilters={hasActiveFilters}
             resetFilters={resetFilters}
           />

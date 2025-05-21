@@ -1,20 +1,37 @@
+
 import { useState, useEffect } from 'react';
 
-// Interface for the metrics in the API response
-interface MetricItem {
-  origin_asn?: string;
-  provider: string;
-  method?: string;
+// Interface for the test method in the API response
+interface TestMethod {
+  test_type: string;
+  method: string;
   p50_latency_ms: number;
   p90_latency_ms: number;
   sample_size: number;
-  last_updated?: string;
 }
 
-// Interface for the API response format
-interface ApiResponse {
+// Interface for the region in the API response
+interface Region {
   region: string;
-  metrics: MetricItem[];
+  test_methods: TestMethod[];
+}
+
+// Interface for the network in the API response
+interface Network {
+  network: string;
+  chain_id: string;
+  regions: Region[];
+}
+
+// Interface for the provider in the API response
+interface Provider {
+  provider: string;
+  networks: Network[];
+}
+
+// Interface for the new API response format
+interface NewApiResponse {
+  providers: Provider[];
 }
 
 // Our application's internal data model
@@ -31,6 +48,7 @@ export interface CloudLatencyData {
   sample_size: number;
   success_rate?: number;
   timestamp?: string;
+  test_type?: string;
 }
 
 export const useCloudLatency = (networkId: string) => {
@@ -78,9 +96,46 @@ export const useCloudLatency = (networkId: string) => {
           throw new Error('Invalid data format received from API');
         }
         
-        // If the API returns an array directly (old format)
-        if (Array.isArray(rawData)) {
-          console.log('API returned an array format');
+        // Process new format with providers, networks, regions, and test_methods
+        if (rawData.providers && Array.isArray(rawData.providers)) {
+          console.log(`Processing new format with ${rawData.providers.length} providers`);
+          
+          const processedData: CloudLatencyData[] = [];
+          
+          // Filter for the requested network ID
+          rawData.providers.forEach((provider: Provider) => {
+            const networkData = provider.networks.find(
+              (network) => network.chain_id === networkId
+            );
+            
+            if (networkData) {
+              networkData.regions.forEach((region) => {
+                region.test_methods.forEach((method) => {
+                  processedData.push({
+                    provider: provider.provider,
+                    origin: {
+                      region: region.region
+                    },
+                    method: method.method,
+                    p50_latency: method.p50_latency_ms,
+                    p90_latency: method.p90_latency_ms,
+                    sample_size: method.sample_size,
+                    success_rate: 1.0, // Default if not provided
+                    test_type: method.test_type
+                  });
+                });
+              });
+            }
+          });
+          
+          console.log('Processed new format data:', processedData);
+          setData(processedData);
+        } 
+        // Fall back to legacy formats if the new format isn't recognized
+        else if (Array.isArray(rawData)) {
+          console.log('API returned an array format (legacy)');
+          
+          // This is the old format handling code
           if (rawData.length === 0) {
             console.log('API returned empty array');
             setData([]);
@@ -92,10 +147,10 @@ export const useCloudLatency = (networkId: string) => {
           if (rawData.length > 0 && rawData[0].region && Array.isArray(rawData[0].metrics)) {
             console.log('API returned array of region/metrics objects');
             
-            // Flatten all metrics from all regions
-            const processedData: CloudLatencyData[] = rawData.flatMap((regionData: ApiResponse) => {
+            // Process old region/metrics format
+            const processedData: CloudLatencyData[] = rawData.flatMap((regionData: any) => {
               console.log(`Processing region: ${regionData.region} with ${regionData.metrics.length} metrics`);
-              return regionData.metrics.map(item => ({
+              return regionData.metrics.map((item: any) => ({
                 provider: item.provider || 'Unknown',
                 origin: {
                   region: regionData.region
@@ -112,9 +167,9 @@ export const useCloudLatency = (networkId: string) => {
             console.log('Processed multiple regions data:', processedData);
             setData(processedData);
           } else {
-            // Process old format array
+            // Process very old format array
             console.log('Processing old format array data');
-            const processedData: CloudLatencyData[] = rawData.map(item => ({
+            const processedData: CloudLatencyData[] = rawData.map((item: any) => ({
               provider: item.provider || 'Unknown',
               origin: {
                 city: item.origin?.city,
@@ -135,9 +190,9 @@ export const useCloudLatency = (networkId: string) => {
             setData(processedData);
           }
         } 
-        // New format - object with region and metrics array
+        // Legacy format - object with region and metrics array
         else if (rawData.region && Array.isArray(rawData.metrics)) {
-          console.log(`API returned new format with region: ${rawData.region} and ${rawData.metrics.length} metrics`);
+          console.log(`API returned legacy format with region: ${rawData.region} and ${rawData.metrics.length} metrics`);
           const region = rawData.region;
           const metrics = rawData.metrics;
           
@@ -148,8 +203,8 @@ export const useCloudLatency = (networkId: string) => {
             return;
           }
           
-          // Process new format
-          const processedData: CloudLatencyData[] = metrics.map(item => ({
+          // Process legacy format
+          const processedData: CloudLatencyData[] = metrics.map((item: any) => ({
             provider: item.provider || 'Unknown',
             origin: {
               region: region
@@ -162,7 +217,7 @@ export const useCloudLatency = (networkId: string) => {
             timestamp: item.last_updated
           }));
           
-          console.log('Processed new format data:', processedData);
+          console.log('Processed legacy format data:', processedData);
           setData(processedData);
         }
         else {

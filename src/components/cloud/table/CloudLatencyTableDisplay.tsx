@@ -48,7 +48,23 @@ const CloudLatencyTableDisplay: React.FC<CloudLatencyTableDisplayProps> = ({
               </div>
             </TableCell>
             <TableCell>
-              {item.method || 'eth_blockNumber'}
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center">
+                      <span>{item.method || 'eth_blockNumber'}</span>
+                      {item.test_type && (
+                        <Info size={14} className="ml-1 text-muted-foreground cursor-help" />
+                      )}
+                    </div>
+                  </TooltipTrigger>
+                  {item.test_type && (
+                    <TooltipContent>
+                      <p>Test type: {item.test_type}</p>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
             </TableCell>
             <TableCell className={getLatencyColor(item.p50_latency)}>
               <div className="flex items-center gap-1">
