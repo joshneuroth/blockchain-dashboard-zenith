@@ -22,7 +22,7 @@ const TimelinessTable: React.FC<TimelinessTableProps> = ({ providers }) => {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="w-12">Rank</TableHead>
+          <TableHead className="w-12">Ahead Rank</TableHead>
           <TableHead>Provider</TableHead>
           <TableHead className="text-right">Tip Accuracy</TableHead>
           <TableHead className="text-right">Ahead %</TableHead>
@@ -33,16 +33,16 @@ const TimelinessTable: React.FC<TimelinessTableProps> = ({ providers }) => {
         {providers.map((provider) => (
           <TableRow key={provider.provider_name}>
             <TableCell className="font-mono">
-              {provider.blockheight_accuracy.rank === 1 ? (
+              {provider.blockheight_accuracy.ahead_rank === 1 ? (
                 <div className="flex items-center justify-center">
                   <Award className="text-yellow-500" size={18} />
                 </div>
               ) : (
                 <div className="text-center">
-                  {provider.blockheight_accuracy.rank}
-                  {provider.blockheight_accuracy.is_tied_tip_rank && 
+                  {provider.blockheight_accuracy.ahead_rank}
+                  {provider.blockheight_accuracy.is_tied_ahead_rank && 
                     <span className="text-xs text-muted-foreground ml-1">
-                      (tied with {provider.blockheight_accuracy.tied_count_tip_rank})
+                      (tied)
                     </span>}
                 </div>
               )}

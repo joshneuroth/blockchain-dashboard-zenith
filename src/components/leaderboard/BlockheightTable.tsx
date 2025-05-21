@@ -17,7 +17,7 @@ interface BlockheightTableProps {
 }
 
 const BlockheightTable: React.FC<BlockheightTableProps> = ({ providers, isLoading }) => {
-  const [sortField, setSortField] = useState<'rank' | 'tip_rank' | 'ahead_rank'>('rank');
+  const [sortField, setSortField] = useState<'ahead_rank'>('ahead_rank');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   const getAccuracyColor = (accuracy: number) => {
@@ -26,7 +26,7 @@ const BlockheightTable: React.FC<BlockheightTableProps> = ({ providers, isLoadin
     return "bg-red-500 text-white";
   };
 
-  const handleSort = (field: 'rank' | 'tip_rank' | 'ahead_rank') => {
+  const handleSort = (field: 'ahead_rank') => {
     if (sortField === field) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
@@ -65,45 +65,10 @@ const BlockheightTable: React.FC<BlockheightTableProps> = ({ providers, isLoadin
         <TableHeader>
           <TableRow>
             <TableHead 
-              className="w-16 cursor-pointer" 
-              onClick={() => handleSort('rank')}
-            >
-              <div className="flex items-center">
-                Overall Rank
-                {sortField === 'rank' && (
-                  sortDirection === 'asc' ? <ArrowUp size={14} className="ml-1" /> : <ArrowDown size={14} className="ml-1" />
-                )}
-              </div>
-            </TableHead>
-            <TableHead>Provider</TableHead>
-            <TableHead 
-              className="cursor-pointer text-right" 
-              onClick={() => handleSort('tip_rank')}
-            >
-              <div className="flex items-center justify-end">
-                <div className="flex items-center">
-                  At Tip Rank
-                  <Tooltip delayDuration={300}>
-                    <TooltipTrigger asChild>
-                      <span className="inline-flex cursor-help ml-1">
-                        <HelpCircle size={14} className="text-muted-foreground" />
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent side="top">
-                      <p className="max-w-xs">Ranking based on how accurately the provider reports the latest block</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  {sortField === 'tip_rank' && (
-                    sortDirection === 'asc' ? <ArrowUp size={14} className="ml-1" /> : <ArrowDown size={14} className="ml-1" />
-                  )}
-                </div>
-              </div>
-            </TableHead>
-            <TableHead 
-              className="cursor-pointer text-right" 
+              className="cursor-pointer" 
               onClick={() => handleSort('ahead_rank')}
             >
-              <div className="flex items-center justify-end">
+              <div className="flex items-center">
                 <div className="flex items-center">
                   Ahead Rank
                   <Tooltip delayDuration={300}>
@@ -122,6 +87,7 @@ const BlockheightTable: React.FC<BlockheightTableProps> = ({ providers, isLoadin
                 </div>
               </div>
             </TableHead>
+            <TableHead>Provider</TableHead>
             <TableHead className="text-right">Tip Accuracy</TableHead>
             <TableHead className="text-right">Ahead %</TableHead>
           </TableRow>
@@ -130,43 +96,19 @@ const BlockheightTable: React.FC<BlockheightTableProps> = ({ providers, isLoadin
           {validProviders.map((provider) => (
             <TableRow key={provider.provider_name}>
               <TableCell className="font-mono">
-                {provider.rank === 1 ? (
+                {provider.ahead_rank === 1 ? (
                   <div className="flex items-center justify-center">
                     <Medal className="text-yellow-500" size={18} />
                   </div>
                 ) : (
-                  <div className="text-center">{provider.rank}</div>
-                )}
-              </TableCell>
-              <TableCell className="font-medium">{provider.provider_name}</TableCell>
-              <TableCell className="text-right">
-                {provider.tip_rank === 1 ? (
-                  <span className="flex justify-end items-center">
-                    <span className="mr-1">1</span>
-                    <Medal className="text-yellow-500" size={14} />
-                  </span>
-                ) : (
-                  provider.tip_rank
-                )}
-                {provider.is_tied_tip_rank && 
-                  <span className="text-xs text-muted-foreground ml-1">
-                    (tied)
-                  </span>}
-              </TableCell>
-              <TableCell className="text-right">
-                {provider.ahead_rank === 1 ? (
-                  <span className="flex justify-end items-center">
-                    <span className="mr-1">1</span>
-                    <Medal className="text-yellow-500" size={14} />
-                  </span>
-                ) : (
-                  provider.ahead_rank
+                  <div className="text-center">{provider.ahead_rank}</div>
                 )}
                 {provider.is_tied_ahead_rank && 
                   <span className="text-xs text-muted-foreground ml-1">
                     (tied)
                   </span>}
               </TableCell>
+              <TableCell className="font-medium">{provider.provider_name}</TableCell>
               <TableCell className="text-right">
                 <Badge className={getAccuracyColor(provider.tip_accuracy_percentage)}>
                   {provider.tip_accuracy_percentage.toFixed(2)}%
