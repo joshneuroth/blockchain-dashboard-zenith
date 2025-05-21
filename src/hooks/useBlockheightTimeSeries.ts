@@ -27,7 +27,8 @@ export interface BlockheightTimeSeriesData {
 
 export const useBlockheightTimeSeries = (chainId: string) => {
   const fetchBlockheightData = async () => {
-    const response = await fetch(`https://blockheight-api.fly.dev/internal/networks/${chainId}/blockheight/time-series`);
+    // Use the updated API endpoint with the API key
+    const response = await fetch(`https://api.internal.blockheight.xyz/internal/networks/${chainId}/blockheight/time-series?api_key=bh_a7c63f38-5757-4250-88cd-8d1f842a7142`);
     
     if (!response.ok) {
       throw new Error(`API error: ${response.status}`);
