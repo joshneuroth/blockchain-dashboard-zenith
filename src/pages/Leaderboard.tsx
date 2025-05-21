@@ -6,7 +6,6 @@ import NetworkHeader from '@/components/network/NetworkHeader';
 import MobileNetworkSelector from '@/components/network/MobileNetworkSelector';
 import NetworkFooter from '@/components/network/NetworkFooter';
 import LeaderboardCard from '@/components/leaderboard/LeaderboardCard';
-import ApiInfoSection from '@/components/status/ApiInfoSection';
 import RawDataDisplay from '@/components/leaderboard/RawDataDisplay';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
@@ -80,8 +79,6 @@ const Leaderboard = () => {
           </div>
         </div>
       </section>
-      
-      <ApiInfoSection />
       
       <NetworkFooter />
     </div>
