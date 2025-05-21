@@ -17,6 +17,9 @@ const ReliabilityTable: React.FC<ReliabilityTableProps> = ({ providers, isLoadin
     return "bg-red-500 text-white";
   };
 
+  // Sort providers by rank in ascending order
+  const sortedProviders = [...providers].sort((a, b) => a.rank - b.rank);
+
   if (isLoading) {
     return (
       <div className="h-60 flex items-center justify-center">
@@ -25,7 +28,7 @@ const ReliabilityTable: React.FC<ReliabilityTableProps> = ({ providers, isLoadin
     );
   }
 
-  if (!providers || providers.length === 0) {
+  if (!sortedProviders || sortedProviders.length === 0) {
     return (
       <div className="h-60 flex items-center justify-center">
         <p className="text-muted-foreground">No reliability data available</p>
@@ -45,7 +48,7 @@ const ReliabilityTable: React.FC<ReliabilityTableProps> = ({ providers, isLoadin
         </TableRow>
       </TableHeader>
       <TableBody>
-        {providers.map((provider) => (
+        {sortedProviders.map((provider) => (
           <TableRow key={provider.provider_name}>
             <TableCell className="font-mono">
               {provider.rank === 1 ? (
