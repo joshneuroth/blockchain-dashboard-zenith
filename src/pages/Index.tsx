@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import BlockchainCard from '@/components/BlockchainCard';
@@ -6,6 +5,7 @@ import NewsletterForm from '@/components/NewsletterForm';
 import { NETWORKS } from '@/lib/api';
 import { Link } from 'react-router-dom';
 import NetworkHeader from '@/components/network/NetworkHeader';
+import MobileNetworkSelector from '@/components/network/MobileNetworkSelector';
 
 const Index = () => {
   const [darkMode, setDarkMode] = useState(false);
@@ -32,20 +32,7 @@ const Index = () => {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
       <NetworkHeader darkMode={darkMode} setDarkMode={setDarkMode} />
-      
-      <div className="md:hidden p-4 overflow-x-auto flex items-center">
-        <div className="blockchain-tabs flex">
-          {Object.entries(NETWORKS).map(([id, network]) => (
-            <Link
-              key={id}
-              to={`/${id}`}
-              className={`blockchain-tab ${activeNetwork === id ? 'active' : ''} whitespace-nowrap`}
-            >
-              {network.name}
-            </Link>
-          ))}
-        </div>
-      </div>
+      <MobileNetworkSelector />
       
       <section className="w-full py-16 px-6 md:px-10 animate-slide-in">
         <div className="container mx-auto max-w-4xl">
