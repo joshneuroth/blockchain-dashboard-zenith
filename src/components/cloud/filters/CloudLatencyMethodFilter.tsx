@@ -9,15 +9,15 @@ import {
 } from '@/components/ui/select';
 
 interface CloudLatencyMethodFilterProps {
+  uniqueMethods: string[];
   methodFilter: string | null;
   setMethodFilter: (method: string | null) => void;
-  uniqueMethods: string[];
 }
 
 const CloudLatencyMethodFilter: React.FC<CloudLatencyMethodFilterProps> = ({
+  uniqueMethods,
   methodFilter,
-  setMethodFilter,
-  uniqueMethods
+  setMethodFilter
 }) => {
   return (
     <div className="space-y-2">

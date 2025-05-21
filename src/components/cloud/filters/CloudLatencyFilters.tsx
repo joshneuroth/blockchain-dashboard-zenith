@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import CloudLatencyRegionFilter from './CloudLatencyRegionFilter';
 import CloudLatencyMethodFilter from './CloudLatencyMethodFilter';
+import CloudLatencyProviderFilter from './CloudLatencyProviderFilter';
 
 interface CloudLatencyFiltersProps {
   showFilters: boolean;
@@ -15,9 +16,12 @@ interface CloudLatencyFiltersProps {
   setMethodFilter: (method: string | null) => void;
   testTypeFilter: string | null;
   setTestTypeFilter: (testType: string | null) => void;
+  providerFilter: string | null;
+  setProviderFilter: (provider: string | null) => void;
   uniqueRegions: string[];
   uniqueMethods: string[];
   uniqueTestTypes: string[];
+  uniqueProviders: string[];
   hasActiveFilters: boolean;
   resetFilters: () => void;
 }
@@ -27,7 +31,8 @@ const CloudLatencyFilters: React.FC<CloudLatencyFiltersProps> = ({
   regionFilter, setRegionFilter,
   methodFilter, setMethodFilter,
   testTypeFilter, setTestTypeFilter,
-  uniqueRegions, uniqueMethods, uniqueTestTypes,
+  providerFilter, setProviderFilter,
+  uniqueRegions, uniqueMethods, uniqueTestTypes, uniqueProviders,
   hasActiveFilters, resetFilters
 }) => {
   return (
@@ -43,7 +48,10 @@ const CloudLatencyFilters: React.FC<CloudLatencyFiltersProps> = ({
             <Filter size={14} />
             <span>Filters</span>
             {hasActiveFilters && <Badge className="ml-1 h-5 w-5 p-0 flex items-center justify-center">{
-              (regionFilter ? 1 : 0) + (methodFilter ? 1 : 0) + (testTypeFilter ? 1 : 0)
+              (regionFilter ? 1 : 0) + 
+              (methodFilter ? 1 : 0) + 
+              (testTypeFilter ? 1 : 0) + 
+              (providerFilter ? 1 : 0)
             }</Badge>}
           </Button>
           
@@ -51,6 +59,13 @@ const CloudLatencyFilters: React.FC<CloudLatencyFiltersProps> = ({
             <Badge variant="secondary" className="flex items-center gap-1">
               Region: {regionFilter}
               <X size={12} className="ml-1 cursor-pointer" onClick={() => setRegionFilter(null)} />
+            </Badge>
+          )}
+          
+          {providerFilter && (
+            <Badge variant="secondary" className="flex items-center gap-1">
+              Provider: {providerFilter}
+              <X size={12} className="ml-1 cursor-pointer" onClick={() => setProviderFilter(null)} />
             </Badge>
           )}
           
@@ -82,17 +97,23 @@ const CloudLatencyFilters: React.FC<CloudLatencyFiltersProps> = ({
       </div>
       
       {showFilters && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4 p-4 border border-gray-200 dark:border-gray-800 rounded-md bg-gray-50 dark:bg-gray-900">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-4 p-4 border border-gray-200 dark:border-gray-800 rounded-md bg-gray-50 dark:bg-gray-900">
+          <CloudLatencyProviderFilter
+            uniqueProviders={uniqueProviders}
+            providerFilter={providerFilter}
+            setProviderFilter={setProviderFilter}
+          />
+          
           <CloudLatencyRegionFilter
-            regions={uniqueRegions}
-            selectedRegion={regionFilter}
-            setRegion={setRegionFilter}
+            uniqueRegions={uniqueRegions}
+            regionFilter={regionFilter}
+            setRegionFilter={setRegionFilter}
           />
           
           <CloudLatencyMethodFilter
-            methods={uniqueMethods}
-            selectedMethod={methodFilter}
-            setMethod={setMethodFilter}
+            uniqueMethods={uniqueMethods}
+            methodFilter={methodFilter}
+            setMethodFilter={setMethodFilter}
           />
           
           <div>

@@ -9,15 +9,15 @@ import {
 } from '@/components/ui/select';
 
 interface CloudLatencyRegionFilterProps {
+  uniqueRegions: string[];
   regionFilter: string | null;
   setRegionFilter: (region: string | null) => void;
-  uniqueRegions: string[];
 }
 
 const CloudLatencyRegionFilter: React.FC<CloudLatencyRegionFilterProps> = ({
+  uniqueRegions,
   regionFilter,
-  setRegionFilter,
-  uniqueRegions
+  setRegionFilter
 }) => {
   return (
     <div className="space-y-2">
