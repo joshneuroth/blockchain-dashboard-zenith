@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -115,7 +114,7 @@ const TimelinessRankingCard: React.FC<TimelinessRankingCardProps> = ({
           variant="outline" 
           size="sm"
           className="flex items-center gap-1"
-          onClick={() => window.open('https://docs.blockheight.xyz/api-reference/introduction#3-get-network-leaderboard', '_blank')}
+          onClick={() => window.open('https://docs.blockheight.xyz/', '_blank')}
         >
           <ExternalLink size={14} />
           API Docs
