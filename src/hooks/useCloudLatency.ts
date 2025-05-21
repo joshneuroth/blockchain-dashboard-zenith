@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 
 // Interface for the metrics in the API response
@@ -48,8 +47,8 @@ export const useCloudLatency = (networkId: string) => {
         
         console.log(`Fetching cloud latency data for network ${networkId}...`);
         
-        // Use the public demo API endpoint
-        const apiUrl = `https://blockheight-api.fly.dev/networks/${networkId}/metrics/latency`;
+        // Updated API endpoint with the provided URL and API key
+        const apiUrl = `https://api.internal.blockheight.xyz/latency?api_key=bh_a7c63f38-5757-4250-88cd-8d1f842a7142`;
         
         console.log(`Calling API: ${apiUrl}`);
         
