@@ -72,7 +72,7 @@ const BlockheightTable: React.FC<BlockheightTableProps> = ({ providers, isLoadin
               <li><strong>Tip Accuracy:</strong> Shows how often the provider reports the correct blockheight, with higher percentages being better.</li>
               <li><strong>Ahead %:</strong> The percentage of time the provider reports a blockheight ahead of the majority consensus.</li>
             </ul>
-            <p className="mt-2">Providers that consistently report the newest blocks first are ranked higher in the "Ahead Rank" column.</p>
+            <p className="mt-2">Providers that consistently report the newest blocks first are ranked higher in the "Ahead Rank" column, while "Tip Accuracy" shows when the provider was at or ahead of consensus.</p>
           </AlertDescription>
         </Alert>
 
