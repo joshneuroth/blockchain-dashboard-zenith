@@ -10,7 +10,7 @@ import TimePeriodFilter from '@/components/leaderboard/TimePeriodFilter';
 
 const Leaderboard = () => {
   const [darkMode, setDarkMode] = useState(false);
-  const [timePeriod, setTimePeriod] = useState<TimePeriod>('month');
+  const [timePeriod, setTimePeriod] = useState<TimePeriod>('week'); // Changed default from 'month' to 'week'
   const location = useLocation();
   
   // Fetch leaderboard data with time period
