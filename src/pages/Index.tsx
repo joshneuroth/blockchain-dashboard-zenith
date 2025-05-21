@@ -1,10 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
-import { Moon, Sun, Home, TrendingUp } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import BlockchainCard from '@/components/BlockchainCard';
 import NewsletterForm from '@/components/NewsletterForm';
 import { NETWORKS } from '@/lib/api';
-import { Popover, PopoverTrigger, PopoverContent } from '@radix-ui/react-popover';
+import { Link } from 'react-router-dom';
+import NetworkHeader from '@/components/network/NetworkHeader';
 
 const Index = () => {
   const [darkMode, setDarkMode] = useState(false);
@@ -28,80 +29,9 @@ const Index = () => {
     }
   }, [location]);
 
-  const isHomePage = location.pathname === '/';
-
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
-      <header className="w-full py-4 px-6 md:px-10 border-b border-gray-200 dark:border-gray-800 glass-effect">
-        <div className="container mx-auto flex justify-between items-center">
-          <div className="flex items-center">
-            <h1 className="text-lg md:text-xl font-bold">
-              blockheight<span className="text-gray-500 font-mono">.xyz</span>
-            </h1>
-            
-            <Link 
-              to="/" 
-              className={`ml-4 p-2 rounded-full transition-colors ${
-                isHomePage 
-                  ? 'bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-gray-100' 
-                  : 'hover:bg-gray-200 dark:hover:bg-gray-700'
-              }`}
-              aria-label="Home"
-            >
-              <Home size={20} />
-            </Link>
-            
-            <Link 
-              to="/leaderboard" 
-              className="ml-4 p-2 rounded-full transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
-              aria-label="Leaderboard"
-            >
-              <TrendingUp size={20} />
-            </Link>
-            
-            <div className="ml-4 blockchain-tabs hidden md:flex">
-              {Object.entries(NETWORKS).map(([id, network]) => (
-                <Link
-                  key={id}
-                  to={`/${id}`}
-                  className={`blockchain-tab ${activeNetwork === id ? 'active' : ''}`}
-                >
-                  {network.name}
-                </Link>
-              ))}
-            </div>
-            
-            <Popover>
-              <PopoverTrigger asChild>
-                <button
-                  className="ml-4 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                  aria-label="More chains"
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="2" y="7" width="6" height="10" rx="1" />
-                    <rect x="9" y="4" width="6" height="16" rx="1" />
-                    <rect x="16" y="10" width="6" height="7" rx="1" />
-                  </svg>
-                </button>
-              </PopoverTrigger>
-              <PopoverContent className="w-72 p-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                <div className="p-4">
-                  <h3 className="text-sm font-medium mb-2">More Chains</h3>
-                  <p className="text-xs text-gray-500">Dropdown content will be added in the next step</p>
-                </div>
-              </PopoverContent>
-            </Popover>
-          </div>
-          
-          <button
-            onClick={() => setDarkMode(!darkMode)}
-            className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-            aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
-          >
-            {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-          </button>
-        </div>
-      </header>
+      <NetworkHeader darkMode={darkMode} setDarkMode={setDarkMode} />
       
       <div className="md:hidden p-4 overflow-x-auto flex items-center">
         <div className="blockchain-tabs flex">
@@ -115,27 +45,6 @@ const Index = () => {
             </Link>
           ))}
         </div>
-        
-        <Popover>
-          <PopoverTrigger asChild>
-            <button
-              className="ml-4 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-              aria-label="More chains"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="2" y="7" width="6" height="10" rx="1" />
-                <rect x="9" y="4" width="6" height="16" rx="1" />
-                <rect x="16" y="10" width="6" height="7" rx="1" />
-              </svg>
-            </button>
-          </PopoverTrigger>
-          <PopoverContent className="w-60 p-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-            <div className="p-4">
-              <h3 className="text-sm font-medium mb-2">More Chains</h3>
-              <p className="text-xs text-gray-500">Dropdown content will be added in the next step</p>
-            </div>
-          </PopoverContent>
-        </Popover>
       </div>
       
       <section className="w-full py-16 px-6 md:px-10 animate-slide-in">
